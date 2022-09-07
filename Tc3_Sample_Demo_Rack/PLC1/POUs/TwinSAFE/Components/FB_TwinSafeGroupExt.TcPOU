@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="FB_TwinSafeGroupExt" Id="{dbc5d683-c343-4b2b-8876-e5f1c3b39c90}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_TwinSafeGroupExt
+(*******************************************************************************************************
+Description			:	Entries of the status and diagnostic TwinSAFE groups
+ocumentation 		:	TwinSAFE-Logik-FB TwinCAT function blocks for TwinSAFE logic terminals
+Supported hardware	: 	EL6910 / EJ6910 / EK1960
+Version/Date 		:	V3.1.0/26.10.2016
+********************************************************************************************************)
+VAR_INPUT
+
+	bRun							AT %Q*	:BOOL;				(* TwinSAFE group run - linked with the associated TwinSAFE Group in the TwinSAFE projekt *)
+	bErrAck							AT %Q*	:BOOL;				(* TwinSAFE group error acknowledge - linked with the associated TwinSAFE Group in the TwinSAFE projekt *)
+	bModuleFault					AT %Q*	:BOOL;				(*  *)
+	sName									:STRING;			(* TwinSAFE group name *)
+
+END_VAR
+VAR_OUTPUT
+
+	stInfoData						AT %I*	:ST_TsGroupInfo;	(* TwinSAFE Group Info Data *)
+	bComErr							AT %I*	:BOOL;				(* TwinSAFE group communication error - linked with the associated TwinSAFE Group in the TwinSAFE projekt *)
+	bFbErr							AT %I*	:BOOL;				(* TwinSAFE group function block error - linked with the associated TwinSAFE Group in the TwinSAFE projekt *)
+	bOutErr							AT %I*	:BOOL;				(* TwinSAFE group output error - linked with the associated TwinSAFE Group in the TwinSAFE projekt *)
+	bOtherErr						AT %I*	:BOOL;				(* ModuleFault or AnalogValueFault or WaitComTimeoutFault *)
+	bComStartUp						AT %I*	:BOOL;				(* At least one of the Connection of this group is in the StartUp *)
+	bFbDeactive						AT %I*	:BOOL;				(* TwinSAFE group was deactivated *)
+	bFbRun							AT %I*	:BOOL;				(* All Fbs are in run state *)
+	bInRun							AT %I*	:BOOL;				(* TwinSAFE group is in run *)
+	sState									:STRING;
+	sDiag									:STRING;
+
+END_VAR
+VAR
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* TwinSAFE group status and diagnostic *)
+
+(* THIS CODE IS ONLY AN EXAMPLE - YOU HAVE TO CHECK APTITUDE FOR YOUR APPLICATION *)
+
+	CASE stInfoData.nState OF
+		1:	sState := 'RUN';
+		2:	sState := 'STOP';
+		4:	sState := 'ERROR';
+		5:	sState := 'RESET';
+		6:	sState := 'START';
+		7:	sState := 'STOPERROR';
+		16:	sState := 'DEACTIVE';
+		17:	sState := 'WAITCOMERROR';
+	ELSE
+		sState := 'undefined';
+	END_CASE
+	
+	CASE stInfoData.nDiag OF
+		0:	sDiag := 'No error';
+		1:	sDiag := 'Fb error';
+		2:	sDiag := 'Com error';
+		3:	sDiag := 'Module error';
+		4:	sDiag := 'CMP error';
+		5:	sDiag := 'Deactivate error';
+		6:	sDiag := 'Restart error';
+	ELSE
+		sDiag := 'undefined';
+	END_CASE
+	
+(* End *)]]></ST>
+    </Implementation>
+    <LineIds Name="FB_TwinSafeGroupExt">
+      <LineId Id="3" Count="6" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="63" Count="3" />
+      <LineId Id="13" Count="1" />
+      <LineId Id="69" Count="1" />
+      <LineId Id="73" Count="3" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="82" Count="2" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

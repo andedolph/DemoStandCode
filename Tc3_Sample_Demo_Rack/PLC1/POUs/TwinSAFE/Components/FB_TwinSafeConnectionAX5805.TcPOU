@@ -1,0 +1,593 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="FB_TwinSafeConnectionAX5805" Id="{43ad83fd-cdad-4e3b-9504-3d0d751f8b18}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_TwinSafeConnectionAX5805
+(*******************************************************************************************************
+Description			:	Evaluate a TwinSAFE connection status and diagnosis to an EtherCAT terminal
+Supported terminals : 	AX5805(2 Axis)
+Documentation 		:	AX5805 / AX5806 TwinSAFE drive option cards for the AX5000 servo drive
+Version/Date 		:	V1.6.1/15.03.2016
+Required libraries 	: 	TcSystem.lib (Tc2_System), TcEtherCAT.lib (Tc2_EtherCAT)
+********************************************************************************************************)
+VAR_INPUT
+	
+	tCoEReadCycle							:TIME 		:= T#0MS;			(* Read cycle CoE-Data, e.g. temperature *)
+
+END_VAR
+VAR_OUTPUT
+
+	stInfoData						AT %I*	:ST_TsConnectionInfo8Byte;		(* EL6900 \ Connection Info Data \ Message_X Info Data*)
+	nEcSlaveState					AT %I*	:UINT ;							(* AX5805 \ InfoData \ State *)
+	stEcAdsAddr						AT %I*	:ST_AdsAddr;					(* AX5805 \ InfoData \ AdsAddr *)
+	
+(* act_EcSlaveIdentify *)
+	sEcSlaveType							:STRING(15);
+	sEcSlaveName							:STRING(31) := '';
+
+	bSlaveIdentify							:BOOL;
+	bSlaveTypeError							:BOOL;
+	
+(* act_Signals *)
+	stSignalStatusMC1						:ST_TsStatusWordAX5805;
+	stSignalControlStatusMC1				:ST_TsControlWordAX5805;
+	stSignalStatusMC2						:ST_TsStatusWordAX5805;
+	stSignalControlStatusMC2				:ST_TsControlWordAX5805;
+
+(* act_ConnectionState *)
+	sState									:STRING;
+	
+(* act_ConnectionDiag *)
+	sDiag									:STRING;
+	sFault									:STRING;						(* FailSafe Error (Hardware)*)
+	bError									:BOOL;							(* TwinSAFE-Error *)
+	
+(* act_ReadDiagObjects *)
+	stSlaveTemp								:ST_TsSlave2Temp;
+	bTempWarning							:BOOL;							(* Temperature warning: T1, T2 *)
+
+	eErrIndicesFA82ErrorMC1					:E_TsErrIndicesFA82AX5805;
+	eErrIndicesFA82ErrorMC2					:E_TsErrIndicesFA82AX5805;
+	eErrIndicesFA82DiagnosisMC1				:E_TsErrIndicesFA82AX5805;
+	bErrIndicesFA82DiagnosisMC1Err			:BOOL;
+	eErrIndicesFA82DiagnosisMC2				:E_TsErrIndicesFA82AX5805;
+	bErrIndicesFA82DiagnosisMC2Err			:BOOL;	
+
+	eDiagObjFA10LowByteMC1					:E_TsDiagnosisObjektsFA10AX5805;
+	eDiagObjFA10HighByteMC1					:E_TsDiagnosisObjektsFA10AX5805;
+	eDiagObjFA10LowByteMC2					:E_TsDiagnosisObjektsFA10AX5805;
+	eDiagObjFA10HighByteMC2					:E_TsDiagnosisObjektsFA10AX5805;
+
+END_VAR
+VAR
+
+(* act_ConnectionDiag *)
+	nDiag0_3								:BYTE;
+
+(* act_ReadDiagObjects *)
+	eReadDiagObjState						:E_TsCycleDiagObj;
+	eReadDiagObjErrStep						:E_TsCycleDiagObj := E_TsCycleDiagObj.eCycleDiagObj_NoError;
+	bReadDiagObjError						:BOOL;								(* Error in the diagnosis objects read cycle *)  
+	bReadDiagObjReset						:BOOL;								(* Reset the diagnosis objects read cycle error *)
+	fbTimer									:TON;
+	fbEcCoeSdoRead							:FB_EcCoESdoReadEx;
+	stErrIndicesFA82						:ST_TsErrIndicesFA82AX5805;
+	stDiagObjectsFA10						:ST_TsDiagObjectsFA10AX5805;
+
+(* act_EcSlaveIdentify *)
+	fbEcGetSlaveName						:FB_EcGetSlaveName;
+
+END_VAR
+VAR CONSTANT
+
+(* act_ReadDiagObjects *)
+	nWarningLevelTemp1						:INT	:= 85;						(* Temperature 1 warning level [°C] *)
+	nWarningLevelTemp2						:INT	:= 85;						(* Temperature 2 warning level [°C] *)
+
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Function Block TwinSAFE connection status and diagnosis for AX5805 Terminals *)
+
+(* THIS CODE IS ONLY AN EXAMPLE - YOU HAVE TO CHECK APTITUDE FOR YOUR APPLICATION *)
+
+	(* Identify the EtherCAT slave *)
+		act_EcSlaveIdentify();
+
+	(* Evaluate the connection state *)
+		act_ConnectionState();
+	
+	(* Evaluate the connection diagnosis *)
+		act_ConnectionDiag();
+	
+	(* Evaluate the AX5805 input and output signals *)
+		act_Signals();
+	
+	(* Evaluate the Terminal temperatures and diagnostic objects *)
+		IF bSlaveIdentify
+		THEN
+			act_ReadDiagObjects();
+		ELSE
+			eReadDiagObjState := E_TsCycleDiagObj.eCycleDiagObj_Init;
+		END_IF
+		
+(* End *)]]></ST>
+    </Implementation>
+    <Action Name="act_ConnectionDiag" Id="{97371e0a-67ce-44b7-bd0c-044bde254b3e}">
+      <Implementation>
+        <ST><![CDATA[(* Evaluate the connection diagnosis *)
+
+	(* Evaluate Bit 0..3 *)
+	nDiag0_3 := USINT_TO_BYTE(stInfoData.nDiag) AND 16#0F;
+
+	CASE nDiag0_3 OF
+		0:		sDiag := 'No error';
+		1:		sDiag := 'Invalid command';
+		2:		sDiag := 'Unknown command';
+		3:		sDiag := 'Invalid connection ID';
+		4:		sDiag := 'Invalid CRC';
+		5:		sDiag := 'Watchdog time elapsed';
+		6:		sDiag := 'Invalid FSOE address';
+		7:		sDiag := 'Invalid data';
+		8:		sDiag := 'Invalid communication parameter length';
+		9:		sDiag := 'Invalid communication parameters';
+		10:		sDiag := 'Invalid user parameter length';
+		11:		sDiag := 'Invalid user parameter';
+		12:		sDiag := 'FSoE master reset';
+		13:		sDiag := 'Module err detected on slave, with option "Module error is ComError" activated';
+		14:		sDiag := 'Module err detected on EL290x, with option "Error acknowledge active" activated';
+		15:		sDiag := 'Slave not yet started, or unexpected error argument';
+	END_CASE
+
+	(* Evaluate Bit 4..7 *)
+	sFault:='';
+
+	IF stInfoData.nDiag.4 
+	THEN
+		sFault	:= 'FSoE slave error detected - '; 
+	END_IF
+
+	IF stInfoData.nDiag.5 
+	THEN
+		sFault	:= concat(sFault,'FSoE slave reports Failsafe Value active - ');
+	END_IF
+
+	IF stInfoData.nDiag.6 
+	THEN
+		sFault	:= concat(sFault,'StartUp - ');
+	END_IF
+
+	IF stInfoData.nDiag.7 
+	THEN
+		sFault	:= concat(sFault, 'FSoE master reports Failsafe Value active');
+	END_IF
+		
+	(* Error *)
+	bError := stInfoData.nDiag <> 0;
+
+(* End *)]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="act_ConnectionState" Id="{24befdad-cbcc-4915-a439-34cd27fdac86}">
+      <Implementation>
+        <ST><![CDATA[(* Evaluate the connection state *)
+
+	CASE stInfoData.nState OF
+		100:	sState := 'Reset state';
+		101:	sState := 'Session state';
+		102:	sState := 'Connection state';
+		103:	sState := 'Parameter state';
+		104:	sState := 'Data state';
+		105:	sState := 'Shutdown state';
+	ELSE
+		sState := 'unknown';
+	END_CASE
+	
+(* End *)]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="act_EcSlaveIdentify" Id="{021020c4-7977-4653-b079-4b3c761cf7e6}">
+      <Implementation>
+        <ST><![CDATA[(* Identify the EtherCAT slave *)
+
+	IF NOT nEcSlaveState.3
+	THEN
+		bSlaveIdentify  := FALSE;
+		bSlaveTypeError := FALSE;
+		sEcSlaveType    := '';
+	END_IF
+
+	IF nEcSlaveState.3
+		AND NOT bSlaveIdentify
+		AND NOT bSlaveTypeError
+		AND F_CreateAmsNetId(stEcAdsAddr.netId) <> '0.0.0.0.0.0' 
+		AND stEcAdsAddr.port <> 0
+	THEN
+
+		fbEcCoeSdoRead(
+			sNetId			:= 	F_CreateAmsNetId(stEcAdsAddr.netId),
+			nSlaveAddr		:= 	stEcAdsAddr.port,
+			nSubIndex		:= 	0,
+			nIndex			:= 	16#1008,
+			pDstBuf			:= 	ADR(sEcSlaveType),
+			cbBufLen		:= 	SIZEOF(sEcSlaveType),
+			bExecute		:= 	TRUE,
+			tTimeout		:= 	DEFAULT_ADS_TIMEOUT);
+	
+
+		fbEcGetSlaveName(
+			bExecute		:=	TRUE, 
+			sNetId			:=	F_CreateAmsNetId(stEcAdsAddr.netId), 
+			nSlaveAddr		:=	stEcAdsAddr.port, 
+			tTimeout		:=	DEFAULT_ADS_TIMEOUT, 
+			bBusy			=>	, 
+			sSlaveName		=>	sEcSlaveName, 
+			bError			=>	, 
+			nErrId			=>	);
+
+		IF NOT fbEcCoeSdoRead.bBusy
+			AND NOT fbEcCoeSdoRead.bError
+			AND NOT fbEcGetSlaveName.bBusy
+			AND NOT fbEcGetSlaveName.bError
+		THEN
+		
+			fbEcCoeSdoRead(bExecute := FALSE); 
+			fbEcGetSlaveName(bExecute := FALSE); 
+
+			IF sEcSlaveType = 'AX5805' 
+				AND fbEcGetSlaveName.sSlaveName <> ''
+			THEN
+				bSlaveIdentify := TRUE;
+			ELSE
+				bSlaveTypeError := TRUE;
+			END_IF
+
+		ELSIF NOT fbEcCoeSdoRead.bBusy
+			AND fbEcCoeSdoRead.bError
+		OR (NOT fbEcGetSlaveName.bBusy
+			AND fbEcGetSlaveName.bError)
+		THEN
+		
+			fbEcCoeSdoRead(bExecute := FALSE); 
+			fbEcGetSlaveName(bExecute := FALSE); 
+
+		END_IF
+
+	END_IF
+	
+(* End *)]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="act_ReadDiagObjects" Id="{89692a69-c724-4d54-9772-2caf581343ae}">
+      <Implementation>
+        <ST><![CDATA[(* Evaluate the Terminal temperatures and diagnostic objects *)
+
+	CASE eReadDiagObjState OF
+
+		eCycleDiagObj_Init				:	(* Init *)	
+
+			IF nEcSlaveState.3					(* Slave in OP *)
+				AND tCoEReadCycle <> T#0MS 		(* tCoEReadCycle <> t#0ms -> Read diagnostic aktiv *)
+			THEN
+				bReadDiagObjError := FALSE;
+				fbEcCoeSdoRead(	bExecute := FALSE);
+				fbTimer(IN := FALSE);
+				eReadDiagObjState := eCycleDiagObj_ReadTemperature;
+			END_IF
+
+			
+		eCycleDiagObj_ReadTemperature	:	(* Read temperature *)
+
+			fbEcCoeSdoRead(
+				sNetId			:= 	F_CreateAmsNetId(stEcAdsAddr.netId),
+				nSlaveAddr		:= 	stEcAdsAddr.port,
+				nSubIndex		:= 	1,
+				nIndex			:= 	16#FA80,
+				pDstBuf			:= 	ADR(stSlaveTemp),
+				cbBufLen		:= 	SIZEOF(stSlaveTemp),
+				bExecute		:= 	TRUE,
+				tTimeout		:= 	DEFAULT_ADS_TIMEOUT,
+				bCompleteAccess	:= 	TRUE);
+
+			IF NOT fbEcCoeSdoRead.bBusy 
+				AND NOT fbEcCoeSdoRead.bError 
+			THEN
+				fbEcCoeSdoRead(bExecute := FALSE);
+				eReadDiagObjState := eCycleDiagObj_ReadErrorIndices;
+			ELSIF NOT fbEcCoeSdoRead.bBusy 
+				AND fbEcCoeSdoRead.bError 
+			THEN
+				eReadDiagObjErrStep := eReadDiagObjState;
+				eReadDiagObjState 	:= eCycleDiagObj_Error;
+			END_IF
+
+			
+		eCycleDiagObj_ReadErrorIndices			:	(* Read error indices *)
+
+			fbTimer(IN := TRUE, PT := tCoEReadCycle);
+
+			fbEcCoeSdoRead(
+				sNetId			:= 	F_CreateAmsNetId(stEcAdsAddr.netId),
+				nSlaveAddr		:= 	stEcAdsAddr.port,
+				nSubIndex		:= 	1,
+				nIndex			:= 	16#FA82,
+				pDstBuf			:= 	ADR(stErrIndicesFA82),
+				cbBufLen		:= 	SIZEOF(stErrIndicesFA82),
+				bExecute		:= 	TRUE,
+				tTimeout		:= 	DEFAULT_ADS_TIMEOUT,
+				bCompleteAccess	:= 	TRUE);
+
+			IF NOT fbEcCoeSdoRead.bBusy 
+				AND NOT fbEcCoeSdoRead.bError 
+			THEN
+				fbEcCoeSdoRead(bExecute := FALSE);
+
+				eErrIndicesFA82ErrorMC1 	 	:= stErrIndicesFA82.nErrorMC1;
+				eErrIndicesFA82ErrorMC2 	 	:= stErrIndicesFA82.nErrorMC2;
+				eErrIndicesFA82DiagnosisMC1 	:= stErrIndicesFA82.nDiagnosisMC1;
+				bErrIndicesFA82DiagnosisMC1Err 	:= eErrIndicesFA82DiagnosisMC1 <> E_TsErrIndicesFA82AX5805.eAX5805FA82_NoError;
+				eErrIndicesFA82DiagnosisMC2 	:= stErrIndicesFA82.nDiagnosisMC2;
+				bErrIndicesFA82DiagnosisMC2Err 	:= eErrIndicesFA82DiagnosisMC2 <> E_TsErrIndicesFA82AX5805.eAX5805FA82_NoError;
+				
+				eReadDiagObjState := eCycleDiagObj_ReadDiag;
+			ELSIF NOT fbEcCoeSdoRead.bBusy 
+				AND fbEcCoeSdoRead.bError 
+			THEN
+				eReadDiagObjErrStep := eReadDiagObjState;
+				eReadDiagObjState 	:= eCycleDiagObj_Error;
+			END_IF
+				
+			
+		eCycleDiagObj_ReadDiag			:	(* Read diacnostic objects *)
+
+			fbTimer(IN := TRUE, PT := tCoEReadCycle);
+
+			fbEcCoeSdoRead(
+				sNetId			:= 	F_CreateAmsNetId(stEcAdsAddr.netId),
+				nSlaveAddr		:= 	stEcAdsAddr.port,
+				nSubIndex		:= 	1,
+				nIndex			:= 	16#FA10,
+				pDstBuf			:= 	ADR(stDiagObjectsFA10),
+				cbBufLen		:= 	SIZEOF(stDiagObjectsFA10),
+				bExecute		:= 	TRUE,
+				tTimeout		:= 	DEFAULT_ADS_TIMEOUT,
+				bCompleteAccess	:= 	TRUE);
+
+			IF NOT fbEcCoeSdoRead.bBusy 
+				AND NOT fbEcCoeSdoRead.bError 
+			THEN
+				fbEcCoeSdoRead(bExecute := FALSE);
+				
+				eDiagObjFA10LowByteMC1	:=	TO_WORD(stDiagObjectsFA10.nReasonForShutdownAxis1) AND 16#00FF;	
+				eDiagObjFA10HighByteMC1	:=	TO_WORD(stDiagObjectsFA10.nReasonForShutdownAxis1) AND 16#FF00;	
+				eDiagObjFA10LowByteMC2	:=	TO_WORD(stDiagObjectsFA10.nReasonForShutdownAxis2) AND 16#00FF;	
+				eDiagObjFA10HighByteMC2	:=	TO_WORD(stDiagObjectsFA10.nReasonForShutdownAxis2) AND 16#FF00;	
+				
+				eReadDiagObjState := eCycleDiagObj_ReadDelay;
+			ELSIF NOT fbEcCoeSdoRead.bBusy 
+				AND fbEcCoeSdoRead.bError 
+			THEN
+				eReadDiagObjErrStep := eReadDiagObjState;
+				eReadDiagObjState 	:= eCycleDiagObj_Error;
+			END_IF
+				
+			
+		eCycleDiagObj_ReadDelay		:	(* Read delay *)
+			fbTimer(
+				IN := TRUE, 
+				PT := tCoEReadCycle);
+
+			IF fbTimer.Q 
+			THEN
+				fbTimer(IN := FALSE); 			
+				eReadDiagObjState := eCycleDiagObj_Done;
+			END_IF
+
+			
+		eCycleDiagObj_Done				:	(* Done *)
+
+			eReadDiagObjState := eCycleDiagObj_Init;
+
+			
+		eCycleDiagObj_Error			:	(* Error detected *)
+
+			bReadDiagObjError := TRUE;
+		
+			IF bReadDiagObjReset
+			THEN
+				bReadDiagObjError 		:= FALSE;
+				fbEcCoeSdoRead(bExecute := FALSE);
+				eReadDiagObjErrStep 	:= E_TsCycleDiagObj.eCycleDiagObj_NoError;
+				eReadDiagObjState 		:= eCycleDiagObj_Init;
+			END_IF
+
+	ELSE
+		
+		eReadDiagObjState := eCycleDiagObj_Init;
+		
+	END_CASE
+
+	bTempWarning := stSlaveTemp.nInternalTemperature1 >= nWarningLevelTemp1 
+						OR stSlaveTemp.nInternalTemperature2 >= nWarningLevelTemp2;
+
+(* End *)]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="act_Signals" Id="{ca1b421c-9adf-4b82-980b-0cd3d6da9af4}">
+      <Implementation>
+        <ST><![CDATA[(* Evaluate the input and output signals *)
+
+	IF nEcSlaveState.3 (* Slave in operational state *)
+	THEN
+	
+		(* OP -> transfer the signal states *)
+		stSignalStatusMC1.bSafeTorqueOff_STO 					:= stInfoData.nInSafeDataByte1.0;
+		stSignalStatusMC1.bSafeSpeedMonitor_SSM_1 				:= stInfoData.nInSafeDataByte1.1;
+		stSignalStatusMC1.bSafeSpeedMonitor_SSM_2 				:= stInfoData.nInSafeDataByte1.2;
+		stSignalStatusMC1.bSafeOperatingStop_SOS_1	 			:= stInfoData.nInSafeDataByte1.3;
+		stSignalStatusMC1.bSafeSpeedRange_SSR_1 				:= stInfoData.nInSafeDataByte1.4;
+		stSignalStatusMC1.bSafeDirectionPositive_SDIp 			:= stInfoData.nInSafeDataByte1.5;
+		stSignalStatusMC1.bSafeDirectionNegative_SDIn 			:= stInfoData.nInSafeDataByte1.6;
+		stSignalStatusMC1.bErrorAcknowledge_ErrAck 				:= stInfoData.nInSafeDataByte1.7;
+		stSignalStatusMC1.bNotInUseBit8 						:= stInfoData.nInSafeDataByte2.0;
+		stSignalStatusMC1.bNotInUseBit9 						:= stInfoData.nInSafeDataByte2.1;
+		stSignalStatusMC1.bNotInUseBit10						:= stInfoData.nInSafeDataByte2.2;
+		stSignalStatusMC1.bNotInUseBit11						:= stInfoData.nInSafeDataByte2.3;
+		stSignalStatusMC1.bNotInUseBit12						:= stInfoData.nInSafeDataByte2.4;
+		stSignalStatusMC1.bNotInUseBit13						:= stInfoData.nInSafeDataByte2.5;
+		stSignalStatusMC1.bNotInUseBit14						:= stInfoData.nInSafeDataByte2.6;
+		stSignalStatusMC1.bNotInUseBit15						:= stInfoData.nInSafeDataByte2.7;
+		
+		stSignalStatusMC2.bSafeTorqueOff_STO 					:= stInfoData.nInSafeDataByte3.0;
+		stSignalStatusMC2.bSafeSpeedMonitor_SSM_1 				:= stInfoData.nInSafeDataByte3.1;
+		stSignalStatusMC2.bSafeSpeedMonitor_SSM_2 				:= stInfoData.nInSafeDataByte3.2;
+		stSignalStatusMC2.bSafeOperatingStop_SOS_1 				:= stInfoData.nInSafeDataByte3.3;
+		stSignalStatusMC2.bSafeSpeedRange_SSR_1 				:= stInfoData.nInSafeDataByte3.4;
+		stSignalStatusMC2.bSafeDirectionPositive_SDIp 			:= stInfoData.nInSafeDataByte3.5;
+		stSignalStatusMC2.bSafeDirectionNegative_SDIn		 	:= stInfoData.nInSafeDataByte3.6;
+		stSignalStatusMC2.bErrorAcknowledge_ErrAck 				:= stInfoData.nInSafeDataByte3.7;
+		stSignalStatusMC2.bNotInUseBit8 						:= stInfoData.nInSafeDataByte4.0;
+		stSignalStatusMC2.bNotInUseBit9 						:= stInfoData.nInSafeDataByte4.1;
+		stSignalStatusMC2.bNotInUseBit10						:= stInfoData.nInSafeDataByte4.2;
+		stSignalStatusMC2.bNotInUseBit11						:= stInfoData.nInSafeDataByte4.3;
+		stSignalStatusMC2.bNotInUseBit12						:= stInfoData.nInSafeDataByte4.4;
+		stSignalStatusMC2.bNotInUseBit13						:= stInfoData.nInSafeDataByte4.5;
+		stSignalStatusMC2.bNotInUseBit14						:= stInfoData.nInSafeDataByte4.6;
+		stSignalStatusMC2.bNotInUseBit15						:= stInfoData.nInSafeDataByte4.7;
+		
+		stSignalControlStatusMC1.bSafeTorqueOff_STO 			:= stInfoData.nOutSafeDataByte1.0;
+		stSignalControlStatusMC1.bSafeStop1_SS1_1 				:= stInfoData.nOutSafeDataByte1.1;
+		stSignalControlStatusMC1.bSafeStop2_SS2_1 				:= stInfoData.nOutSafeDataByte1.2;
+		stSignalControlStatusMC1.bSafeOperatingStop_SOS_1 		:= stInfoData.nOutSafeDataByte1.3;
+		stSignalControlStatusMC1.bSafeSpeedRange_SSR_1 			:= stInfoData.nOutSafeDataByte1.4;
+		stSignalControlStatusMC1.bSafeDirectionPositive_SDIp 	:= stInfoData.nOutSafeDataByte1.5;
+		stSignalControlStatusMC1.bSafeDirectionNegative_SDIn 	:= stInfoData.nOutSafeDataByte1.6;
+		stSignalControlStatusMC1.bErrorAcknowledge_ErrAck 		:= stInfoData.nOutSafeDataByte1.7;
+		stSignalControlStatusMC1.bNotInUseBit8 					:= stInfoData.nOutSafeDataByte2.0;
+		stSignalControlStatusMC1.bNotInUseBit9 					:= stInfoData.nOutSafeDataByte2.1;
+		stSignalControlStatusMC1.bNotInUseBit10					:= stInfoData.nOutSafeDataByte2.2;
+		stSignalControlStatusMC1.bNotInUseBit11					:= stInfoData.nOutSafeDataByte2.3;
+		stSignalControlStatusMC1.bNotInUseBit12					:= stInfoData.nOutSafeDataByte2.4;
+		stSignalControlStatusMC1.bNotInUseBit13					:= stInfoData.nOutSafeDataByte2.5;
+		stSignalControlStatusMC1.bNotInUseBit14					:= stInfoData.nOutSafeDataByte2.6;
+		stSignalControlStatusMC1.bNotInUseBit15					:= stInfoData.nOutSafeDataByte2.7;
+
+		stSignalControlStatusMC2.bSafeTorqueOff_STO 			:= stInfoData.nOutSafeDataByte3.0;
+		stSignalControlStatusMC2.bSafeStop1_SS1_1 				:= stInfoData.nOutSafeDataByte3.1;
+		stSignalControlStatusMC2.bSafeStop2_SS2_1 				:= stInfoData.nOutSafeDataByte3.2;
+		stSignalControlStatusMC2.bSafeOperatingStop_SOS_1 		:= stInfoData.nOutSafeDataByte3.3;
+		stSignalControlStatusMC2.bSafeSpeedRange_SSR_1 			:= stInfoData.nOutSafeDataByte3.4;
+		stSignalControlStatusMC2.bSafeDirectionPositive_SDIp 	:= stInfoData.nOutSafeDataByte3.5;
+		stSignalControlStatusMC2.bSafeDirectionNegative_SDIn 	:= stInfoData.nOutSafeDataByte3.6;
+		stSignalControlStatusMC2.bErrorAcknowledge_ErrAck 		:= stInfoData.nOutSafeDataByte3.7;
+		stSignalControlStatusMC2.bNotInUseBit8 					:= stInfoData.nOutSafeDataByte4.0;
+		stSignalControlStatusMC2.bNotInUseBit9 					:= stInfoData.nOutSafeDataByte4.1;
+		stSignalControlStatusMC2.bNotInUseBit10					:= stInfoData.nOutSafeDataByte4.2;
+		stSignalControlStatusMC2.bNotInUseBit11					:= stInfoData.nOutSafeDataByte4.3;
+		stSignalControlStatusMC2.bNotInUseBit12					:= stInfoData.nOutSafeDataByte4.4;
+		stSignalControlStatusMC2.bNotInUseBit13					:= stInfoData.nOutSafeDataByte4.5;
+		stSignalControlStatusMC2.bNotInUseBit14					:= stInfoData.nOutSafeDataByte4.6;
+		stSignalControlStatusMC2.bNotInUseBit15					:= stInfoData.nOutSafeDataByte4.7;
+		
+	ELSE
+		
+		(* Error -> clear the signal states *)
+		stSignalStatusMC1.bSafeTorqueOff_STO 					:= FALSE;
+		stSignalStatusMC1.bSafeSpeedMonitor_SSM_1 				:= FALSE;
+		stSignalStatusMC1.bSafeSpeedMonitor_SSM_2 				:= FALSE;
+		stSignalStatusMC1.bSafeOperatingStop_SOS_1	 			:= FALSE;
+		stSignalStatusMC1.bSafeSpeedRange_SSR_1 				:= FALSE;
+		stSignalStatusMC1.bSafeDirectionPositive_SDIp 			:= FALSE;
+		stSignalStatusMC1.bSafeDirectionNegative_SDIn 			:= FALSE;
+		stSignalStatusMC1.bErrorAcknowledge_ErrAck 				:= FALSE;
+		stSignalStatusMC1.bNotInUseBit8 						:= FALSE;
+		stSignalStatusMC1.bNotInUseBit9 						:= FALSE;
+		stSignalStatusMC1.bNotInUseBit10						:= FALSE;
+		stSignalStatusMC1.bNotInUseBit11						:= FALSE;
+		stSignalStatusMC1.bNotInUseBit12						:= FALSE;
+		stSignalStatusMC1.bNotInUseBit13						:= FALSE;
+		stSignalStatusMC1.bNotInUseBit14						:= FALSE;
+		stSignalStatusMC1.bNotInUseBit15						:= FALSE;
+		
+		stSignalStatusMC2.bSafeTorqueOff_STO 					:= FALSE;
+		stSignalStatusMC2.bSafeSpeedMonitor_SSM_1 				:= FALSE;
+		stSignalStatusMC2.bSafeSpeedMonitor_SSM_2 				:= FALSE;
+		stSignalStatusMC2.bSafeOperatingStop_SOS_1 				:= FALSE;
+		stSignalStatusMC2.bSafeSpeedRange_SSR_1 				:= FALSE;
+		stSignalStatusMC2.bSafeDirectionPositive_SDIp 			:= FALSE;
+		stSignalStatusMC2.bSafeDirectionNegative_SDIn		 	:= FALSE;
+		stSignalStatusMC2.bErrorAcknowledge_ErrAck 				:= FALSE;
+		stSignalStatusMC2.bNotInUseBit8 						:= FALSE;
+		stSignalStatusMC2.bNotInUseBit9 						:= FALSE;
+		stSignalStatusMC2.bNotInUseBit10						:= FALSE;
+		stSignalStatusMC2.bNotInUseBit11						:= FALSE;
+		stSignalStatusMC2.bNotInUseBit12						:= FALSE;
+		stSignalStatusMC2.bNotInUseBit13						:= FALSE;
+		stSignalStatusMC2.bNotInUseBit14						:= FALSE;
+		stSignalStatusMC2.bNotInUseBit15						:= FALSE;
+		
+		stSignalControlStatusMC1.bSafeTorqueOff_STO 			:= FALSE;
+		stSignalControlStatusMC1.bSafeStop1_SS1_1 				:= FALSE;
+		stSignalControlStatusMC1.bSafeStop2_SS2_1 				:= FALSE;
+		stSignalControlStatusMC1.bSafeOperatingStop_SOS_1 		:= FALSE;
+		stSignalControlStatusMC1.bSafeSpeedRange_SSR_1 			:= FALSE;
+		stSignalControlStatusMC1.bSafeDirectionPositive_SDIp 	:= FALSE;
+		stSignalControlStatusMC1.bSafeDirectionNegative_SDIn 	:= FALSE;
+		stSignalControlStatusMC1.bErrorAcknowledge_ErrAck 		:= FALSE;
+		stSignalControlStatusMC1.bNotInUseBit8 					:= FALSE;
+		stSignalControlStatusMC1.bNotInUseBit9 					:= FALSE;
+		stSignalControlStatusMC1.bNotInUseBit10					:= FALSE;
+		stSignalControlStatusMC1.bNotInUseBit11					:= FALSE;
+		stSignalControlStatusMC1.bNotInUseBit12					:= FALSE;
+		stSignalControlStatusMC1.bNotInUseBit13					:= FALSE;
+		stSignalControlStatusMC1.bNotInUseBit14					:= FALSE;
+		stSignalControlStatusMC1.bNotInUseBit15					:= FALSE;
+
+		stSignalControlStatusMC2.bSafeTorqueOff_STO 			:= FALSE;
+		stSignalControlStatusMC2.bSafeStop1_SS1_1 				:= FALSE;
+		stSignalControlStatusMC2.bSafeStop2_SS2_1 				:= FALSE;
+		stSignalControlStatusMC2.bSafeOperatingStop_SOS_1 		:= FALSE;
+		stSignalControlStatusMC2.bSafeSpeedRange_SSR_1 			:= FALSE;
+		stSignalControlStatusMC2.bSafeDirectionPositive_SDIp 	:= FALSE;
+		stSignalControlStatusMC2.bSafeDirectionNegative_SDIn 	:= FALSE;
+		stSignalControlStatusMC2.bErrorAcknowledge_ErrAck 		:= FALSE;
+		stSignalControlStatusMC2.bNotInUseBit8 					:= FALSE;
+		stSignalControlStatusMC2.bNotInUseBit9 					:= FALSE;
+		stSignalControlStatusMC2.bNotInUseBit10					:= FALSE;
+		stSignalControlStatusMC2.bNotInUseBit11					:= FALSE;
+		stSignalControlStatusMC2.bNotInUseBit12					:= FALSE;
+		stSignalControlStatusMC2.bNotInUseBit13					:= FALSE;
+		stSignalControlStatusMC2.bNotInUseBit14					:= FALSE;
+		stSignalControlStatusMC2.bNotInUseBit15					:= FALSE;
+
+	END_IF
+
+(* End *)
+]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="FB_TwinSafeConnectionAX5805">
+      <LineId Id="3" Count="23" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TwinSafeConnectionAX5805.act_ConnectionDiag">
+      <LineId Id="2" Count="49" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TwinSafeConnectionAX5805.act_ConnectionState">
+      <LineId Id="2" Count="12" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TwinSafeConnectionAX5805.act_EcSlaveIdentify">
+      <LineId Id="2" Count="66" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TwinSafeConnectionAX5805.act_ReadDiagObjects">
+      <LineId Id="2" Count="149" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TwinSafeConnectionAX5805.act_Signals">
+      <LineId Id="2" Count="147" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

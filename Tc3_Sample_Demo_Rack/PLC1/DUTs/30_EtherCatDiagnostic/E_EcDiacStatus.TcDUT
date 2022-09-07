@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.3">
+  <DUT Name="E_EcDiacStatus" Id="{d074548a-a206-4230-b593-2f17dc266e17}">
+    <Declaration><![CDATA[TYPE E_EcDiacStatus :
+(
+
+	eEcDiac_Start							:= 0, 
+	eEcDiac_Delay							,
+	eEcDiac_ReadMasterState					,
+	eEcDiac_ReadSlaveState
+
+);
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

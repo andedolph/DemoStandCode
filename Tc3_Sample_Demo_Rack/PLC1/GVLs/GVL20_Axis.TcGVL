@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.3">
+  <GVL Name="GVL20_Axis" Id="{c0adfcf4-48b9-493d-b82b-23b17f51e519}">
+    <Declaration><![CDATA[(* GVL20_Axis - Global variables axis *)
+{attribute 'TcContextName' := 'PlcTask'}
+VAR_GLOBAL
+	
+(* Axis 1 inputs and outputs *)
+	stAxis1									:AXIS_REF;
+
+(* Axis 2 inputs and outputs *)
+	stAxis2									:AXIS_REF;
+
+(* Axis 3 - 4 (AX5203) inputs and outputs *)
+	nAxis3TorqueFeedback			AT%I*	:INT;		(* Axis 3 current +/- 1000 *)
+	nAxis4TorqueFeedback			AT%I*	:INT;		(* Axis 4 current +/- 1000 *)
+
+	nAX5203DigitalInputs			AT%I*	:UINT;		(* Digital inputs AX5000
+															BIT 0 - servo reference cam (axis 3)
+															BIT 1 - servo reference cam (axis 4)
+															BIT 2 - switch S26
+															BIT 3 - switch S27 *)
+
+	nAX5203DigitalOutputs			AT%Q*	:UINT;		(* Digital output AX5000 
+															BIT 7 - Led H27 *)
+	
+	stAxis3									:AXIS_REF;
+	stAxis4									:AXIS_REF;
+
+(* Axis 5 (Handwheel) inputs and outputs *)
+	stAxis5									:AXIS_REF;
+
+END_VAR
+(* End *)]]></Declaration>
+  </GVL>
+</TcPlcObject>

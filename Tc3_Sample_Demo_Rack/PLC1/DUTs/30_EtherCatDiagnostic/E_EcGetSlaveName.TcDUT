@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4019.2">
+  <DUT Name="E_EcGetSlaveName" Id="{631eb869-b46c-4d04-a210-b41bb2a5f34c}">
+    <Declaration><![CDATA[TYPE E_EcGetSlaveName :
+(
+
+	eEcGetSlaveName_Start						:= 0,
+	eEcGetSlaveName_Init						:= 10,
+	eEcGetSlaveName_ReadAllSlaveAddr			:= 100,
+	eEcGetSlaveName_ReadSlaveName				,
+	eEcGetSlaveName_Done						:= 500,
+	eEcGetSlaveName_ErrorStep 					:= 999,
+	eEcGetSlaveName_NoError
+
+);
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <Itf Name="I_Axis" Id="{c41240db-9aae-4039-8c18-a812738259a6}">
+    <Declaration><![CDATA[INTERFACE I_Axis
+]]></Declaration>
+    <Method Name="M_Disable" Id="{cf28dac8-1d35-47ad-a17d-d6303191da5c}">
+      <Declaration><![CDATA[METHOD M_Disable : UDINT
+VAR_INPUT
+	bDisable : BOOL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error
+]]></Declaration>
+    </Method>
+    <Method Name="M_Enable" Id="{3e4d0ab3-2039-4903-9dd5-d46f1f023669}">
+      <Declaration><![CDATA[METHOD M_Enable : UDINT
+VAR_INPUT
+	bEnable :BOOL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error]]></Declaration>
+    </Method>
+    <Method Name="M_HardwareReset" Id="{94760612-d19a-4ba8-a418-df0afd0ff23b}">
+      <Declaration><![CDATA[METHOD M_HardwareReset : UDINT
+VAR_INPUT
+	bReset:BOOL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error number
+]]></Declaration>
+    </Method>
+    <Method Name="M_Jog" Id="{7556452f-a871-45d2-ace6-c64ab617ec71}">
+      <Declaration><![CDATA[METHOD M_Jog : UDINT
+VAR_INPUT
+	bJogFwd : BOOL;
+	bJogBwd : BOOL;
+	fJogSpeed : LREAL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error]]></Declaration>
+    </Method>
+    <Method Name="M_Reset" Id="{af0a7ca7-eb0b-42c8-ac52-5b7df18a8304}">
+      <Declaration><![CDATA[METHOD M_Reset : UDINT
+VAR_INPUT
+	bReset : BOOL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error]]></Declaration>
+    </Method>
+    <Method Name="M_Speed" Id="{0e1f4b42-7d7b-4bfe-8988-ffdbf615b1dd}">
+      <Declaration><![CDATA[METHOD M_Speed : UDINT
+VAR_INPUT
+	bMoveVelocity : BOOL;
+	fSpeed : LREAL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error]]></Declaration>
+    </Method>
+    <Method Name="M_Stop" Id="{79731514-a798-4c3b-b94c-f3efade60055}">
+      <Declaration><![CDATA[METHOD M_Stop : UDINT
+VAR_INPUT
+	bStop : BOOL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error]]></Declaration>
+    </Method>
+    <Property Name="P_CurrentPosition" Id="{715ffe80-1f66-499f-991d-39da0d04a341}">
+      <Declaration><![CDATA[PROPERTY P_CurrentPosition : LREAL]]></Declaration>
+      <Get Name="Get" Id="{b0d91eb5-a333-4b33-a84e-0b49cb073778}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{d346a4eb-1440-4c31-8372-9f2f33a521c7}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="P_CurrentSpeed" Id="{3af48bc4-057b-434a-ab44-2926e0ac9eb3}">
+      <Declaration><![CDATA[PROPERTY P_CurrentSpeed : LREAL]]></Declaration>
+      <Get Name="Get" Id="{2e836973-d04c-4b8d-b27e-92bb153381cc}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{7e638068-8440-4b95-8b00-71ccafab89c3}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="P_Error" Id="{b8561cfd-3b30-43d2-84da-c627a9917f07}">
+      <Declaration><![CDATA[PROPERTY P_Error : BOOL]]></Declaration>
+      <Get Name="Get" Id="{35875975-ad62-4570-9d17-6c1b896cbd2b}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{36453995-58b1-4919-848f-e563dc7b9081}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="P_ErrorID" Id="{f654812e-e5cc-4fc5-9d9b-8b43161e093e}">
+      <Declaration><![CDATA[PROPERTY P_ErrorID : UDINT]]></Declaration>
+      <Get Name="Get" Id="{e4c0f296-5db8-4536-beaa-c2c094e58e77}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{855cf3c7-9658-40f1-9846-7a67648406c0}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="P_Ready" Id="{845d3468-a188-495b-b91a-0e9cbf8f059a}">
+      <Declaration><![CDATA[PROPERTY P_Ready : BOOL]]></Declaration>
+      <Get Name="Get" Id="{a3fc1d7c-db25-432c-89f6-bb8f8dfb3a95}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{fb09deb1-b473-456f-9d8f-e63cd51d1edb}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+  </Itf>
+</TcPlcObject>

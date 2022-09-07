@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="ConsumeTime" Id="{efd0f232-f22a-4579-bec9-9dd5593716e8}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION ConsumeTime : bool
+VAR_INPUT
+	DelayUs 	: UDINT;
+END_VAR
+VAR
+	fbGetTime	: GETCPUACCOUNT;
+	tStart		: UDINT;
+	tNow		: UDINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbGetTime(cpuAccountDW => tStart);
+tNow := tStart;
+
+WHILE (tNow - tStart) < DelayUs*10 DO
+	fbGetTime(cpuAccountDW => tNow);
+END_WHILE
+	
+
+	]]></ST>
+    </Implementation>
+    <LineIds Name="ConsumeTime">
+      <LineId Id="3" Count="7" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

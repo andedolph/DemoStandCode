@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Crc="3546488720" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{696b2b6c-5d52-42a3-b1ce-925663f045fe}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>TwinCAT3SafePlcProject</RootNamespace>
+    <AssemblyName>TwinCAT3SafePlcProject</AssemblyName>
+    <FileUpgradeFlags />
+    <UpgradeBackupLocation />
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <TargetSystem>EL6900</TargetSystem>
+    <ProgrammingLanguage>Graphical Editor</ProgrammingLanguage>
+    <Worker>MichaelG</Worker>
+    <IntProjName>DemoRack</IntProjName>
+    <NextSdsId>10</NextSdsId>
+    <SPlcProjVersion>1.1.0.0</SPlcProjVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>false</DebugSymbols>
+    <OutputPath>bin\Release\</OutputPath>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="TwinSafeGroup1\Alias Devices\Gr01ComErr.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Gr01FbErr.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Gr01OutErr.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Gr01Run.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Term 15 %28EL1904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Term 16 %28EL2904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Term 22 %28EL1904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Term 32 %28AX5805%29 - Module 1 %28Safety Process Data, 2 axis%29.sds" />
+    <None Include="TwinSafeGroup1\TwinSafeGroup1.sal" />
+    <None Include="TwinSafeGroup1\TwinSafeGroup1.sal.diagram">
+      <DependentUpon>TwinSafeGroup1\TwinSafeGroup1.sal</DependentUpon>
+      <Visible>false</Visible>
+    </None>
+    <None Include="TargetSystemConfig.xml">
+      <Visible>false</Visible>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TwinSafeGroup1" />
+    <Folder Include="TwinSafeGroup1\Alias Devices" />
+    <None Include="TwinSafeGroup1\Alias Devices\Gr01ErrAck.sds" />
+  </ItemGroup>
+</Project>

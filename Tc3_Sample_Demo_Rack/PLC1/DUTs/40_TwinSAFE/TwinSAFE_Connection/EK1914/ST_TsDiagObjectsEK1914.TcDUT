@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="ST_TsDiagObjectsEK1914" Id="{1c9e18fc-f51a-4347-8f65-93bef88e203e}">
+    <Declaration><![CDATA[TYPE ST_TsDiagObjectsEK1914 :
+(*******************************************************************************************************
+Description			:	Index 16#800E Diagnostic objects
+Supported terminals : 	EK1914
+Documentation 		:	EK1914 TwinSAFE input/output terminal with 2 fail-safe inputs and 2 fail-safe outputs
+Version/Date 		:	V1.2.0/08.03.2016
+********************************************************************************************************)
+STRUCT
+	
+	nDummyData1								:ARRAY[0..8] OF UINT;
+
+(* Sensor test error *)
+	nSensorTestError						:UINT;
+
+(* Error during two channel evaluation *)
+	nDuringTwoChannelEvaluationError		:UINT;
+
+(* Error in the safety mat operating mode: input pair disagree *)
+	nMatModeInputPairDisagreeError			:UINT;
+
+(* Error in the safety mat operating mode: external supply *)
+	nMatModeExternalSupplyError				:UINT;
+
+(* Diagnosis μC1 *)
+	nDiagnosisMicroC1						:UINT;
+
+(* Diagnosis μC2 *)
+	nDiagnosisMicroC2						:UINT;
+
+	nDummyData2								:ARRAY[0..48] OF UINT;
+
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

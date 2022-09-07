@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{847ae0c0-1177-47b7-9fc9-2c132bdd1f9e}</ProjectGuid>
+    <AssemblyName>TwinCAT Measurement Axis</AssemblyName>
+    <Name>TwinCAT Measurement Axis</Name>
+    <RootNamespace>TwinCAT Measurement Axis</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="C:\Users\AlyssaH\Desktop\Active Projects\DemoStandCode\Tc3_Sample_Demo_Rack\TwinCAT Measurement Axis\Scope YT Axis 1 Stepper1.tcscopex" />
+    <Content Include="C:\Users\AlyssaH\Desktop\Active Projects\DemoStandCode\Tc3_Sample_Demo_Rack\TwinCAT Measurement Axis\Scope YT Axis 2 Servo EL1.tcscopex" />
+    <Content Include="C:\Users\AlyssaH\Desktop\Active Projects\DemoStandCode\Tc3_Sample_Demo_Rack\TwinCAT Measurement Axis\Scope YT Axis 3 Servo A AX1.tcscopex" />
+    <Content Include="C:\Users\AlyssaH\Desktop\Active Projects\DemoStandCode\Tc3_Sample_Demo_Rack\TwinCAT Measurement Axis\Scope YT Axis 4 Servo B AX1.tcscopex" />
+    <Content Include="Scope XY NCI.tcscopex">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Scope YT PLC Data.tcscopex">
+      <SubType>Content</SubType>
+    </Content>
+  </ItemGroup>
+</Project>

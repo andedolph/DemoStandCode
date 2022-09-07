@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4019.2">
+  <GVL Name="GVL02_IO_EK1101" Id="{50ca7845-6e35-42a4-bc9e-64366eb48021}">
+    <Declaration><![CDATA[(* GVL02_IO_EK1101 *)
+{attribute 'TcContextName' := 'PlcTask'}
+VAR_GLOBAL
+	
+	(* EL1904 digital inputs TwinSAFE *)
+
+	(* EL1252 digital inputs time stamp *)
+	stEL1252Ch1								:EL1252_IoInterface;	(* servo reference cam on a time stamp input (axis 2 servo EL) *)
+	stEL1252Ch2								:EL1252_IoInterface;	(* Signal form EL2252 output 1 *)
+
+	(* EL1262 digital inputs oversampling *)
+	nEL1262Ch1CycleCount			AT%I*	:UINT;					(* EtherCAT cycle count, increments each EtherCAT cycle *)
+	aAxis2RefCamOs		 			AT%I*	:ARRAY[0..9] OF BOOL;	(* servo reference cam on a oversampling input (Axis 2 Servo EL) - Oversampling of 10 samples per EtherCAT cylce (based on task cylce time) *)
+	nEL1262Ch2CycleCount			AT%I*	:UINT;					(* EtherCAT cycle count, increments each EtherCAT cycle *)
+	aOsInputFromEL2252Out2			AT%I*	:ARRAY[0..9] OF BOOL;	(* Signal form EL2252 output 2 - Oversampling of 10 samples per EtherCAT cylce (based on task cylce time) *)
+
+	(* EL2252 digital outputs time stamp *)
+	stEL2252								:EL2252_IoInterface;	(* Ch1 - position cam axis 2  90 - 180 Degree
+																   	   Ch2 - position cam axis 2  30 - 90  Degree *)
+	
+	(* EL3702 analog inputs oversampling *)
+	nEL3702Ch1CycleCount			AT%I*	:UINT;					(* EtherCAT cycle count, increments each EtherCAT cycle *)
+{attribute 'TcContextName' := 'PlcTaskFast'}
+	aOsAnalogInR11		 			AT%I*	:ARRAY[0..9] OF INT;	(* override axis 3 - 4 - Oversampling of 10 samples per EtherCAT cylce (based on task cylce time) *)
+	nEL3702Ch2CycleCount			AT%I*	:UINT;					(* EtherCAT cycle count, increments each EtherCAT cycle *)
+{attribute 'TcContextName' := 'PlcTaskFast'}
+	aOsInputFromEL4732Out1 			AT%I*	:ARRAY[0..9] OF INT;	(* Signal form EL4732 output 1 - Oversampling of 10 samples per EtherCAT cylce (based on task cylce time) *)
+	
+	(* EL4732 analog outputs oversampling *)
+	nEL4732Ch1CycleCount			AT%Q*	:UINT;					(* EtherCAT cycle count, increments each EtherCAT cycle *)
+	aOsOutputToEL3702In2 			AT%Q*	:ARRAY[0..99] OF INT;	(* Signal to EL3702 input 2 - Oversampling of 100 samples per EtherCAT cylce (based on task cylce time) *)
+	
+	(* EL2004 digital outputs *)
+	
+END_VAR
+(* End *)]]></Declaration>
+  </GVL>
+</TcPlcObject>

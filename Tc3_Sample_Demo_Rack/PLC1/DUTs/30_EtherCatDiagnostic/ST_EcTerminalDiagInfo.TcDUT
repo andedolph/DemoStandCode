@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <DUT Name="ST_EcTerminalDiagInfo" Id="{6e7cbb87-edd5-41dc-b42f-e9dc396e0ad4}">
+    <Declaration><![CDATA[TYPE ST_EcTerminalDiagInfo :
+STRUCT
+
+	nAddr									:UINT;
+	sType									:STRING(15);
+	sName									:STRING(31);
+	sTerminalStatus							:STRING(60);
+
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,538 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_AxisNc" Id="{a450cac1-daf8-423f-a444-927e47eb20d3}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_AxisNc IMPLEMENTS I_Axis
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR_IN_OUT
+	stAxisRef 		: AXIS_REF;
+END_VAR
+VAR
+//Enable	
+	fbMCPower		: MC_Power;
+	bEnableAxis		: BOOL;
+	fbTrigEnable	: R_TRIG;
+	
+//Jog	
+	fbJog			: MC_Jog;
+	bJogAxisFwd		: BOOL;
+	bJogAxisBwd		: BOOL;
+	fJogAxisSpeed	: LREAL;
+	fbJogErrTrig	: R_TRIG;
+	bJogError		: BOOL;
+	udiJogErrID		: UDINT;
+	
+//Move Velocity 	
+	fbMoveVelocity 	: MC_MoveVelocity;
+	eAxisDirection	: MC_Direction;
+	fbStartMoveVelocity: R_TRIG;
+	iVeloMoveSeq	: INT;
+	
+//Reset	
+	fbMCReset		: MC_Reset;
+	fbTrigResetSeq	: R_TRIG;
+	iResetSeq		: INT;
+	bError			: BOOL;
+	udiErrorID		: UDINT;
+	fbTrigStop		: R_TRIG;
+	iStopSeq		: INT;
+	fbMCStop		: MC_Stop;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[stAxisRef.ReadStatus();
+
+//the MC_Power block is one that should be called every cycle to allow for a very quick disabling of the axis
+fbMCPower(
+	Enable			:= bEnableAxis , 
+	Enable_Positive	:= bEnableAxis , 
+	Enable_Negative	:= bEnableAxis , 
+	Override		:= 100.0 , 
+	Axis			:= stAxisRef );
+	
+
+
+
+
+
+]]></ST>
+    </Implementation>
+    <Method Name="M_Disable" Id="{65a400e8-a4d6-47d4-b190-968df44d4ed4}">
+      <Declaration><![CDATA[METHOD M_Disable : UDINT
+VAR_INPUT
+	bDisable : BOOL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT bDisable THEN
+	M_Disable := 0;
+END_IF
+
+IF bDisable THEN 
+	bEnableAxis := FALSE;
+	M_Disable := 1;
+END_IF
+
+IF NOT fbMCPower.Status THEN
+	M_Disable := 3;
+END_IF
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Enable" Id="{ec81f90b-bce6-408c-8419-792b1840b3e5}">
+      <Declaration><![CDATA[METHOD M_Enable : UDINT
+VAR_INPUT
+	bEnable : BOOL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF bEnable THEN
+	bEnableAxis := TRUE;
+	M_Enable := 1;
+END_IF
+
+IF fbMCPower.Status THEN
+	M_Enable := 3;
+END_IF
+
+IF fbMCPower.Error THEN
+	M_Enable :=fbMCPower.ErrorID;
+END_IF
+
+IF NOT bEnable THEN
+	M_Enable := 0;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_HardwareReset" Id="{c6562ee0-b7dd-4514-8abf-1b53525d0596}">
+      <Declaration><![CDATA[METHOD M_HardwareReset : UDINT
+VAR_INPUT
+	bReset	: BOOL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Default result for the method is that it completes
+IF bReset THEN
+	M_HardwareReset := 3;
+END_IF
+
+IF NOT bReset THEN
+	M_HardwareReset := 0;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Jog" Id="{f69e1e21-7ba1-49a5-8f58-1ffa3e649d42}">
+      <Declaration><![CDATA[METHOD M_Jog : UDINT
+VAR_INPUT
+	bJogFwd 	: BOOL;
+	bJogBwd 	: BOOL;
+	fJogSpeed 	: LREAL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF bJogFwd AND NOT bJogBwd THEN
+	bJogAxisFwd := TRUE;
+	bJogAxisBwd := FALSE;
+ELSIF bJogBwd AND NOT bJogFwd THEN
+	bJogAxisBwd := TRUE;
+	bJogAxisFwd := FALSE;
+ELSE
+	bJogAxisBwd := FALSE;
+	bJogAxisFwd := FALSE;
+END_IF
+
+fbJog(
+	JogForward	:= bJogAxisFwd, 
+	JogBackwards:= bJogAxisBwd, 
+	Velocity	:= fJogSpeed, 
+	Mode 		:= MC_JOGMODE_CONTINOUS,
+	Axis		:= stAxisRef
+);
+	
+fbJogErrTrig(CLK := fbJog.Error);
+IF fbJogErrTrig.Q THEN
+	bJogError:=TRUE;
+	udiJogErrID := fbJog.ErrorID;
+END_IF
+
+IF fbJog.Active THEN
+	M_Jog := 1;
+ELSIF fbJog.Error THEN
+	M_Jog := fbJog.ErrorID;
+ELSE
+	M_Jog := 0;
+END_IF
+
+
+
+ 
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Reset" Id="{6952fc95-11a5-448f-9114-edaf9ae978ea}">
+      <Declaration><![CDATA[METHOD M_Reset : UDINT
+VAR_INPUT
+	bReset : BOOL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error
+VAR
+	udiHardwareResetResult:UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbTrigResetSeq(CLK:=bReset);
+IF fbTrigResetSeq.Q THEN
+	M_Reset		:= 1;
+	iResetSeq	:= 10;
+END_IF
+
+IF NOT bReset THEN
+	M_Reset 	:= 0;
+END_IF
+
+CASE iResetSeq OF 
+	0: (* Idle*)
+		fbMCReset(Execute := FALSE, Axis := stAxisRef);
+		
+	10: (*If necessary reset the hardware first*)
+		M_HardwareReset(bReset:=TRUE);
+		iResetSeq := 10;	
+	20: 
+		udiHardwareResetResult := M_HardwareReset(bReset:=TRUE);   
+		IF udiHardwareResetResult = 3 THEN // Hardware reset successful
+			M_HardwareReset(bReset:=FALSE);
+			iResetSeq := 30;
+		ELSIF udiHardwareResetResult > 3 THEN // Hardware reset faulted
+			M_Reset := udiHardwareResetResult;
+			iResetSeq:= 0;			
+		END_IF
+		fbMCReset(Execute:=TRUE ,Axis:= stAxisRef);
+		iResetSeq := 30;
+	30:
+		fbMCReset(Axis:=stAxisRef);
+		IF fbMCReset.Done OR fbMCReset.Error THEN
+			fbMCReset(Execute:=FALSE,Axis:=stAxisRef);
+			iResetSeq := 0;
+			IF fbMCReset.Error THEN
+				M_Reset := fbMCReset.ErrorID;
+			ELSE
+				iResetSeq:= 0;		
+				M_Reset:=2;
+			END_IF
+		END_IF
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Speed" Id="{a0e0f698-0518-4e07-abc3-8b4be3141686}">
+      <Declaration><![CDATA[METHOD M_Speed : UDINT
+VAR_INPUT
+	bMoveVelocity 	: BOOL;
+	fSpeed 			: LREAL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Determine the dirction of the velocity command
+IF fSpeed > 0 THEN
+	eAxisDirection := MC_Positive_Direction; 
+ELSE
+	eAxisDirection := MC_Negative_Direction;
+END_IF
+//Look for a trigger 
+fbStartMoveVelocity(CLK:= bMoveVelocity);
+IF fbStartMoveVelocity.Q THEN 
+	iVeloMoveSeq := 10;
+	M_Speed:=1;
+	fbMoveVelocity(Execute:= FALSE,Axis:=stAxisRef);
+END_IF
+// If the bMoveVelocity bit is off clear the Method
+IF NOT bMoveVelocity THEN
+	M_Speed := 0;
+END_IF
+
+CASE iVeloMoveSeq OF
+	0: (*Idle*)
+		fbMoveVelocity(Execute:=FALSE,Axis:=stAxisRef);
+	10: (*Initiate Move Velocity command*)
+		fbMoveVelocity(
+			Execute:= TRUE , 
+			Velocity:= ABS(fSpeed), 
+			Direction:= eAxisDirection , 
+			Axis:=stAxisRef);
+		iVeloMoveSeq := 20;
+		
+	20: (*Wait for axis to reach velocity or error out*)
+		fbMoveVelocity(Axis:=stAxisRef);
+		IF fbMoveVelocity.InVelocity OR fbMoveVelocity.Error THEN
+			IF fbMoveVelocity.Error THEN
+				M_Speed := fbMoveVelocity.ErrorID;
+			END_IF			
+			fbMoveVelocity(Execute:= FALSE,Axis:=stAxisRef);
+			iVeloMoveSeq:=0;
+			M_Speed:=3;
+		END_IF
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Stop" Id="{60d55dc1-e01c-4328-8fde-ddbded50822e}">
+      <Declaration><![CDATA[METHOD M_Stop : UDINT
+VAR_INPUT
+	bStop	: BOOL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error
+VAR
+
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Look for a trigger 
+fbTrigStop(CLK:= bStop);
+IF fbTrigStop.Q THEN 
+	iStopSeq := 10;
+	M_Stop:=1;
+END_IF
+// If the bMoveVelocity bit is off clear the Method
+IF NOT bStop THEN
+	M_Stop := 0;
+END_IF
+
+CASE iStopSeq OF
+	0: (*Idle*)
+		fbMCStop(Execute:=FALSE,Axis:=stAxisRef);
+	10: (*Initiate Move Velocity command*)
+		fbMCStop(Execute:= TRUE,Axis:=stAxisRef);
+		iStopSeq := 20;
+		
+	20: (*Wait for axis to reach velocity or error out*)
+		fbMCStop(Axis:=stAxisRef);
+		IF fbMCStop.Done OR fbMCStop.Error THEN
+			IF fbMCStop.Error THEN
+				M_Stop := fbMCStop.ErrorID;
+			END_IF			
+			fbMCStop(Execute:= FALSE,Axis:=stAxisRef);
+			iStopSeq:=0;
+			M_Stop:=3;
+		END_IF
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_CurrentPosition" Id="{83c86f81-3fc4-44a5-9c3b-a2bc9eca8621}">
+      <Declaration><![CDATA[PROPERTY P_CurrentPosition : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{2e678ccf-8b0a-4f36-b16e-bb26caea707e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_CurrentPosition :=  stAxisRef.NcToPlc.ActPos;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{fa9cf0aa-8b73-4d44-b710-7f10888058b2}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_CurrentSpeed" Id="{85265932-77a3-4492-92f8-5de145c91536}">
+      <Declaration><![CDATA[PROPERTY P_CurrentSpeed : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{f56630f4-a4d6-4e3d-a90f-658909eacceb}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_CurrentSpeed := stAxisRef.NcToPlc.ActVelo;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{8efaf231-7f23-4b3c-8afe-639264b15a88}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[// setting the current speed is not allowed
+;
+]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Error" Id="{0e1d853d-c8cd-4bbc-8560-7466e1792ac2}">
+      <Declaration><![CDATA[PROPERTY P_Error : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{baf9e57c-7679-46ab-ba21-82431b61aeb1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[//Report Errors with the most important first 
+// Axis Hardware Failure
+// NC Axis Failure
+//Move command errors are returned by their respective method calls
+P_Error := stAxisRef.Status.Error;
+]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{05a7b338-ceaf-43b8-b9a3-feaca92b709e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[//Allow user to externally clear error.
+IF P_Error = FALSE THEN
+	udiErrorID	:= 0;
+	bError 		:= FALSE;
+END_IF]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_ErrorID" Id="{10b0150c-b123-4278-975a-aa388e3549b4}">
+      <Declaration><![CDATA[PROPERTY P_ErrorID : UDINT
+]]></Declaration>
+      <Get Name="Get" Id="{b7706309-215c-4ff5-a34c-b4340e199ce0}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_ErrorID := udiErrorID;
+]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{d661f499-faa6-4c21-8c82-62b2d7b65b97}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF P_ErrorID = 0 THEN
+	bError		:= FALSE;
+	udiErrorID	:= 0;
+END_IF]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Ready" Id="{f906de0b-a755-4d48-ab56-82d7c28856c6}">
+      <Declaration><![CDATA[PROPERTY P_Ready : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{5104f6ce-5df2-48c8-8bc6-9667b2061cf2}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF stAxisRef.Status.ControlLoopClosed AND NOT stAxisRef.Status.Error THEN
+	P_Ready := TRUE;
+ELSE
+	P_Ready := FALSE;
+END_IF]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{0a253648-6e1d-43c6-9c5b-5cb38bcb5897}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_AxisNc">
+      <LineId Id="3" Count="14" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.M_Disable">
+      <LineId Id="3" Count="12" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.M_Enable">
+      <LineId Id="3" Count="14" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.M_HardwareReset">
+      <LineId Id="3" Count="6" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.M_Jog">
+      <LineId Id="3" Count="35" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.M_Reset">
+      <LineId Id="3" Count="39" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.M_Speed">
+      <LineId Id="3" Count="39" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.M_Stop">
+      <LineId Id="3" Count="28" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.P_CurrentPosition.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.P_CurrentPosition.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.P_CurrentSpeed.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.P_CurrentSpeed.Set">
+      <LineId Id="3" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.P_Error.Get">
+      <LineId Id="3" Count="4" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.P_Error.Set">
+      <LineId Id="3" Count="3" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.P_ErrorID.Get">
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.P_ErrorID.Set">
+      <LineId Id="3" Count="2" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.P_Ready.Get">
+      <LineId Id="3" Count="3" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisNc.P_Ready.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

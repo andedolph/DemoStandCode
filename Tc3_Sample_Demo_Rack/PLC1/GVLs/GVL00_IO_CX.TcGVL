@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4019.2">
+  <GVL Name="GVL00_IO_CX" Id="{4b62d156-c139-43a4-b6f4-34b55745f21d}">
+    <Declaration><![CDATA[(* GVL00_IO_CX *)
+{attribute 'TcContextName' := 'PlcTask'}
+VAR_GLOBAL
+
+	(* EL1008 digital inputs *)
+	bSwitchS10						AT%I*	:BOOL;	(* blinker 1 on/off *)
+	bSwitchS11						AT%I*	:BOOL;	(* blinker 2 on/off *)
+	bSwitchS12						AT%I*	:BOOL;	(* controller enable axis 1 *)
+	bSwitchS13						AT%I*	:BOOL;	(* controller enable axis 2 *)
+	bSwitchS14						AT%I*	:BOOL;	(* controller enable axis 3 *)
+	bSwitchS15						AT%I*	:BOOL;	(* controller enable Axis 4 *)
+	bSwitchS16						AT%I*	:BOOL;	(* start axis 1 - 4 absolute *)
+	bSwitchS17						AT%I*	:BOOL;	(* Uncouple Axis 1 - 4 / set target position to zero *)
+	
+	(* EL2008 digital outputs *)
+	bLedH10							AT%Q*	:BOOL;	(* blinker 1 *)
+	bLedH11							AT%Q*	:BOOL;	(* blinker 2 *)
+	bLedH12							AT%Q*	:BOOL;	(* axis 1 operational *)
+	bLedH13							AT%Q*	:BOOL;	(* axis 2 operational *)
+	bLedH14							AT%Q*	:BOOL;	(* axis 3 operational *)
+	bLedH15							AT%Q*	:BOOL;	(* axis 4 operational *)
+	bLedH16							AT%Q*	:BOOL;	(* bSwitchS16 aktiv *)
+	bLedH17							AT%Q*	:BOOL;	(* bSwitchS17 aktiv *)
+
+	(* EL5151 incremental encoder 24 increments/rotation * 4-fold evaluation -> 96  increments/rotation*)
+	nHandwheelCounter				AT%I*	:UINT;	(* handwheel counter (Axis_5_Encoder) *)
+	bHandwheelSwitchS28				AT%I*	:BOOL;	(* axis 1 - 4 couple to the handwheel *)	
+
+	(* EL9110 potential supply diagnosis *)
+	bPotentialStepper24VOk			AT%I*	:BOOL;	(* Power stepper ok *)
+
+	(* EL9576 brake chopper terminal *)
+	
+	(* EL7037 (Axis 1 Stepper) stepper motor terminal inputs *)
+	bStepperReferenceCam 			AT%I*	:BOOL;	(* stepper reference cam (Axis 1 Stepper) *)
+	bSwitchS23						AT%I*	:BOOL;	(* start stepper homing *)
+	bSwitchS24						AT%I*	:BOOL;	(*  *)	
+
+	(* EL9512 power supply diagnosis *)
+	bPotentialAnalog12VOk			AT%I*	:BOOL;	(* 12V voltage ok *)
+	
+	(* EL3162 0..10V analog inputs *)
+	nAnalogInR10					AT%I*	:INT;	(* override axis 1 - 2, blinker 1 *)
+	nAnalogInFromEL4102Out1			AT%I*	:INT;	(* *)
+
+	(* EL4102 0..10V analog outputs *)
+	nAnalogOutP10					AT%Q*	:INT;	(* Override axis 1 - 2 / 10.0V = 100% *)
+{attribute 'TcContextName' := 'PlcTaskFast'}
+	nAnalogOutP11					AT%Q*	:INT;	(* Override axis 3 - 4 / 10.0V = 100% *)
+
+	(* EL6900 TwinSAFE Logic *)
+
+END_VAR
+(* End *)]]></Declaration>
+  </GVL>
+</TcPlcObject>

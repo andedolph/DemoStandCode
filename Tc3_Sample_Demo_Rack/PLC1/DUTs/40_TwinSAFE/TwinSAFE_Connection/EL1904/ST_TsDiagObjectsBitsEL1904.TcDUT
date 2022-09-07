@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <DUT Name="ST_TsDiagObjectsBitsEL1904" Id="{b6e76d9b-1973-4e94-82e4-a6a3a55c1370}">
+    <Declaration><![CDATA[TYPE ST_TsDiagObjectsBitsEL1904 :
+(*******************************************************************************************************
+Description			:	Index 16#800E Diagnostic objects
+Supported terminals : 	EL1904
+Documentation 		:	EL1904 TwinSAFE input terminal with 4 fail-safe inputs
+Version/Date 		:	V1.5.2/02.10.2015
+********************************************************************************************************)
+STRUCT
+	
+(* Sensor test error *)
+	bErrInput1								:BOOL;	(* Error input 1 - Bit0 - Error at input 1 *)
+	bErrInput2								:BOOL;	(* Error input 2 - Bit1 - Error at input 2 *)
+	bErrInput3								:BOOL;	(* Error input 3 - Bit2 - Error at input 3 *)
+	bErrInput4								:BOOL;	(* Error input 4 - Bit3 - Error at input 4 *)
+
+(* Error during two channel evaluation *)
+	bErrFirstInputPair						:BOOL;	(* Error input 1..2 - Bit0 - Error in the first input pair *)
+	bErrSecondInputPair						:BOOL;	(* Error input 3..4 - Bit1 - Error in the second input pair *)
+
+(* Error in the safety mat operating mode: input pair disagree *)
+	bMatOpModeErrFirstInputPair				:BOOL;	(* Error input 1..2 - Bit1, Bit0 - Mat operating mode - Error in the first input pair *)
+	bMatOpModeErrSecondInputPair			:BOOL;	(* Error input 3..4 - Bit3, Bit2 - Mat operating mode - Error in the second input pair *)
+
+(* Error in the safety mat operating mode: external supply *)
+	bMatOpModeExtSupplyErrInput1			:BOOL;	(* Error input 1 - Bit0 - Mat operating mode external supply - Error at input 1 *)
+	bMatOpModeExtSupplyErrInput2			:BOOL;	(* Error input 2 - Bit1 - Mat operating mode external supply - Error at input 2 *)
+	bMatOpModeExtSupplyErrInput3			:BOOL;	(* Error input 3 - Bit2 - Mat operating mode external supply - Error at input 3 *)
+	bMatOpModeExtSupplyErrInput4			:BOOL;	(* Error input 4 - Bit3 - Mat operating mode external supply - Error at input 4 *)
+	
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

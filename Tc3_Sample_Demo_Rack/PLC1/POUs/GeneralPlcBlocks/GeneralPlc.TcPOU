@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.3">
+  <POU Name="GeneralPlc" Id="{40442ba5-5468-42d6-b755-fa74013c25b0}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM GeneralPlc
+VAR
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* General *)
+
+(* Analog input to output *)
+	nAnalogOutP10 := nAnalogInR10;
+	
+(* Led on/off *)
+	bLedH25 := bSwitchS25;
+
+(* End *)]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

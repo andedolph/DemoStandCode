@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <DUT Name="ST_TsConnectionInfo1Byte" Id="{0c792f44-8607-4d29-8ff7-2254c0b943d1}">
+    <Declaration><![CDATA[TYPE ST_TsConnectionInfo1Byte :
+(*******************************************************************************************************
+Description			:	Connection information data of EtherCAT Slaves with 1 byte safe data 
+Supported terminals : 	EL1904, EL2904...
+Date 				:	04.04.2016
+********************************************************************************************************)
+STRUCT
+
+	nState 	 								:USINT;
+	nDiag 		 							:USINT;
+	nInOutSafeDataByte1						:BYTE;
+	
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

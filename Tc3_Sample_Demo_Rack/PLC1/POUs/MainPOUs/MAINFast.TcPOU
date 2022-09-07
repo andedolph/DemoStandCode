@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="MAINFast" Id="{9b7c0521-0ec3-464f-9e63-d2e459844049}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAINFast
+(*******************************************************************************************************
+Title				:	Main program fast 
+Description			:	Calling the created subroutines (Task 100µs)
+Version / Date		:	1.0.0 / 23.05.2016 / created program (Version progress see below)
+********************************************************************************************************)
+VAR
+
+(* Cycle counter *)
+	nCycleCounter							:UDINT;
+	
+END_VAR
+(*******************************************************************************************************
+Version / Date / Description:
+1.0.0   / 23.05.2016 / created program
+********************************************************************************************************)
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* MAIN - 100µs *)
+
+(* THIS CODE IS ONLY AN EXAMPLE - YOU HAVE TO CHECK APTITUDE FOR YOUR APPLICATION *)
+
+(* Cycle counter *)
+	nCycleCounter := nCycleCounter + 1;
+
+	IF bMachineSequenzAktiv
+	THEN
+	
+		(* Test Averaging *)
+		AverageOut();
+		
+	END_IF
+	
+(* End *)]]></ST>
+    </Implementation>
+    <LineIds Name="MAINFast">
+      <LineId Id="3" Count="14" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

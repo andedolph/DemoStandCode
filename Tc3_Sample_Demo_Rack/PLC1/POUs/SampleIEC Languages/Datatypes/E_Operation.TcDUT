@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="E_Operation" Id="{5fee42ab-f6c8-4366-a67b-1c718e04f5d7}">
+    <Declaration><![CDATA[TYPE E_Operation :
+(
+	eOp_Add := 0,
+	eOp_Sub,
+	eOp_Mul
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

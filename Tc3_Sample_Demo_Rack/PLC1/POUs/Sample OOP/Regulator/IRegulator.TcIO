@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <Itf Name="IRegulator" Id="{32a4efb6-a6ad-4b6b-a70b-dce0caacc678}">
+    <Declaration><![CDATA[INTERFACE IRegulator
+]]></Declaration>
+    <Method Name="M_Active" Id="{6a44f168-9b77-4c09-94c4-f2895005834c}">
+      <Declaration><![CDATA[METHOD M_Active : UINT
+VAR_INPUT
+	(* controller input  *)
+	fSetpointValue			: LREAL;		// setpoint value
+	fActualValue			: LREAL;		// actual value
+	bReset					: BOOL;			// reset flag
+	(* controller values *)
+	stRegParams				: ST_RegParams;
+END_VAR
+VAR_OUTPUT
+	fCtrlOutput				: LREAL;		// controller output command
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_Error" Id="{cfd9924e-7f8a-4801-b7c3-48c3289e5279}">
+      <Declaration><![CDATA[PROPERTY P_Error : BOOL]]></Declaration>
+      <Get Name="Get" Id="{b64430ec-3f38-4f9f-a2e7-985cd8915753}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{b8d23d20-be54-4d31-8fc3-250f7e1dbd65}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+  </Itf>
+</TcPlcObject>

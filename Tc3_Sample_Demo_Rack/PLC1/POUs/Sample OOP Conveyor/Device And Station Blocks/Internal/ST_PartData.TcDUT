@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="ST_PartData" Id="{2adc7c93-e528-4995-9df9-33ea1d155140}">
+    <Declaration><![CDATA[TYPE ST_PartData :
+STRUCT
+	iIDNumber 					: UDINT; // ID Number of the part 
+	iCurrentDeviceID 			: UDINT; // ID of the current device that contains the part eg station1
+	iSubDeviceLocation 			: UDINT; // Sublocation if available eg bin number within a station
+	fPosition 					: LREAL; // Current position within a device eg conveyor location  
+	fLength 					: LREAL; // length of part
+	fStartingConveyorPosition	: LREAL; // conveyor position when product was placed
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

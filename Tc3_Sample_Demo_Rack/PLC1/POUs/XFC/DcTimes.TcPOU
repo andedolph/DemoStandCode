@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="DcTimes" Id="{94259b24-0743-45a1-9330-b9b4f19cd335}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM DcTimes
+VAR
+	(* Freeze reading *)
+	bFreezeReading							:BOOL;
+
+(* Actual distributed clock system times *)
+	// F_GetActualDcTime
+	dtActDcTime								:T_DCTIME64;
+	stActDcTime								:DCTIMESTRUCT;
+	sActDcTime								:STRING;
+
+	// F_GetCurDcTaskTime
+	dtActDcTaskTime							:T_DCTIME64;
+	stActDcTaskTime							:DCTIMESTRUCT;
+	sActDcTaskTime							:STRING;
+
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Actual distributed clock system times *)
+
+	IF NOT bFreezeReading
+	THEN
+		(* F_GetActualDcTime - This function supplies the current time*)
+		dtActDcTime  	:= F_GetActualDcTime64();
+		stActDcTime  	:= DCTIME64_TO_DCTIMESTRUCT(dtActDcTime);
+		sActDcTime   	:= DCTIME64_TO_STRING(dtActDcTime);
+
+		(* F_GetCurDcTaskTime - This function supplies the task target start time *)
+		dtActDcTaskTime := F_GetCurDcTaskTime64();
+		stActDcTaskTime := DCTIME64_TO_DCTIMESTRUCT(dtActDcTaskTime);
+		sActDcTaskTime  := DCTIME64_TO_STRING(dtActDcTaskTime);
+	END_IF
+
+(* End *)]]></ST>
+    </Implementation>
+    <LineIds Name="DcTimes">
+      <LineId Id="3" Count="14" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

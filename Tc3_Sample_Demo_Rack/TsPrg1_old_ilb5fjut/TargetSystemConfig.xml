@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TargetSystemConfig>
+  <IsExternalDevice>False</IsExternalDevice>
+  <ItemId>#x0302000b</ItemId>
+  <FSOEAddress>1</FSOEAddress>
+  <VersionNumber>1</VersionNumber>
+  <SerialNumber>00859870</SerialNumber>
+  <ProjectCRC>0x0000</ProjectCRC>
+  <MapProjectCRC>False</MapProjectCRC>
+  <MapSerialNumber>False</MapSerialNumber>
+  <AmsNetID>5.36.135.98.2.1</AmsNetID>
+  <AmsPort>1010</AmsPort>
+  <DeviceName>Term 11 (EL6900)</DeviceName>
+  <DipSwitch>1</DipSwitch>
+  <FieldBusAdress>1010</FieldBusAdress>
+  <SoftwareVersion>05</SoftwareVersion>
+</TargetSystemConfig>

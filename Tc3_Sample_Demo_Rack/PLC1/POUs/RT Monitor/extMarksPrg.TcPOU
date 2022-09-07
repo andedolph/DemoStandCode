@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="extMarksPrg" Id="{254fce39-b20e-4600-bfbd-cf8c6f7bc85a}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM extMarksPrg
+VAR
+    fbLogMark	: FB_RTMon_LogMarkBase;	
+	
+	// user defined context
+	idModule1 : UINT := 10001;	
+
+		
+	// Marks
+	markCounter  : ST_RTMon_MarkDef := (nContextId := idModule1, nGroupId := 1, nEventId := 0); 
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//fbLogMark.LogMarkEx(markCounter, TcMarkOption.Start OR TcMarkOption.RefToCaller);
+IF GVL.fbCrititcalSection.Enter() THEN
+	GVL.iGlobalCounter:=GVL.iGlobalCounter+1;
+	ConsumeTime(50);
+    GVL.fbCrititcalSection.Leave();
+END_IF
+//fbLogMark.LogMarkEx(markCounter, TcMarkOption.Stop OR TcMarkOption.RefToCaller);
+]]></ST>
+    </Implementation>
+    <LineIds Name="extMarksPrg">
+      <LineId Id="3" Count="6" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

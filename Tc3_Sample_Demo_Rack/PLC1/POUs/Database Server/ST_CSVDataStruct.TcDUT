@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="ST_CSVDataStruct" Id="{91ea7c2e-1510-47b8-bb81-37257b333a6b}">
+    <Declaration><![CDATA[TYPE ST_CSVDataStruct :
+STRUCT
+	ID: LINT;
+	Timestamp: DT;
+	Name: STRING(80);
+	Velocity: LREAL;
+	Temperature: LREAL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

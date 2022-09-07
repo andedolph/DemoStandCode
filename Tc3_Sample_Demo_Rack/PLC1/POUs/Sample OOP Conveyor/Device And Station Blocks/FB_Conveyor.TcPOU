@@ -1,0 +1,525 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_Conveyor" Id="{73bf8a6c-d4ae-4ad3-a588-bcb4a417df7f}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Conveyor EXTENDS FB_Device
+VAR_INPUT
+	bJogConveyorFwd : BOOL;
+	bJogConveyorBwd : BOOL;
+	fJogSpeed 		: LREAL;
+	bRunConveyor	: BOOL;
+	fCmdSpeed		: LREAL;
+END_VAR
+VAR_OUTPUT
+	bReadyToAcceptPart 	: BOOL;
+	bNotReadyToAcceptPart: BOOL;
+	bPartInPickLocation : BOOL;
+END_VAR
+VAR_IN_OUT
+	fbAxis				: I_Axis; //Pass the reference to ANY block that uses FB_Axis as a base class
+END_VAR
+VAR
+	fbDisableConvSeq	: R_TRIG;
+	fbDisableConvTrig	: R_TRIG;
+	iDisableSeq			: INT;
+	iAxisEnableState	: UDINT;
+	iAxisResetState		: UDINT;
+	fLastConveyorSpeed	: LREAL;
+	iJogStatus			: UDINT;
+	iAxisStopState		: UDINT;
+	iAxisSpeedState		: UDINT;
+	iDisableAxis		: UDINT;
+	arrProductsOnConveyor: ARRAY [0..50] OF ST_PartData;
+	fMinimumSpacing		: LREAL;
+	fbTrigReleasePartSeq: R_TRIG;
+	I					: INT;
+	iReleasePartSeq		: INT;
+	fPickLocation		: LREAL; 
+	iLastPart			: INT;
+	stEmptyPart			: ST_PartData;
+	fCurrentSpeed 		: LREAL;
+	fbNewSpeedTrig		: R_TRIG;
+	fbNewCmdTrig		: R_TRIG;
+	bIssueNewCommand	: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(*States are selected according to method request*)
+//Conveyor belt control
+CASE eCurrentState OF
+	E_Disabled: (*Disabled*)
+		; 
+	E_Error: (*Conveyor is in an Error State*)
+		;
+		
+	E_Manual: (*Allow Manual commands to be called*)
+		iJogStatus := fbAxis.M_Jog(bJogFwd:= bJogConveyorFwd, bJogBwd:= bJogConveyorBwd, fJogSpeed:=fJogSpeed );
+		IF iJogStatus > 3 THEN 
+			eCurrentState:= E_Error;
+			iJogStatus:= fbAxis.M_Jog(bJogFwd:= FALSE, bJogBwd:= FALSE, fJogSpeed:=fJogSpeed );
+		END_IF
+		
+	E_Auto:  (*Allow only automatic commands to be called*)
+		iJogStatus:= fbAxis.M_Jog(bJogFwd:= FALSE, bJogBwd:= FALSE, fJogSpeed:=fJogSpeed );
+		fbNewSpeedTrig(CLK:= (fCmdSpeed <> fLastConveyorSpeed) AND bRunConveyor);
+		fbNewCmdTrig(CLK:= bRunConveyor);
+		IF fbNewSpeedTrig.Q OR fbNewCmdTrig.Q THEN 
+			bIssueNewCommand := TRUE;
+		END_IF
+		IF bIssueNewCommand AND iAxisSpeedState < 3 THEN 
+			iAxisSpeedState := fbAxis.M_Speed(bMoveVelocity:=TRUE , fSpeed:=fCmdSpeed );
+			fLastConveyorSpeed := fCmdSpeed;
+		ELSIF iAxisSpeedState = 3 THEN 
+			iAxisSpeedState :=fbAxis.M_Speed(bMoveVelocity:=FALSE , fSpeed:=fCmdSpeed );
+			bIssueNewCommand := FALSE;
+		ELSIF iAxisSpeedState > 3 THEN
+			eCurrentState:=E_Error;
+			iAxisSpeedState := fbAxis.M_Speed(bMoveVelocity:=FALSE , fSpeed:=fCmdSpeed );
+			bIssueNewCommand := FALSE;
+		END_IF			
+		IF NOT bRunConveyor THEN 
+			bIssueNewCommand := FALSE;
+			iAxisSpeedState := fbAxis.M_Speed(bMoveVelocity:=FALSE , fSpeed:=fCmdSpeed );
+		END_IF
+END_CASE
+
+//If there are any parts on the conveyor update their locations
+bPartInPickLocation :=FALSE;
+FOR I := 1 TO 50 DO
+	IF arrProductsOnConveyor[I].fStartingConveyorPosition <> 0 THEN 
+		arrProductsOnConveyor[I].fPosition := fbAxis.P_CurrentPosition - arrProductsOnConveyor[I].fStartingConveyorPosition;
+		bPartInPickLocation := bPartInPickLocation OR (arrProductsOnConveyor[I].fPosition > fPickLocation );  
+	END_IF
+END_FOR
+
+fCurrentSpeed := fbAxis.P_CurrentSpeed;
+]]></ST>
+    </Implementation>
+    <Method Name="M_AcceptPart" Id="{b924ebfe-fd1c-4a32-9c79-d49a3a6ade3c}">
+      <Declaration><![CDATA[METHOD PUBLIC M_AcceptPart : UDINT
+VAR_INPUT
+	bPartPresentAtEntrance : BOOL;
+	stPartAtEntrance : ST_PartData; 
+END_VAR
+
+VAR
+	I: INT;
+	fNextPartPosition: LREAL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//If a part is present at the entrance determine if it can be accepted and if so accept 
+IF bPartPresentAtEntrance THEN
+	M_AcceptPart := 1; // Process is waiting 
+	//Part can be accepted if it is far enough from the last part
+	IF  (arrProductsOnConveyor[1].iIDNumber = 0)
+	 OR (arrProductsOnConveyor[1].fPosition >  (stPartAtEntrance.fLength + fMinimumSpacing))  THEN
+		//Shift all parts down one 
+		 FOR I	:= 49 TO 2 BY -1 DO
+			 arrProductsOnConveyor[I] := arrProductsOnConveyor[I-1];
+		 END_FOR
+		// after shifting add new part
+		arrProductsOnConveyor[1] := stPartAtEntrance; 
+		arrProductsOnConveyor[1].fStartingConveyorPosition:= fbAxis.P_CurrentPosition;
+		arrProductsOnConveyor[1].iCurrentDeviceID := P_DeviceID;
+		M_AcceptPart := 3; //Part has been accepted
+	END_IF
+END_IF
+IF NOT bPartPresentAtEntrance THEN 
+	M_AcceptPart := 0; //Idle
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Auto" Id="{5c850ce5-c124-4e14-b3f1-9542b21f357f}">
+      <Declaration><![CDATA[METHOD M_Auto : UDINT
+VAR_INPUT
+	bRequestAutoMode	: BOOL;
+END_VAR
+// Method confirms to the user it has complteted or that it is busy
+// 0: idle
+// 1: busy
+// 3: complete
+// > 3 Error condition]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbTrigAutoMode(CLK:= bRequestAutoMode);
+IF fbTrigAutoMode.Q THEN
+	iSwitchAutoSeq := 10;
+	M_Auto:=1;
+END_IF
+IF NOT bRequestAutoMode THEN
+	M_Auto:= 0;
+END_IF
+
+CASE iSwitchAutoSeq OF
+	0: (*Idle*)
+		;
+	10: (*Verify all components can switch to Auto 
+		Request all components to allow Auto*)
+		eCurrentState:= E_SwitchingToAuto;
+		iAxisEnableState := fbAxis.M_Enable(bEnable:=TRUE );
+		iSwitchAutoSeq := 20;
+
+	20:  (*Wait for all components to go to Auto*)
+		iAxisEnableState := fbAxis.M_Enable(bEnable:=TRUE );
+		IF iAxisEnableState =3 THEN (*If 3 then enable completed successfully*)
+			iSwitchAutoSeq := 30;		
+		ELSIF iAxisEnableState > 3 THEN (*If >3 error has been returned*)
+			M_Auto := iAxisEnableState;
+			iAxisEnableState := fbAxis.M_Enable(bEnable:=FALSE);
+			iSwitchAutoSeq := 0;
+		END_IF			 
+	
+	30: (*once all devices are in Auto confirm Auto mode*)
+		eCurrentState := E_Auto;
+		iSwitchAutoSeq := 0;
+		M_Auto	:=3;	
+		iAxisEnableState := fbAxis.M_Enable(bEnable:=FALSE);
+
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Disable" Id="{f9ea361f-7650-4045-9127-ed902d934c73}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Disable : UDINT
+VAR_INPUT
+	bDisable: BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbDisableConvTrig(CLK:=bDisable);
+IF fbDisableConvTrig.Q THEN
+	iDisableSeq := 10;
+END_IF
+IF NOT bDisable THEN
+	M_Disable:= 0;
+END_IF
+
+CASE iDisableSeq OF
+	0: (*Idle*)
+		;
+	10: 
+		iDisableAxis := fbAxis.M_Disable(bDisable:=TRUE );
+		IF iDisableAxis = 3 THEN
+			iDisableSeq:= 20;
+		END_IF
+		
+	20:
+		iDisableAxis := fbAxis.M_Disable(bDisable:=FALSE );
+		IF iDisableAxis = 0 THEN
+			iDisableSeq:= 0;
+		END_IF
+END_CASE
+
+IF iDisableAxis > 3 THEN 
+	M_Disable := iDisableAxis;
+	iDisableAxis := fbAxis.M_Disable(bDisable:=FALSE );
+	iDisableSeq := 0;
+END_IF
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Manual" Id="{055f282f-44db-47fc-a4e4-803b4743b8dc}">
+      <Declaration><![CDATA[METHOD M_Manual : UDINT
+VAR_INPUT
+	bRequestManualMode	: BOOL;
+END_VAR
+//The result of the method is an unsigned double integer
+// 0 = idle 
+// 1 = busy
+// 3 = complete
+// Any other number = Error]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbTrigManualMode(CLK:= bRequestManualMode);
+IF fbTrigManualMode.Q THEN
+	iSwitchManualSeq := 10;
+	M_Manual:=1;
+	(*Reset any methods or function blocks*)
+	fbAxis.M_Reset(bReset:= TRUE);
+	fbAxis.M_Enable(bEnable:=FALSE);
+	fbAxis.M_Stop(bStop:= FALSE);
+END_IF
+IF NOT bRequestManualMode THEN
+	M_Manual:= 0;
+END_IF
+
+CASE iSwitchManualSeq OF
+	0: (*Idle*)
+		;
+	10: (*Check all components can switch to Manual*)
+		eCurrentState:= E_SwitchingToManual;
+		IF fbAxis.P_Error THEN (*If axis are errored, reset them*)
+			iSwitchManualSeq := 20;
+			iAxisResetState := fbAxis.M_Reset(bReset:= TRUE);
+		ELSE 
+			iSwitchManualSeq := 30;
+		END_IF
+		
+			
+	20: (*wait for reset to complete*)
+		iAxisResetState := fbAxis.M_Reset(bReset:= TRUE);
+		IF iAxisResetState = 3 THEN 
+			iSwitchManualSeq := 30;
+			iAxisResetState := fbAxis.M_Reset(bReset:= FALSE);
+		ELSIF iAxisResetState > 3 THEN 
+			M_Manual := iAxisResetState;
+			iAxisResetState := fbAxis.M_Reset(bReset:= FALSE);
+			iSwitchManualSeq := 0;		
+		END_IF
+	
+	30:  (*ensure axis are enabled*)
+		IF fbAxis.P_Ready THEN 
+			iSwitchManualSeq := 50; 
+		ELSE
+			iAxisEnableState := fbAxis.M_Enable(bEnable:=TRUE );
+			iSwitchManualSeq := 40;
+		END_IF
+	
+	40: (*Wait for enables *)
+		iAxisEnableState := fbAxis.M_Enable(bEnable:=TRUE );
+		IF iAxisEnableState =3 THEN (*If 3 then enable completed successfully*)
+			iSwitchManualSeq := 50;	
+			iAxisEnableState := fbAxis.M_Enable(bEnable:=FALSE);
+		ELSIF iAxisEnableState > 3 THEN (*If >3 error has been returned*)
+			M_Manual := iAxisEnableState;
+			iAxisEnableState := fbAxis.M_Enable(bEnable:=FALSE);
+			iSwitchManualSeq := 0;
+		END_IF			
+
+	50: (*Ensure axis are stopped*) 
+		IF ABS(fbAxis.P_CurrentSpeed) > 0.1 THEN 
+			iAxisStopState := fbAxis.M_Stop(bStop:= TRUE) ;
+			iSwitchManualSeq := 60; 
+		ELSE 
+			iSwitchManualSeq := 70; 	
+		END_IF
+		
+	60: (*wait for axis to stop*)
+		iAxisStopState := fbAxis.M_Stop(bStop:= TRUE) ;
+		IF iAxisStopState = 3 THEN 
+			iSwitchManualSeq := 70;
+			iAxisStopState := fbAxis.M_Stop(bStop:= FALSE);	
+		ELSIF iAxisStopState >3 THEN
+			M_Manual:= iAxisStopState;
+			iAxisStopState := fbAxis.M_Stop(bStop:= FALSE);
+			iSwitchManualSeq:= 0;
+		END_IF	
+		
+	70: (*once all devices are in Manual confirm Manual mode*)
+		eCurrentState := E_Manual;
+		iSwitchManualSeq := 0;
+		M_Manual:=3;
+
+
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ReleasePart" Id="{a5742dfb-3793-44e1-8ee9-3e156cee3af0}">
+      <Declaration><![CDATA[METHOD PUBLIC M_ReleasePart : UDINT
+VAR_INPUT
+	bReleasePartReq : BOOL; //Requested to release a part
+	bPartHandedOff : BOOL; //Confirmation part has been taken
+END_VAR
+VAR_OUTPUT	
+	stPartToRelease : ST_PartData;  //Part being released
+END_VAR
+VAR
+	I: INT;  // I is a local variable 
+
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbTrigReleasePartSeq(CLK:=bReleasePartReq AND bPartInPickLocation); 
+IF fbTrigReleasePartSeq.Q THEN 
+	M_ReleasePart := 1;
+	iReleasePartSeq:= 10; 
+END_IF
+IF NOT bReleasePartReq THEN 
+	 M_ReleasePart := 0;
+END_IF
+
+CASE iReleasePartSeq OF
+	0: (*Idle*)
+	
+	10: (*Find last part on Conveyor*)
+		iLastPart :=0; 
+		FOR I := 1 TO 50 DO 
+			//Go through the list of parts find the last one that is present
+			IF arrProductsOnConveyor[I].fLength > 0 THEN 
+				iLastPart := I;  
+			END_IF
+		END_FOR
+		IF iLastPart > 0 THEN
+			iReleasePartSeq := 20;
+		ELSE //no parts on conveyor
+			iReleasePartSeq := 99; 
+			eCurrentState := E_Error;
+		END_IF	
+	
+	20:  //Hand the part to the requesting device
+		stPartToRelease := arrProductsOnConveyor[iLastPart];
+		IF bPartHandedOff THEN 
+			iReleasePartSeq := 30;
+		END_IF
+		
+	30: 
+		arrProductsOnConveyor[iLastPart] := stEmptyPart;
+		M_ReleasePart := 3;	
+		iReleasePartSeq := 0; 
+		
+	99: 
+		eCurrentState := E_Error;
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Reset" Id="{36cc4360-2cab-40ae-bed4-80ea9dd8ef31}">
+      <Declaration><![CDATA[METHOD M_Reset : UDINT
+VAR_INPUT
+	bRequestReset	: BOOL;
+END_VAR
+
+VAR
+	fbTrigReset: R_TRIG;
+	iResetSeq: INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbTrigReset(CLK:= bRequestReset);
+IF fbTrigReset.Q THEN
+	iResetSeq := 10;
+	M_Reset:=1;
+END_IF
+
+CASE iResetSeq OF
+	0: (*Idle*)
+		;
+	10: (*Request all sub devices to reset*)
+		iResetSeq := 20;
+		eCurrentState:= E_Resetting;
+		iAxisResetState := fbAxis.M_Reset(bReset:=TRUE);
+		
+	20: //Call the methods to update the variables
+		iAxisResetState := fbAxis.M_Reset(bReset:=TRUE);
+		(*If axis reset state = 3 the reset is complete*)
+		IF iAxisResetState = 3 THEN
+			iResetSeq:= 30;
+		ELSE
+			M_Reset := iAxisResetState;
+			iAxisResetState := fbAxis.M_Reset(bReset:=FALSE);
+			iResetSeq:=0;			
+		END_IF
+	
+	30: (*once all devices are in Manual confirm Manual mode*)
+		eCurrentState := E_Reset;
+		iResetSeq := 0;
+		M_Reset:=3;
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_MinimumSpacing" Id="{6192900b-2357-4438-aeda-83eb363a78f4}">
+      <Declaration><![CDATA[PROPERTY PUBLIC P_MinimumSpacing : LREAL]]></Declaration>
+      <Get Name="Get" Id="{3b334112-6413-4c2f-baf0-9ba5fb80fbfb}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_MinimumSpacing := fMinimumSpacing;
+]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{99c7333f-776e-4a2e-8b77-5b13af59eb50}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[fMinimumSpacing := P_MinimumSpacing;
+]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_PickLocation" Id="{b121413d-1199-4dcc-8641-538e05242cf0}">
+      <Declaration><![CDATA[PROPERTY PUBLIC P_PickLocation : LREAL]]></Declaration>
+      <Get Name="Get" Id="{c743c37a-495d-4817-8079-62f168f79a63}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_PickLocation :=  fPickLocation; ]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{44f77f34-a4da-4bc6-85f8-ac31e049cc4a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF P_PickLocation > 0 THEN 
+	fPickLocation := P_PickLocation;
+END_IF]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_StartLocation" Id="{55f518e4-aac0-419d-bd89-ac94b905c13b}">
+      <Declaration><![CDATA[PROPERTY PUBLIC P_StartLocation : LREAL]]></Declaration>
+      <Get Name="Get" Id="{d96a4682-6929-475b-ae39-da40b7d3a12d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{6de5d1e7-5d06-4611-b141-94e5248011ba}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_Conveyor">
+      <LineId Id="3" Count="48" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Conveyor.M_AcceptPart">
+      <LineId Id="3" Count="18" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Conveyor.M_Auto">
+      <LineId Id="3" Count="33" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Conveyor.M_Disable">
+      <LineId Id="3" Count="29" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Conveyor.M_Manual">
+      <LineId Id="3" Count="80" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Conveyor.M_ReleasePart">
+      <LineId Id="3" Count="39" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Conveyor.M_Reset">
+      <LineId Id="3" Count="28" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Conveyor.P_MinimumSpacing.Get">
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Conveyor.P_MinimumSpacing.Set">
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Conveyor.P_PickLocation.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Conveyor.P_PickLocation.Set">
+      <LineId Id="3" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Conveyor.P_StartLocation.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Conveyor.P_StartLocation.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

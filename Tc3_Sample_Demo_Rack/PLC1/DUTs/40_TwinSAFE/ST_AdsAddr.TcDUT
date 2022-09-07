@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <DUT Name="ST_AdsAddr" Id="{c97e4cdf-7dcf-463c-9eca-9bad82d05ea0}">
+    <Declaration><![CDATA[TYPE ST_AdsAddr :
+STRUCT
+
+	netId									:AMSNETID;
+	port									:WORD;
+
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,227 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="FB_DiagnosticEtherCAT" Id="{d8cc71e0-f3aa-412b-9386-8c7cd4f8be23}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_DiagnosticEtherCAT
+VAR_OUTPUT CONSTANT
+	
+	cMinNumberEcSlaves						:UINT := 0;
+	cMaxNumberEcSlaves						:UINT := 100;
+	cMinNumberEcFrames						:UINT := 0;
+	cMaxNumberEcFrames						:UINT := 9;
+
+END_VAR
+VAR_INPUT
+
+	bEnable									:BOOL := FALSE;
+
+END_VAR
+VAR_OUTPUT
+
+	nFrmXWcState 					AT%I*	:ARRAY[cMinNumberEcFrames..cMaxNumberEcFrames] OF UINT;
+	nDevState 						AT%I*	:UINT;
+	sDevState								:STRING;
+	nDevId 							AT%I*	:UINT;
+	cbAmsNetId 						AT%I*	:ARRAY[0..5] OF BYTE;
+	sNetIdText 								:STRING;
+	nCfgSlaveCount					AT%I*	:UINT;
+	
+(* Evaluated terminal diagnose info *)
+	stEcTerminalDiagInfo 					:ARRAY[cMinNumberEcSlaves..cMaxNumberEcSlaves] OF ST_EcTerminalDiagInfo;
+
+(* Read configured EtherCAT System *)
+	bEcSystemRead							:BOOL;
+
+END_VAR
+VAR
+{attribute 'hide'}
+(* Read configured EtherCAT System *)
+	bStartDiag								:BOOL;
+	eStatus1								:E_EcSystemStatus;
+	fbEcGetConfSlaves 						:FB_EcGetConfSlaves;
+	stEcConfigSlaveData						:ARRAY[cMinNumberEcSlaves..cMaxNumberEcSlaves] OF ST_EcSlaveConfigData;
+	nNumberConfEcMember						:UINT;
+
+(* Read EtherCAT diagnosis and change the master status state*)
+	eStatus2								:E_EcDiacStatus;
+	nAltFrmXWcState							:ARRAY[cMinNumberEcFrames..cMaxNumberEcFrames] OF UINT;
+	nAltDevState							:UINT;
+	fbEcGetMasterState						:FB_EcGetMasterState;
+	nStatusMaster							:WORD;
+	sMasterText								:STRING;
+
+	stSlaveStatus							:ARRAY[cMinNumberEcSlaves..cMaxNumberEcSlaves] OF ST_EcSlaveState;
+	sDeviceStatusText						:ARRAY[cMinNumberEcSlaves..cMaxNumberEcSlaves] OF STRING;
+	ni										:UINT;
+	fbTon									:TON;
+	fbEcGetAllSlaveStates					:FB_EcGetAllSlaveStates;
+
+END_VAR
+(* End *)
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* diagnosis of the EtherCat System *)
+
+(* Create the NetId-String *)
+	sNetIdText := F_CreateAmsNetId(cbAmsNetId);
+
+(* Create the DevState-String *)	
+	sDevState := F_ConvMasterDevStateToString(nDevState);
+
+(* Read configured EtherCAT System *)
+	act_RdEcSystem();
+
+(* Read EtherCAT master and slave diagnosis states *)
+	act_RwEcDiagnose();
+	
+(* End *)]]></ST>
+    </Implementation>
+    <Action Name="act_RdEcSystem" Id="{93609195-5d75-41ff-961e-c5a1b87c3468}">
+      <Implementation>
+        <ST><![CDATA[(* Read configured EtherCAT System *)
+
+	CASE eStatus1 OF
+
+		eEcSystem_Start				:	(* Start reading *)
+
+			IF bEnable 
+				AND NOT bEcSystemRead
+				AND sNetIdText <> '0.0.0.0.0.0'
+			THEN
+				eStatus1 := eEcSystem_ReadConfSystem;
+			END_IF
+
+		eEcSystem_ReadConfSystem	:	(* Read configured EtherCAT System *)
+
+			fbEcGetConfSlaves(	
+				sNetId				:= 	sNetIdText,
+				pArrEcConfSlaveInfo	:= 	ADR(stEcConfigSlaveData),
+				cbBufLen			:= 	SIZEOF(stEcConfigSlaveData),
+				bExecute			:= 	TRUE,
+				tTimeout			:= 	DEFAULT_ADS_TIMEOUT,
+				nSlaves				=> 	nNumberConfEcMember);
+
+			IF NOT fbEcGetConfSlaves.bBusy
+				AND NOT fbEcGetConfSlaves.bError
+			THEN
+
+				FOR ni := cMinNumberEcSlaves TO cMaxNumberEcSlaves BY 1 DO
+					stEcTerminalDiagInfo[ni].nAddr := stEcConfigSlaveData[ni].nAddr;
+					stEcTerminalDiagInfo[ni].sType := stEcConfigSlaveData[ni].sType;
+					stEcTerminalDiagInfo[ni].sName := stEcConfigSlaveData[ni].sName;
+				END_FOR
+
+				fbEcGetConfSlaves(bExecute := FALSE);
+				bEcSystemRead 	:= TRUE;
+				bStartDiag 		:= TRUE;
+				eStatus1   		:= eEcSystem_Start;
+
+			END_IF
+
+	END_CASE
+
+(* End *)]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="act_RwEcDiagnose" Id="{ec12e4e9-9ffe-48bd-b92a-f7c8595f7355}">
+      <Implementation>
+        <ST><![CDATA[(* Read EtherCAT master and slave diagnosis states *)
+
+	CASE eStatus2 OF
+
+		eEcDiac_Start				:	(* Start reading *)
+
+			(* Check master device state of first diag run *)
+			IF (nDevState <> nAltDevState)
+				OR bStartDiag
+			THEN 
+				bStartDiag 			:= FALSE;
+				nAltDevState 		:= nDevState;
+				eStatus2   			:= eEcDiac_Delay;
+			END_IF
+			
+			(* Check frame status *)
+			FOR ni := cMinNumberEcFrames TO cMaxNumberEcFrames BY 1 DO
+				IF nFrmXWcState[ni] <> nAltFrmXWcState[ni]
+				THEN	
+					eStatus2   			:= eEcDiac_Delay;
+				END_IF
+				nAltFrmXWcState[ni]	:= nFrmXWcState[ni];
+			END_FOR
+			
+		eEcDiac_Delay				:	(* Delay - read diagnosis *)
+
+				fbTon(	IN	:=	TRUE,
+						PT	:=	t#400ms);
+
+				IF fbTon.Q
+				THEN
+					fbTon(IN := FALSE);
+					eStatus2 := eEcDiac_ReadMasterState;
+				END_IF
+
+
+		eEcDiac_ReadMasterState		:	(* Read master state *)
+
+				fbEcGetMasterState(	
+					sNetId		:=	sNetIdText,
+					bExecute	:=	TRUE,
+					tTimeout	:=	T#1s,
+					bBusy		=> 	,
+					bError		=> 	,
+					nErrId		=> 	,
+					state		=>	nStatusMaster);
+
+				IF NOT fbEcGetMasterState.bBusy
+				THEN
+
+					fbEcGetMasterState(bExecute := FALSE);
+					eStatus2 := eEcDiac_ReadSlaveState;
+
+					sMasterText := F_ConvStateToString(nStatusMaster);
+				END_IF
+
+
+		eEcDiac_ReadSlaveState		:	(* Read all slave states *)
+
+				fbEcGetAllSlaveStates(	
+					sNetId		:=	sNetIdText,
+					pStateBuf	:=	ADR(stSlaveStatus),
+					cbBufLen	:=	SIZEOF(stSlaveStatus),
+					bExecute	:=	TRUE,
+					tTimeout	:=	t#1s);
+
+				IF NOT fbEcGetAllSlaveStates.bBusy
+				THEN
+
+					fbEcGetAllSlaveStates(bExecute := FALSE);
+
+					FOR ni := cMinNumberEcSlaves TO cMaxNumberEcSlaves BY 1 DO
+
+						sDeviceStatusText[ni] := F_ConvSlaveStateToString(stSlaveStatus[ni]);
+						stEcTerminalDiagInfo[ni].sTerminalStatus := sDeviceStatusText[ni];
+
+					END_FOR
+
+					eStatus2 := eEcDiac_Start;
+
+				END_IF
+
+	END_CASE
+
+(* End *)]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="FB_DiagnosticEtherCAT">
+      <LineId Id="3" Count="13" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DiagnosticEtherCAT.act_RdEcSystem">
+      <LineId Id="2" Count="41" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DiagnosticEtherCAT.act_RwEcDiagnose">
+      <LineId Id="2" Count="83" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

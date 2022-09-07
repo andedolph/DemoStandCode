@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <DUT Name="ST_TsDiagObjectsEL1904" Id="{65cd1cad-8c4f-43be-94c7-b0ef7ce4abce}">
+    <Declaration><![CDATA[TYPE ST_TsDiagObjectsEL1904 :
+(*******************************************************************************************************
+Description			:	Index 16#800E Diagnostic objects
+Supported terminals : 	EL1904
+Documentation 		:	EL1904 TwinSAFE input terminal with 4 fail-safe inputs
+Version/Date 		:	V1.5.2/02.10.2015
+********************************************************************************************************)
+STRUCT
+
+	nDummyData1								:ARRAY[0..8] OF UINT;
+
+(* Sensor test error *)
+	nSensorTestError						:UINT;
+
+(* Error during two channel evaluation *)
+	nDuringTwoChannelEvaluationError		:UINT;
+
+(* Error in the safety mat operating mode: input pair disagree *)
+	nMatModeInputPairDisagreeError			:UINT;
+
+(* Error in the safety mat operating mode: external supply *)
+	nMatModeExternalSupplyError				:UINT;
+
+	nDummyData2								:ARRAY[0..2] OF UINT;
+
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

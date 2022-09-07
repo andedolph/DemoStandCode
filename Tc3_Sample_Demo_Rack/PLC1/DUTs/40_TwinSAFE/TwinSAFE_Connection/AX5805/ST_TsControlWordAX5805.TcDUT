@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <DUT Name="ST_TsControlWordAX5805" Id="{0af2ef42-a5d5-417e-9efa-f6b15994b71d}">
+    <Declaration><![CDATA[TYPE ST_TsControlWordAX5805 :
+(*******************************************************************************************************
+Description			:	Standard control Word of AX5805/6 terminal
+Supported terminals : 	AX5805, AX5806
+Documentation 		:	AX5805 / AX5806 TwinSAFE drive option cards for the AX5000 servo drive
+Version/Date 		:	V1.6.1/15.03.2016
+********************************************************************************************************)
+STRUCT
+	
+	bSafeTorqueOff_STO 						:BOOL;
+	bSafeStop1_SS1_1 						:BOOL;
+	bSafeStop2_SS2_1 						:BOOL;
+	bSafeOperatingStop_SOS_1 				:BOOL;
+	bSafeSpeedRange_SSR_1 					:BOOL;
+	bSafeDirectionPositive_SDIp				:BOOL;
+	bSafeDirectionNegative_SDIn				:BOOL;
+	bErrorAcknowledge_ErrAck				:BOOL;
+	bNotInUseBit8	 						:BOOL;
+	bNotInUseBit9	 						:BOOL;
+	bNotInUseBit10	 						:BOOL;
+	bNotInUseBit11	 						:BOOL;
+	bNotInUseBit12	 						:BOOL;
+	bNotInUseBit13	 						:BOOL;
+	bNotInUseBit14	 						:BOOL;
+	bNotInUseBit15				 			:BOOL;
+	
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

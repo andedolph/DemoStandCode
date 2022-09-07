@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_BasicPID" Id="{27570c71-7199-4ca9-8a60-7ecf27535ef7}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_BasicPID IMPLEMENTS IRegulator //regular FB that additionally implements an interface "IRegulator" as PID-Controller
+VAR CONSTANT
+	nERR_NOERROR			: UINT := 0;	// no error
+	nERR_INVALIDPARAM		: UINT := 1;	// invalid parameter
+	nERR_INVALIDCYCLETIME	: UINT := 2;	// invalid cycle time				
+END_VAR
+VAR
+	(*
+		                       1               Tv * s						
+	  	G(s) = Kp * ( 1 + ------------ + --------------- )				
+	                         Tn * s       1 + Td * s					
+	*)
+
+	(* STATIC VARIABLE *)
+	(* Internal Variable *)
+	fE						: LREAL := 0.0;	// error input
+	fE_1					: LREAL := 0.0;	// error input z^(-1)
+	fY						: LREAL := 0.0;	// control output
+	fY_1					: LREAL := 0.0;	// control output  z^(-1)
+	fYP						: LREAL := 0.0;	// P-part
+	fYI						: LREAL := 0.0;	// I-part			
+	fYI_1					: LREAL := 0.0;	// I-part  z^(-1)	
+	fYD						: LREAL := 0.0;	// D-T1-part		
+	fYD_1					: LREAL := 0.0;	// D-T1-part  z^(-1)
+	nErrorStatus			: UINT;			// controller error output (0: no error; >0:error)
+	(* Internal Parameter *)
+	bInit					: BOOL	:= TRUE;// initialization flag for first cycle
+	bIsIPart				: BOOL	:= FALSE;// I-part active ?
+	bIsDPart				: BOOL	:= FALSE;// D-part active ?
+	fDi						: LREAL	:= 0.0;	// internal I param
+	fDd						: LREAL	:= 0.0;	// internal D param
+	fCd						: LREAL	:= 0.0;	// internal D param
+	fCtrlCycleTimeOld		: LREAL	:= 0.0;
+	fKpOld					: LREAL	:= 0.0;
+	fTnOld					: LREAL	:= 0.0;
+	fTvOld					: LREAL	:= 0.0;
+	fTdOld					: LREAL	:= 0.0;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[;
+]]></ST>
+    </Implementation>
+    <Method Name="M_Active" Id="{7eda8eb8-7636-4bde-8cef-bf2c2c737dcf}">
+      <Declaration><![CDATA[METHOD M_Active 	: UINT
+VAR_INPUT
+	(* controller input  *)
+	fSetpointValue	: LREAL;		// setpoint value
+	fActualValue	: LREAL;		// actual value
+	bReset			: BOOL;			// reset flag
+	(* controller values *)
+	stRegParams		: ST_RegParams;
+END_VAR
+VAR_OUTPUT
+	fCtrlOutput		: LREAL;		// controller output command
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[(* init necessary? *)
+IF (stRegParams.fCtrlCycleTime <> fCtrlCycleTimeOld) OR (stRegParams.fKp <> fKpOld) OR (stRegParams.fTn <> fTnOld) 
+	OR (stRegParams.fTv <> fTvOld) OR (stRegParams.fTd <> fTdOld) THEN
+	
+	bInit := TRUE;
+END_IF
+
+(* controller init *)
+IF bInit OR bReset THEN
+	(* reset internal and external variables *)
+	fE	:= fE_1		:= 0.0;
+	fY	:= fY_1		:= 0.0;
+	fYP	:= 0.0;
+	fYI	:= fYI_1	:= 0.0;
+	fYD	:= fYD_1	:= 0.0;
+	fCtrlOutput		:= 0.0;
+	bIsIPart		:= FALSE;
+	bIsDPart		:= FALSE;
+	fCtrlOutput		:= 0.0;
+	nErrorStatus	:= nERR_NOERROR;
+
+	(* check cycle time parameter: (CycleTime > 0 AND CycleTme <= 60) *)
+	IF ( stRegParams.fCtrlCycleTime <= 0) 	THEN
+		nErrorStatus := nERR_INVALIDCYCLETIME;
+		M_Active := nErrorStatus;
+		RETURN;
+	END_IF;
+
+	(* check controller parameters: (Tn, Tv, Td >= 0) *)
+	IF ( (stRegParams.fTn < 0) OR (stRegParams.fTv < 0) OR (stRegParams.fTd < 0) ) THEN
+		nErrorStatus := nERR_INVALIDPARAM;
+		M_Active := nErrorStatus;
+		RETURN;
+	END_IF;
+
+	(* I-part *)
+	IF( stRegParams.fTn > 0.0 ) THEN
+		fDi := (stRegParams.fKp * stRegParams.fCtrlCycleTime) / (2.0 * stRegParams.fTn);
+		bIsIPart := TRUE;
+	ELSE
+		fDi := 0.0;
+		bIsIPart := FALSE;
+	END_IF;
+
+	(* D-part *)
+	IF( stRegParams.fTv > 0.0 ) AND (stRegParams.fTd > 0.0) THEN
+		fDd := (stRegParams.fKp * stRegParams.fTv) / (stRegParams.fTd + stRegParams.fCtrlCycleTime / 2.0);
+		fCd := (stRegParams.fTd - stRegParams.fCtrlCycleTime / 2.0) / (stRegParams.fTd + stRegParams.fCtrlCycleTime / 2.0);
+		bIsDPart := TRUE;
+	ELSE
+		fDd := 0.0;
+		fCd := 0.0;
+		bIsDPart := FALSE;
+	END_IF;
+
+	(* reset *)
+	IF bReset THEN
+		M_Active := nErrorStatus;
+		RETURN;
+	END_IF
+
+	(* set internal init flag *)
+	fCtrlCycleTimeOld 	:= stRegParams.fCtrlCycleTime;
+	fKpOld 				:= stRegParams.fKp;
+	fTnOld 				:= stRegParams.fTn;
+	fTvOld 				:= stRegParams.fTv;
+	fTdOld 				:= stRegParams.fTd;
+	bInit				:= FALSE;
+END_IF;
+
+(* 3. save old variable *)
+fE_1	:= fE;
+fY_1	:= fY;
+fYI_1	:= fYI;
+fYD_1	:= fYD;
+
+(* 4. set error/deviation input *)
+fE		:= fSetpointValue - fActualValue;
+
+(* 5. YP-part *)
+fYp		:= stRegParams.fKp * fE;
+
+(* 6. YI-part *)
+IF bIsIPart THEN
+	fYI := fYI_1 + fDi * (fE + fE_1);
+ELSE
+	fYI	:= 0.0;
+END_IF;
+
+(* 7. YD-part *)
+IF bIsDPart THEN
+	fYD	:=  fCd * fYD_1 + fDd * (fE - fE_1);
+ELSE
+	fYD	:= 0.0;
+END_IF;
+
+(* 8. Ysum = YP + YI + YD *)
+fY	:= fYP + fYI + fYD;
+
+(* 10. set controller output *)
+fCtrlOutput := fY;
+
+M_Active := nErrorStatus;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Error" Id="{6943162f-b3ba-4bc4-a177-6fa9168030bd}">
+      <Declaration><![CDATA[PROPERTY P_Error : BOOL]]></Declaration>
+      <Get Name="Get" Id="{68ba82e6-2a0b-439f-9e86-c15e742abe94}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Error := (nErrorStatus <> 0); // get error status]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{97e71d5f-ed38-42f5-ae4a-720d1e84ac8c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[nErrorStatus := 0; // clear error status]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_BasicPID">
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BasicPID.M_Active">
+      <LineId Id="3" Count="102" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BasicPID.P_Error.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BasicPID.P_Error.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

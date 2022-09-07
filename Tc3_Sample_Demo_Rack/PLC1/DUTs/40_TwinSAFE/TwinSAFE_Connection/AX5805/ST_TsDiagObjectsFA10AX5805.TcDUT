@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <DUT Name="ST_TsDiagObjectsFA10AX5805" Id="{9e11f2bd-27b1-4f74-a51a-dc3155eedb25}">
+    <Declaration><![CDATA[TYPE ST_TsDiagObjectsFA10AX5805 :
+(*******************************************************************************************************
+Description			:	Reason for shutdown of CoE objects 0xFA10
+Supported terminals : 	AX5805, AX5806
+Documentation 		:	AX5805 / AX5806 TwinSAFE drive option cards for the AX5000 servo drive
+Version/Date 		:	V1.6.1/15.03.2016
+********************************************************************************************************)
+STRUCT
+
+	nDummyData1								:ARRAY[0..3] OF UINT;
+	nSoftwareCrcC1							:UINT;
+	nSoftwareCrcC2							:UINT;
+	nReasonForShutdownAxis1					:UINT;
+	nReasonForShutdownAxis2					:UINT;
+	
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

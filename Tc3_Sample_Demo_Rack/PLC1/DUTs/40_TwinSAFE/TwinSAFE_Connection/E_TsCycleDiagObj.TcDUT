@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="E_TsCycleDiagObj" Id="{c5d06c31-64af-46d2-87e3-33f4bd82e9d3}">
+    <Declaration><![CDATA[TYPE E_TsCycleDiagObj :
+(*******************************************************************************************************
+Description			:	Enumeration read diagnosis objects steps 
+Supported terminals : 	EL1904, EL2904, AX5805, AX5806
+Date 				:	04.04.2016
+********************************************************************************************************)
+(
+
+	eCycleDiagObj_Init						:= 0,
+	eCycleDiagObj_ReadTemperature			,
+	eCycleDiagObj_ReadErrorIndices			,	
+	eCycleDiagObj_ReadDiag					,	
+	eCycleDiagObj_ReadDelay					,	
+	eCycleDiagObj_Done						,
+	eCycleDiagObj_Error						:=999,
+	eCycleDiagObj_NoError					
+	
+);
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

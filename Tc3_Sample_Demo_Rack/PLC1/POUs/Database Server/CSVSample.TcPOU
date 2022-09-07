@@ -1,0 +1,182 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="CSVSample" Id="{3f034a94-650c-4955-931c-be7bb713cadc}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM CSVSample
+VAR
+	// control of the program
+	bStart : BOOL;
+	Mode	: E_WriteMode; 
+	nState : INT; 
+	bError : BOOL := FALSE;
+	sError: T_MAXSTRING;
+
+	// fb to control the data communication
+	fbCSV_Access: FB_CSV_Access;
+	InputData : ST_CSVDataStruct;
+	
+	// datageneration
+	rand: DRAND;
+	randomNumber: LREAL;
+	fbGetSystemTime: GETSYSTEMTIME;
+	fileTime : T_FILETIME;
+	
+	// repetition
+	Count: INT;
+	ValuesToWrite: INT := 1000;
+	risingTrigger: R_TRIG;
+	
+	// measure time to execute actions
+	Timer : TON;
+	t : TIME; 
+	
+	// destination array of read data
+	ReadData: ARRAY[0..4] OF ST_CSVDataStruct;
+		
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Timer(); 
+
+CASE nState OF 
+	
+	
+	0: // init
+ 
+		Count := 0;
+		GenerateData();
+		Timer (IN:= FALSE);
+		risingTrigger(CLK:= bStart);
+		
+		IF risingTrigger.Q THEN
+			
+			bStart := FALSE;
+			bError := FALSE;
+			sError := '';
+			
+			Timer (IN:= TRUE, PT := T#1H);
+			
+			IF mode = E_WriteMode.ePLCDBCmd THEN
+				nState := 1;
+				
+			ELSIF mode = E_WriteMode.ePLCDBWriteStruct THEN
+				nState := 11;
+				
+			ELSIF mode = E_WriteMode.ePLCDBReadStruct THEN
+				nState := 21;
+				
+			END_IF
+						
+		END_IF
+		
+	
+	1:  // fb_PLCDBCMD
+	
+		IF fbCSV_Access.Write(2, InputData) THEN
+			
+			IF fbCSV_Access.bError THEN
+				nState := 255;
+			ELSE
+				Count:= Count+1;
+				nState := 2; 
+			END_IF	
+		
+		END_IF
+
+		
+	2: // repetitions
+		
+		IF Count <= ValuesToWrite THEN
+			GenerateData(); 
+			nState := 1;
+		ELSE
+			t := Timer.ET;
+			nState := 0;
+		END_IF
+	
+	
+	11: // fbPLCDBWriteStruct
+	
+		IF fbCSV_Access.WriteStruct(1, InputData) THEN
+			IF fbCSV_Access.bError THEN
+				nState := 255;
+			ELSE
+				Count:= Count+1;
+				nState := 12; 
+			END_IF		
+		END_IF		
+		
+		
+	12: // repetitions
+	
+		IF Count <= ValuesToWrite THEN
+			GenerateData(); 
+			nState := 11;
+		ELSE
+			t := Timer.ET;
+			nState := 0;
+		END_IF
+
+   
+	21:  // fbPLCDBReadStruct
+	
+		IF fbCSV_Access.ReadStruct(hDBID := 1, pData := ADR(ReadData), cbData := SIZEOF(ReadData)) THEN
+			IF fbCSV_Access.bError THEN
+				nState := 255;
+			ELSE
+				nState := 0; 
+			END_IF		
+		END_IF
+
+	
+	255: // error
+	
+		// request error text
+		fbCSV_Access.ipTcResult.RequestEventText(1033, sError, SIZEOF(sError));
+		bError := TRUE;
+
+END_CASE]]></ST>
+    </Implementation>
+    <Method Name="GenerateData" Id="{d0f7bd84-a9d2-4f25-853f-e3473aa1e9bb}">
+      <Declaration><![CDATA[METHOD GenerateData : BOOL
+VAR_INPUT
+END_VAR
+
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[rand(Seed := 1, Num => randomNumber);
+
+InputData.ID := InputData.ID +1; 
+
+InputData.Temperature :=InputData.Temperature  + ((randomNumber-0.5)*10)/5;
+
+rand(Seed := 1, Num => randomNumber);
+InputData.Velocity := InputData.Velocity + (randomNumber-0.5);
+
+fbGetSystemTime(timeLoDW => fileTime.dwLowDateTime, timeHiDW => fileTime.dwHighDateTime);
+InputData.Timestamp := FILETIME_TO_DT(fileTime);
+
+InputData.Name := 'Water Turbine';
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="CSVSample">
+      <LineId Id="36" Count="98" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="CSVSample.GenerateData">
+      <LineId Id="8" Count="1" />
+      <LineId Id="5" Count="2" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="21" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

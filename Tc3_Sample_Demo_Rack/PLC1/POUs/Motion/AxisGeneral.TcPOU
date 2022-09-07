@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.3">
+  <POU Name="AxisGeneral" Id="{d7273a8e-a469-4876-98eb-93ea451f15ad}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM AxisGeneral
+VAR
+	
+	bAxis3ReferenceCam						:BOOL;
+	bAxis4ReferenceCam						:BOOL;
+
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Axis general *)
+
+(* EL7037 *)
+	(* Reference cam Axis 1 *)
+	bStepperReferenceCam;
+
+(* EL7201 *)
+	(* Reference cam Axis 2 *)
+	bAxis2ReferenceCamEL7;
+
+(* AX5203 *)
+	(* Reference cam Axis 3 *)
+	bLedH26 				:= nAX5203DigitalInputs.0;
+	bAxis3ReferenceCam		:= nAX5203DigitalInputs.0;
+
+	(* Reference cam Axis 4 *)
+	nAX5203DigitalOutputs.7 := nAX5203DigitalInputs.1;
+	bAxis4ReferenceCam		:= nAX5203DigitalInputs.1;
+	
+	(* Switch S26 *)
+	nAX5203DigitalInputs.2;
+
+	(* Switch S27 *)
+	nAX5203DigitalInputs.3;
+	
+
+(* Axis 1-4 aktiv *)
+	bLedH16 := ((Axis1.fbAxis.bMoveAbsBusy
+					OR Axis2.fbAxis.bMoveAbsBusy
+						OR Axis3.fbAxis.bMoveAbsBusy
+							OR Axis4.fbAxis.bMoveAbsBusy)
+				AND bClock500ms)
+				OR (Axis1.fbAxis.bMoveAbsDone
+					AND Axis2.fbAxis.bMoveAbsDone
+						AND Axis3.fbAxis.bMoveAbsDone
+							AND Axis4.fbAxis.bMoveAbsDone);
+
+(* Axis 1-4 coupled *)
+	bLedH17 := ((stAxis1.Status.Coupled
+					OR stAxis2.Status.Coupled
+						OR stAxis3.Status.Coupled
+							OR stAxis4.Status.Coupled)
+				AND bClock500ms)
+				OR bSwitchS17;
+				
+(* Axis 1-4 reversing sequence busy *)		
+	bLedH20 := (Axis1.fbAxis.bRevSeqBusy
+					OR Axis2.fbAxis.bRevSeqBusy
+						OR Axis3.fbAxis.bRevSeqBusy
+							OR Axis4.fbAxis.bRevSeqBusy)
+				AND bClock500ms;
+
+(* Axis 1-4 error detectet *)
+	bLedH21 := (stAxis1.Status.Error
+					OR stAxis2.Status.Error
+						OR stAxis3.Status.Error
+							OR stAxis4.Status.Error)
+				AND bClock500ms;
+
+(* End *)
+
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,260 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <POU Name="FB_ReversingSequence" Id="{fa921010-b102-4e67-a033-443b0bf7bb11}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ReversingSequence
+VAR_INPUT
+	
+	bStart									:BOOL;
+	bStop									:BOOL;	
+	fTargetPosition1						:LREAL;
+	fTargetVelocity1						:LREAL;
+	fTargetPosition2						:LREAL;
+	fTargetVelocity2						:LREAL;
+	tIdleTime								:TIME;
+	
+END_VAR
+VAR_OUTPUT
+	
+	bDone									:BOOL;
+	bBusy									:BOOL;
+	bErr									:BOOL;
+	nErrID									:UDINT;
+	
+END_VAR
+VAR_IN_OUT
+
+	stAxis									:Axis_Ref;
+
+END_VAR
+VAR
+	
+	eStateRevSeq							:E_AxisReversingSequence;
+	eRevSeqErrStep							:E_AxisReversingSequence := eAxisRevSeq_NoError;
+	fbTimerIdleTime							:TON;
+	fbMoveAbsolute							:MC_MoveAbsolute;
+	fbStop									:MC_Stop;
+
+END_VAR
+(* End *)
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Reversing sequence axis *)
+
+	CASE eStateRevSeq OF
+
+		eAxisRevSeq_Start			:	(* Wait for start *)
+		
+			bDone := FALSE;
+			bBusy := FALSE;
+			
+			IF bStart
+			THEN
+
+				bBusy 		 := TRUE;
+				eStateRevSeq := eAxisRevSeq_Init;
+				
+			END_IF		
+
+
+		eAxisRevSeq_Init			:	(* Initialize *)
+		
+			fbMoveAbsolute(
+				Axis	 := stAxis, 
+				Execute	 := FALSE);
+				
+			fbTimerIdleTime(
+				IN	 	 :=	FALSE);
+			
+			fbStop(
+				Axis	 :=	stAxis,
+				Execute	 :=	FALSE);
+				
+			eStateRevSeq := eAxisRevSeq_AxisStartPos1;
+
+
+		eAxisRevSeq_AxisStartPos1	:	(* Start axis to position 1 *)
+		
+			fbMoveAbsolute(
+				Axis		:= stAxis, 
+				Execute		:= TRUE, 
+				Position	:= fTargetPosition1, 
+				Velocity	:= fTargetVelocity1, 
+				ErrorID		=> nErrID);
+			
+		
+			IF NOT fbMoveAbsolute.Busy
+				AND NOT fbMoveAbsolute.Error
+			THEN
+			
+				fbMoveAbsolute(
+					Axis		:= stAxis, 
+					Execute		:= FALSE);
+				eStateRevSeq := eAxisRevSeq_IdleTime1;
+
+			ELSIF bStop
+			THEN
+
+				fbMoveAbsolute(
+					Axis	 := stAxis, 
+					Execute	 := FALSE);
+				eStateRevSeq := eAxisRevSeq_AxisStop;
+
+			ELSIF NOT fbMoveAbsolute.Busy
+					AND fbMoveAbsolute.Error
+			THEN
+
+				eRevSeqErrStep := eStateRevSeq;
+				eStateRevSeq   := eAxisRevSeq_ErrorStep;
+
+			END_IF
+
+
+		eAxisRevSeq_IdleTime1		:	(* delayed restart *)
+		
+			fbTimerIdleTime(
+				IN	:=	TRUE, 
+				PT	:= 	tIdleTime);
+
+			IF NOT bStop			
+				AND fbTimerIdleTime.Q 
+			THEN
+
+				fbTimerIdleTime(IN	:=	FALSE);
+				eStateRevSeq := eAxisRevSeq_AxisStartPos2;
+
+			ELSIF bStop
+			THEN
+
+				eStateRevSeq := eAxisRevSeq_Done;
+
+			END_IF
+
+
+		eAxisRevSeq_AxisStartPos2	:	(* Start axis to position 2 *)
+		
+			fbMoveAbsolute(
+				Axis		:= stAxis, 
+				Execute		:= TRUE, 
+				Position	:= fTargetPosition2, 
+				Velocity	:= fTargetVelocity2, 
+				ErrorID		=> nErrID);
+			
+		
+			IF NOT fbMoveAbsolute.Busy
+				AND NOT fbMoveAbsolute.Error
+			THEN
+				fbMoveAbsolute(
+					Axis	 := stAxis, 
+					Execute	 := FALSE);
+				eStateRevSeq := eAxisRevSeq_IdleTime2;
+
+			ELSIF bStop
+			THEN
+
+				fbMoveAbsolute(
+					Axis		:= stAxis, 
+					Execute	:= FALSE);
+				eStateRevSeq := eAxisRevSeq_AxisStop;
+
+			ELSIF NOT fbMoveAbsolute.Busy
+					AND fbMoveAbsolute.Error
+			THEN
+
+				eRevSeqErrStep := eStateRevSeq;
+				eStateRevSeq   := eAxisRevSeq_ErrorStep;
+
+			END_IF		
+
+
+		eAxisRevSeq_IdleTime2		:	(* delayed restart*)
+
+			fbTimerIdleTime(
+				IN	:=	TRUE, 
+				PT	:= 	tIdleTime);
+				
+			IF NOT bStop			
+				AND fbTimerIdleTime.Q 
+			THEN
+
+				fbTimerIdleTime(IN	:=	FALSE);
+				eStateRevSeq := eAxisRevSeq_Done;
+				
+			ELSIF bStop
+			THEN
+			
+				eStateRevSeq := eAxisRevSeq_Done;
+				
+			END_IF
+			
+			
+		eAxisRevSeq_AxisStop		:	(* Stop axis *)
+
+			fbStop(
+				Axis	:=	stAxis, 
+				Execute	:=	TRUE, 
+				ErrorID	=>	nErrID );
+				
+			IF (fbStop.Done
+				OR fbStop.CommandAborted)
+				AND NOT fbStop.Error
+			THEN
+				fbStop(
+					Axis	:=	stAxis, 
+					Execute	:=	FALSE);
+				eStateRevSeq := eAxisRevSeq_Done;
+
+			ELSIF NOT fbStop.Busy
+					AND fbStop.Error
+			THEN
+
+				eRevSeqErrStep := eStateRevSeq;
+				eStateRevSeq   := eAxisRevSeq_ErrorStep;
+
+			END_IF			
+				
+			
+		eAxisRevSeq_Done			:	(* Sequence done *)
+
+			bDone := TRUE;
+			
+			IF NOT bStart
+				AND NOT bStop
+			THEN
+				bDone 		 := FALSE;
+				bBusy 		 := FALSE;
+				eStateRevSeq := eAxisRevSeq_Start;
+				
+			ELSIF bStart
+				AND NOT bStop
+			THEN
+				bDone 		 := FALSE;
+				eStateRevSeq := eAxisRevSeq_AxisStartPos1;
+			END_IF
+
+			
+		eAxisRevSeq_ErrorStep		:	(* Error step *)
+		
+			bErr := TRUE;
+			nErrID;
+			
+			IF NOT bStart
+				AND NOT bStop
+			THEN
+				bErr 		   := FALSE;
+				nErrID		   := 0;
+				eRevSeqErrStep := eAxisRevSeq_NoError;
+				eStateRevSeq   := eAxisRevSeq_Start;
+			END_IF
+
+	ELSE
+
+		(* If not a valid step is active, then put on start *)
+		eRevSeqErrStep := eAxisRevSeq_NoError;
+		eStateRevSeq   := eAxisRevSeq_Start;
+
+	END_CASE
+
+(* End *)]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

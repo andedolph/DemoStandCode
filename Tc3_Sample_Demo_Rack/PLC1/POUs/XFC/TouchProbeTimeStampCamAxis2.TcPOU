@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="TouchProbeTimeStampCamAxis2" Id="{4a655cab-63c8-4113-b32c-86cf6a230ee7}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM TouchProbeTimeStampCamAxis2
+VAR
+	
+(* Touch Probe - EL1252 *)
+	sTimeStampPos 							:STRING;
+	sTimeStampNeg							:STRING;
+
+	stXfcTriggerRef							:XFC_TRIGGER_REF;
+	fbXfcTouchProbe							:XFC_TouchProbe;
+	fPositionTouch							:LREAL;
+
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* EL1252 - digital input Ch1 time stamp - touch probe *)
+
+(* Current timestamp times *)
+	sTimeStampPos := DCTIME_TO_STRING(stEL1252Ch1.TimeStampPos);
+	sTimeStampNeg := DCTIME_TO_STRING(stEL1252Ch1.TimeStampNeg);
+
+(* Fill structure with values *)
+	stXfcTriggerRef.Signal					:= stEL1252Ch1.Input;
+	stXfcTriggerRef.TimestampRisingEdge 	:= stEL1252Ch1.TimeStampPos.dwLowPart;
+	stXfcTriggerRef.TimestampFallingEdge 	:= stEL1252Ch1.TimeStampNeg.dwLowPart;
+	stXfcTriggerRef.Edge					:= RisingEdge;								(* FallingEdge *)				
+	stXfcTriggerRef.FreeRun					:= TRUE;
+	stXfcTriggerRef.EncoderIndex			:= 0;
+	stXfcTriggerRef.ModuloPositions			:= TRUE;
+	stXfcTriggerRef.ModuloFactor			:= 360.0;
+
+(* Evaluate the time stamp *)
+	fbXfcTouchProbe(
+		Axis				:= 	stAxis2,
+		TriggerInput		:= 	stXfcTriggerRef,
+		Execute				:= 	TRUE,
+		WindowOnly			:= 	FALSE,
+		FirstPosition		:= 	0.0,
+		LastPosition		:= 	0.0,
+		Options				:= 	,
+		Done				=> 	,
+		Busy				=> 	,
+		Error				=> 	,
+		ErrorID				=> 	,
+		RecordedPosition	=>	fPositionTouch);
+
+(* End *)]]></ST>
+    </Implementation>
+    <LineIds Name="TouchProbeTimeStampCamAxis2">
+      <LineId Id="3" Count="30" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

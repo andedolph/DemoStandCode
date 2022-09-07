@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_TransferStation" Id="{c78a8867-3caf-459f-b015-82a720ad1c71}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_TransferStation EXTENDS FB_Device
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+	bHavePart 				: BOOL;
+END_VAR
+VAR_IN_OUT
+	fbConveyorToPickFrom 	: FB_Conveyor;
+	fbConveyorToPlaceTo		: FB_Conveyor;
+	fbStation 				: FB_Station;
+END_VAR
+VAR
+	fbStartGetPartSeq		: R_TRIG;
+	iGetPartSeq				: INT;
+	stPart					: ST_PartData;
+	iPlacePartSeq			: INT;
+	iConveyorAcceptSeq		: UDINT;
+	iConvReleasePartStatus	: UDINT;
+	iConveyorAcceptStatus	: UDINT;
+	fbTrigPlacePartSeq		: R_TRIG;
+	stEmptyPart				: ST_PartData;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="M_PickPart" Id="{2ab714d8-424d-441f-ba95-155297da0e0c}">
+      <Declaration><![CDATA[METHOD PUBLIC M_PickPart : UDINT
+VAR_INPUT
+	bGetPart : BOOL;
+	bPartAvailable : BOOL;
+END_VAR
+VAR_OUTPUT 
+
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbStartGetPartSeq(CLK:=bGetPart AND NOT bHavePart AND bPartAvailable);
+IF fbStartGetPartSeq.Q  THEN 
+ 	M_PickPart := 1; // busy
+	iGetPartSeq := 10;
+	iConvReleasePartStatus := fbConveyorToPickFrom.M_ReleasePart(bReleasePartReq:=FALSE,bPartHandedOff:=FALSE); // Ask conveyor to release the part
+END_IF
+
+IF NOT bGetPart THEN 
+	M_PickPart := 0 ; //idle, ready for next command
+END_IF
+CASE iGetPartSeq OF 
+	0: (*Idle*)
+		;
+		
+	10: (*Get part From Conveyor*)
+		iConvReleasePartStatus := fbConveyorToPickFrom.M_ReleasePart(bReleasePartReq:=TRUE , bPartHandedOff:=FALSE, stPartToRelease=>stPart ); // Ask conveyor to release the part
+		//if the part is non zero its ready take it 
+		IF stPart.iIDNumber <>0 THEN 
+			iGetPartSeq := 20;
+			stPart.iCurrentDeviceID := P_DeviceID;
+			bHavePart:=TRUE;
+		END_IF
+		IF iConvReleasePartStatus > 3 THEN // Function errored out
+			fbConveyorToPickFrom.M_ReleasePart(bReleasePartReq:=FALSE, bPartHandedOff := FALSE); // Ask conveyor to release the part
+			iGetPartSeq := 99;			
+		END_IF
+		
+	20 : //Confirm receipt of part
+		iConvReleasePartStatus := fbConveyorToPickFrom.M_ReleasePart(bReleasePartReq:=TRUE , bPartHandedOff:=TRUE); // Ask conveyor to release the part		
+		IF iConvReleasePartStatus = 3 THEN 
+			iGetPartSeq := 30;
+		ELSIF iConvReleasePartStatus > 3 THEN
+			iConvReleasePartStatus := fbConveyorToPickFrom.M_ReleasePart(bReleasePartReq:=FALSE , bPartHandedOff:=FALSE); // Ask conveyor to release the part		
+			iGetPartSeq := 99;
+		END_IF
+	
+	30: //Reset Request for part 	
+		iConvReleasePartStatus := fbConveyorToPickFrom.M_ReleasePart(bReleasePartReq:=FALSE, bPartHandedOff := FALSE); // Ask conveyor to release the part
+		IF iConvReleasePartStatus = 0 THEN 
+			iGetPartSeq:= 0;
+			M_PickPart := 3;
+		END_IF
+	99: //Error condition  
+		eCurrentState := E_Error;
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_PlacePart" Id="{cec6e16a-ab76-43c7-9ab3-8100e399d03b}">
+      <Declaration><![CDATA[METHOD PUBLIC M_PlacePart : UDINT
+VAR_INPUT
+	bPlacePart : BOOL;
+END_VAR
+VAR
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbTrigPlacePartSeq(CLK := bHavePart AND bPlacePart); 
+IF fbTrigPlacePartSeq.Q THEN 
+	M_PlacePart := 1;
+	iPlacePartSeq:= 10;
+END_IF
+IF NOT bPlacePart THEN 
+	 M_PlacePart := 0;
+END_IF
+
+CASE iPlacePartSeq OF
+	0: (*Idle*)
+	
+	10: (*Find last part on Conveyor*)
+		iConveyorAcceptStatus := fbConveyorToPlaceTo.M_AcceptPart(bPartPresentAtEntrance:=TRUE , stPartAtEntrance:=stPart );
+		IF iConveyorAcceptStatus = 3 THEN 
+			iPlacePartSeq := 20;
+			iConveyorAcceptStatus := fbConveyorToPlaceTo.M_AcceptPart(bPartPresentAtEntrance:=FALSE , stPartAtEntrance:=stPart );
+		END_IF
+		IF iConveyorAcceptStatus > 3 THEN 
+			iPlacePartSeq := 99;
+			iConveyorAcceptStatus := fbConveyorToPlaceTo.M_AcceptPart(bPartPresentAtEntrance:=FALSE , stPartAtEntrance:=stPart );
+		END_IF
+	20:  //Hand the part to the requesting device
+		stPart := stEmptyPart ; 
+		bHavePart := FALSE;
+		M_PlacePart := 0;
+ 
+	99: //Error condition
+		eCurrentState := E_Error;	
+		
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_TransferStation">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TransferStation.M_PickPart">
+      <LineId Id="3" Count="43" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TransferStation.M_PlacePart">
+      <LineId Id="3" Count="29" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

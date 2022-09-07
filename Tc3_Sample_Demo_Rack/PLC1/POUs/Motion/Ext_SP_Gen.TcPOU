@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="Ext_SP_Gen" Id="{b7780f01-6728-483a-8a18-a828f1046393}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM Ext_SP_Gen
+VAR
+	bMstrExtSP			: BOOL;
+	ExtSP_Enable		: MC_ExtSetPointGenEnable;
+	ExtSP_Disable		: MC_ExtSetPointGenDisable;	
+
+	lrPosCmd			: LREAL;
+	lrVeloCmd			: LREAL;
+	lrAccelCmd			: LREAL;
+
+	rDeg				: REAL;
+	rDegStep			: REAL := 0.1;
+	lrSinWave			: LREAL;
+	rSinAmp				: REAL := 30.0;
+	
+	bSinGen				: BOOL;
+	bAddSin				: BOOL;
+
+	diDir: DINT := 1;
+	
+	lrPosInput: LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bSinGen THEN
+	rDeg:=rDeg+rDegStep;
+	IF rDeg >= 360.0 THEN
+		rDeg:=0.0;
+	END_IF
+END_IF
+
+lrSinWave:=rSinAmp*SIN(rDeg*3.14159/180.0);	// SIN function uses radian input
+
+IF bAddSin THEN
+	lrPosCmd:=lrPosInput+lrSinWave;
+ELSE
+	lrPosCmd:=lrPosInput;
+END_IF
+
+MC_ExtSetPointGenFeed(
+	lrPosCmd,
+	lrVeloCmd,
+	lrAccelCmd,
+	diDir,
+	stAxis3);
+
+ExtSP_Enable(
+	Axis:= stAxis3, 
+	Execute:= bMstrExtSP, 
+	Position:= , 
+	PositionType:= POSITIONTYPE_ABSOLUTE, 
+	Done=> , 
+	Busy=> , 
+	Error=> , 
+	ErrorID=> , 
+	Enabled=> );
+	
+ExtSP_Disable(
+	Axis:= stAxis3, 
+	Execute:= NOT(bMstrExtSP), 
+	Done=> , 
+	Busy=> , 
+	Error=> , 
+	ErrorID=> , 
+	Enabled=> );]]></ST>
+    </Implementation>
+    <LineIds Name="Ext_SP_Gen">
+      <LineId Id="3" Count="39" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

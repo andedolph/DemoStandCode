@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <DUT Name="E_TsDiagnosisObjektsFA10AX5805" Id="{a8cc2ae8-b0ec-4bf9-b025-fbcbdf2aa535}">
+    <Declaration><![CDATA[TYPE E_TsDiagnosisObjektsFA10AX5805 :
+(*******************************************************************************************************
+Description			:	Reason for shutdown of CoE objects 0xFA10
+Supported terminals : 	AX5805, AX5806
+Documentation 		:	AX5805 / AX5806 TwinSAFE drive option cards for the AX5000 servo drive
+Version/Date 		:	V1.6.1/15.03.2016
+********************************************************************************************************)
+(
+
+	eFA10AX5805_NoErrorReaction					:= 16#0000,	(* Error reaction: no error reaction *)
+	eFA10AX5805_ErrSafeTorqueOff				:= 16#0040,	(* Error reaction: STO (Safe Torque Off) *)
+	eFA10AX5805_ErrSafeStop1					:= 16#0050,	(* Error reaction: SS1 (Safe Stop 1) *)
+
+	eFA10AX5805_StatusWordIncorrect				:= 16#0100,	(* Shutdown reason: The status word was calculated incorrectly *)
+	eFA10AX5805_ParametersWrongOrNotLoaded		:= 16#0200,	(* Shutdown reason: The parameters are wrong or not yet loaded *)
+	eFA10AX5805_FSOEProtocolWrongState			:= 16#0300,	(* Shutdown reason: FSOE protocol not in state DATA *)
+	eFA10AX5805_WrongDriveParameter				:= 16#0400,	(* Shutdown reason: Internal comparison failed. Please check the motor/drive dimensioning/parameterization *)
+	eFA10AX5805_ExtCamDetectedUnexpectedly		:= 16#0500,	(* Reason for shutdown position detection: external cam detected unexpectedly *)
+	eFA10AX5805_ExtCamRightSideCamWindow		:= 16#0600,	(* Reason for shutdown position detection: external cam detected to the right of the cam window *)
+	eFA10AX5805_ExtCamLeftSideCamWindow			:= 16#0700,	(* Reason for shutdown position detection: external cam detected to the left of the cam window *)
+	eFA10AX5805_MaxTraversingRangeExceeded		:= 16#0800,	(* Reason for shutdown position detection: the maximum traversing range was exceeded *)
+	eFA10AX5805_SS1SwitchedOff					:= 16#5000,	(* Reason for shutdown safety function: The safety function SS1 has switched off *)
+	eFA10AX5805_SOSSwitchedOff					:= 16#6800,	(* Reason for shutdown safety function: The safety function SOS has switched off *)
+	eFA10AX5805_SSRSwitchedOff					:= 16#8000,	(* Reason for shutdown safety function: The safety function SSR has switched off *)
+	eFA10AX5805_SLSSwitchedOff					:= 16#9000,	(* Reason for shutdown safety function: The safety function SLS has switched off *)
+	eFA10AX5805_SLPSwitchedOff					:= 16#A000,	(* Reason for shutdown safety function: The safety function SLP has switched off *)
+	eFA10AX5805_SMSSwitchedOff					:= 16#A800,	(* Reason for shutdown safety function: The safety function SMS has switched off *)
+	eFA10AX5805_SLISwitchedOff					:= 16#B800,	(* Reason for shutdown safety function: The safety function SLI has switched off *)
+	eFA10AX5805_SARSwitchedOff					:= 16#C000,	(* Reason for shutdown safety function: The safety function SAR has switched off *)
+	eFA10AX5805_SMASwitchedOff					:= 16#C800,	(* Reason for shutdown safety function: The safety function SMA has switched off *)
+	eFA10AX5805_SDIpSwitchedOff					:= 16#D000,	(* Reason for shutdown safety function: The safety function SDIp has switched off *)
+	eFA10AX5805_SDInSwitchedOff					:= 16#D100	(* Reason for shutdown safety function: The safety function SDIn has switched off *)
+	
+);
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

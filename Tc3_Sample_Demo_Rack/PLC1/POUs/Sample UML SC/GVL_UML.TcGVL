@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <GVL Name="GVL_UML" Id="{1fc19f52-ebcc-41ff-a140-728e9eca1fa9}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	nCounterInit				: INT;
+	nCounterSaveInitSettings	: INT;
+	nCounterClearXml			: INT;
+	nCounterFillXml				: INT;
+	nCounterSaveXml				: INT;
+	nCounterClearText			: INT;
+	nCounterFillText			: INT;
+	nCounterSaveText			: INT;
+	nCounterGetMasterID			: INT;
+	nCounterGetClientID			: INT;
+	nCounterSendToMaster		: INT;
+	nCounterSendToClient		: INT;
+	
+	bMasterFirst				: BOOL;
+	bClientFirst				: BOOL;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

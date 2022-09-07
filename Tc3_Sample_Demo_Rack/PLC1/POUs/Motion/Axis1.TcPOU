@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="Axis1" Id="{6482dd8f-0683-48c2-80cc-146d71bdd97a}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM Axis1
+VAR
+
+	sAxisDescription						:STRING	:= 'Axis 1 - EL7037 - AS1020-0120';	
+
+(* Axis - basic functions *)
+	fbAxis									:FB_Axis;
+	fMoveAbsPosition						:LREAL;				(* Target position *)
+	fMoveAbsVelocity						:LREAL	:= 500.0;	(* Target speed axis 1 max. 3600.0 Degree/s *)
+	bStartMoveAbs							:BOOL;
+	bMoveAbsBusy							:BOOL;
+	bMoveAbsDone							:BOOL;
+	bAxisErr								:BOOL;
+	nAxisErrId								:DWORD;
+	bReset									:BOOL;
+	bStop									:BOOL;
+	bStopAxisDone							:BOOL;
+	bStopAxisBusy							:BOOL;
+	bRevSeqStart							:BOOL;
+	bStartparameterSet						:BOOL;
+	
+(* Test - change target position *)
+	bTestChangeTargetPos					:BOOL;				(* Test - change target position *)
+	bMaxPositionReached						:BOOL;
+	
+(* Homing *)
+	fbHomingAxis							:MC_Home;
+	fHomingPosition							:LREAL	:= 331.00;
+
+(* Touch Probe *)
+	fbTouchProbe							:MC_TouchProbe;
+	stTriggerInput							:TRIGGER_REF;
+	bTouchProbeDone							:BOOL;
+	bTouchProbeBusy							:BOOL;
+	bTouchProbeComAb						:BOOL;
+	bTouchProbeErr							:BOOL;
+	bTouchProbeErrId						:UDINT;
+	fRecordedPosition 						:LREAL;
+	stRecordedData							:MC_TouchProbeRecordedData;	
+
+(* Couple Axis on Handwheel *)
+	fbGearIn								:MC_GearIn;
+	bGearInDone								:BOOL;
+	bAxisCoupled							:BOOL;
+
+(* Uncouple Axis *)
+	fbGearOut								:MC_GearOut;
+	bGearOutDone							:BOOL;
+
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Axis 1 *)
+
+(* Axis - basic functions  *)
+
+	IF NOT bStartparameterSet
+	THEN
+		(* Startup Parameter reversing sequence *)
+		fbAxis.fRevSeqTargetPos1	:= 720.0;
+		fbAxis.fRevSeqTargetVelo1	:= 500.0;
+		fbAxis.fRevSeqTargetPos2	:= 0.0;
+		fbAxis.fRevSeqTargetVelo2	:= 3000.0;
+		fbAxis.nRevSeqIdleTime		:= 500;
+		bStartparameterSet			:= TRUE;
+	END_IF
+		
+	fbAxis(
+		bPowerEnable		:= 	bSwitchS12,
+		fPowerOverride		:= 	F_Scaling(nAnalogInR10, 100.0, 32767.0),
+		bMoveAbsExecute		:= 	(bStartMoveAbs OR bSwitchS16) AND NOT stAxis1.Status.Coupled,
+		fMoveAbsPosition	:= 	fMoveAbsPosition,
+		fMoveAbsVelocity	:= 	fMoveAbsVelocity,
+		bReset				:= 	bReset OR bSwitchS21,
+		bStopAxis			:= 	bStop,
+		bRevSeqStart		:=  (bSwitchS20 OR bRevSeqStart) AND fbAxis.bPowerStatus, 
+		stAxis				:= 	stAxis1,
+		bPowerStatus		=> 	bLedH12,
+		bMoveAbsDone		=> 	bMoveAbsDone,
+		bMoveAbsBusy		=> 	bMoveAbsBusy,
+		bAxisErr			=> 	bAxisErr,
+		nAxisErrId			=> 	nAxisErrId,
+		bStopAxisDone		=> 	bStopAxisDone,
+		bStopAxisBusy		=> 	bStopAxisBusy);
+		
+
+(* Test - change target position - Axis *)
+	IF bTestChangeTargetPos
+		AND (fMoveAbsPosition <= stAxis1.NcToPlc.ActPos)
+			AND NOT bMaxPositionReached
+	THEN
+		fMoveAbsPosition := fMoveAbsPosition + 180.0;
+	ELSE
+		IF bTestChangeTargetPos
+			AND (fMoveAbsPosition >= 3600.0)
+		THEN
+			fMoveAbsPosition 	:= 0.0;
+			bMaxPositionReached	:= TRUE;
+		END_IF
+	END_IF
+
+	IF bTestChangeTargetPos
+		AND (stAxis1.NcToPlc.ActPos < 1.0)
+	THEN
+		bMaxPositionReached	:= FALSE;
+	END_IF
+
+	IF bSwitchS17
+	THEN
+		bMaxPositionReached	:= FALSE;
+		fMoveAbsPosition 	:= 0.0;
+	END_IF
+	
+(* Homing Axis *)
+	fbHomingAxis(
+		Execute			:= 	bSwitchS23 AND fbAxis.bPowerStatus,
+		Position		:= 	fHomingPosition,
+		HomingMode		:= 	MC_DefaultHoming,
+		BufferMode		:= 	,
+		Options			:= 	,
+		bCalibrationCam	:= 	bStepperReferenceCam,
+		Axis			:= 	stAxis1,
+		Done			=> 	,
+		Busy			=> 	,
+		Active			=> 	,
+		CommandAborted	=> 	,
+		Error			=> 	,
+		ErrorID			=> 	);
+		
+		
+	bLedH23 :=	(bClock1s 
+					AND NOT stAxis1.Status.Homed
+					AND fbAxis.bPowerStatus
+					AND NOT fbHomingAxis.Busy)
+				OR (bClock500ms 
+					AND fbHomingAxis.Busy)
+				OR fbHomingAxis.Done;
+					
+
+(* Touch Probe *)
+	stTriggerInput.EncoderID 		:= 1;
+	stTriggerInput.TouchProbe 		:= TouchProbe1;
+	stTriggerInput.SignalSource 	:= SignalSource_Default;
+	stTriggerInput.Edge 			:= RisingEdge;
+	stTriggerInput.Mode 			:= TOUCHPROBEMODE_SINGLE;
+	stTriggerInput.ModuloPositions 	:= FALSE;
+
+	fbTouchProbe(
+		Execute			:= 	bSwitchS24,
+		WindowOnly		:= 	,
+		FirstPosition	:= 	,
+		LastPosition	:= 	,
+		Axis			:= 	stAxis1,
+		TriggerInput	:= 	stTriggerInput,
+		Done			=> 	bTouchProbeDone,
+		Busy			=> 	bTouchProbeBusy,
+		CommandAborted	=> 	bTouchProbeComAb,
+		Error			=> 	bTouchProbeErr,
+		ErrorID			=> 	bTouchProbeErrId,
+		RecordedPosition=> 	fRecordedPosition,
+		RecordedData	=>	stRecordedData);
+	
+	bLedH24 :=	(bClock500ms 
+					AND fbTouchProbe.Busy)
+						OR fbTouchProbe.Done;
+
+(* Couple Axis on Handwheel *)
+	fbGearIn(
+		Execute			:= 	bHandwheelSwitchS28,
+		RatioNumerator	:= 	1,
+		RatioDenominator:= 	1,
+		Acceleration	:= 	,
+		Deceleration	:= 	,
+		Jerk			:= 	,
+		BufferMode		:= 	,
+		Options			:= 	,
+		Master			:= 	stAxis5,
+		Slave			:= 	stAxis1,
+		InGear			=> 	bGearInDone,
+		Busy			=> 	,
+		Active			=> 	,
+		CommandAborted	=> 	,
+		Error			=> 	,
+		ErrorID			=> 	);
+
+(* Axis coupled *)
+	bAxisCoupled := stAxis1.Status.Coupled;
+
+(* Uncouple Axis *)
+	fbGearOut(
+		Execute	:= 	bSwitchS17,
+		Options	:= 	,
+		Slave	:= 	stAxis1,
+		Done	=> 	bGearOutDone,
+		Busy	=> 	,
+		Error	=> 	,
+		ErrorID	=> 	);
+	
+(* End *)]]></ST>
+    </Implementation>
+    <LineIds Name="Axis1">
+      <LineId Id="3" Count="145" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

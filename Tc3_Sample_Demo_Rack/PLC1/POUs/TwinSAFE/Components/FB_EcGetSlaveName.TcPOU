@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4019.2">
+  <POU Name="FB_EcGetSlaveName" Id="{1f476497-e90f-4f9f-b708-0b1db341e240}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_EcGetSlaveName
+(*******************************************************************************************************
+Title				:	Get EtherCAT slave name
+Description			:	Read the EtherCAT slave name from the EtherCAT Master CoE table
+Version / Date		:	1.0.0 / 23.05.2016 / created program (Version progress see below)
+********************************************************************************************************)
+VAR_INPUT
+
+	bExecute                        		:BOOL;							(* The block is activated by a rising edge at this input *)
+	sNetId          						:T_AmsNetId;					(* AmsNetId of the EtherCAT master device *)
+	nSlaveAddr      						:UINT; 							(* Address of the slave device *)
+	tTimeout                        		:TIME := DEFAULT_ADS_TIMEOUT;
+
+END_VAR
+VAR_OUTPUT
+
+	bBusy           						:BOOL;							(* This output is set when the function block is activated *)
+	sSlaveName         						:STRING[31];					(* Name of this EtherCAT Slave *)
+	bError          						:BOOL;
+	nErrId          						:UDINT;
+
+END_VAR
+VAR
+
+	eStateEcGetSlaveNameSeq					:E_EcGetSlaveName;
+	eEcGetSlaveNameErrStep					:E_EcGetSlaveName := eEcGetSlaveName_NoError;
+
+	fbEcGetAllSlaveAddr						:FB_EcGetAllSlaveAddr;
+	aAllSlaveAddr							:ARRAY[cMinNumberEcSlaves..cMaxNumberEcSlaves] OF UINT;
+	nSlaveAddrIndex							:UINT;
+	fbEcCoeSdoRead							:FB_EcCoESdoReadEx;
+
+END_VAR
+VAR CONSTANT
+
+	cMinNumberEcSlaves						:UINT := 0;
+	cMaxNumberEcSlaves						:UINT := 100;
+
+END_VAR
+(*******************************************************************************************************
+Version / Date / Description:
+1.0.0   / 23.05.2016 / created program
+********************************************************************************************************)
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* FB_EcGetSlaveName *)
+
+	CASE eStateEcGetSlaveNameSeq OF 
+	
+		eEcGetSlaveName_Start				:	(* Waiting for start *)
+			
+			IF bExecute
+			THEN
+				bBusy := TRUE;
+				eStateEcGetSlaveNameSeq := eEcGetSlaveName_Init;
+			END_IF
+		
+		eEcGetSlaveName_Init				:	(* Initialize functions *)
+
+			fbEcGetAllSlaveAddr(bExecute := FALSE);
+			fbEcCoeSdoRead(		bExecute := FALSE);
+			
+			eStateEcGetSlaveNameSeq := eEcGetSlaveName_ReadAllSlaveAddr;
+			
+	
+		eEcGetSlaveName_ReadAllSlaveAddr	:	(* Read all EtherCAT Slave addresses and find the slave position in the EtherCAT bus *)
+
+			fbEcGetAllSlaveAddr(
+				sNetId	 := sNetId, 
+				pAddrBuf := ADR(aAllSlaveAddr), 
+				cbBufLen := SIZEOF(aAllSlaveAddr), 
+				bExecute := TRUE, 
+				tTimeout := DEFAULT_ADS_TIMEOUT);
+
+			IF NOT fbEcGetAllSlaveAddr.bBusy
+				AND NOT fbEcGetAllSlaveAddr.bError
+			THEN
+			
+				FOR nSlaveAddrIndex := cMinNumberEcSlaves TO cMaxNumberEcSlaves BY 1 DO
+					IF nSlaveAddr = aAllSlaveAddr[nSlaveAddrIndex]
+					THEN
+						EXIT;
+					END_IF
+				END_FOR
+
+				fbEcGetAllSlaveAddr(bExecute := FALSE);
+			
+				eStateEcGetSlaveNameSeq := eEcGetSlaveName_ReadSlaveName;
+	
+			ELSIF NOT fbEcGetAllSlaveAddr.bBusy
+				AND fbEcGetAllSlaveAddr.bError
+			THEN
+
+				nErrId					:=	fbEcGetAllSlaveAddr.nErrId;
+				eEcGetSlaveNameErrStep	:= 	eStateEcGetSlaveNameSeq;
+				eStateEcGetSlaveNameSeq := 	eEcGetSlaveName_ErrorStep;
+			
+			END_IF
+
+		eEcGetSlaveName_ReadSlaveName		:	(* Read the EtherCAT slave name from the EtherCAT master CoE table *)
+				
+			fbEcCoeSdoRead(
+				sNetId		:= sNetId, 
+				nSlaveAddr	:= 16#FFFF, 						(* EtherCAT master address = 16#FFFF *)
+				nSubIndex	:= 3, 
+				nIndex		:= 16#8000 + nSlaveAddrIndex, 
+				pDstBuf		:= ADR(sSlaveName), 
+				cbBufLen	:= SIZEOF(sSlaveName), 
+				bExecute	:= TRUE, 
+				tTimeout	:= DEFAULT_ADS_TIMEOUT);	
+
+
+			IF NOT fbEcCoeSdoRead.bBusy
+				AND NOT fbEcCoeSdoRead.bError
+			THEN
+					
+				fbEcCoeSdoRead(bExecute := FALSE);
+
+				eStateEcGetSlaveNameSeq := eEcGetSlaveName_Done;
+	
+			ELSIF NOT fbEcCoeSdoRead.bBusy
+				AND fbEcCoeSdoRead.bError
+			THEN
+				nErrId					:=	fbEcCoeSdoRead.nErrId;
+				eEcGetSlaveNameErrStep	:= 	eStateEcGetSlaveNameSeq;
+				eStateEcGetSlaveNameSeq := 	eEcGetSlaveName_ErrorStep;
+			
+			END_IF
+
+
+		eEcGetSlaveName_Done				:	(* EtherCAT slave name read done *)
+
+			bBusy := FALSE;
+
+			IF NOT bExecute
+			THEN
+				eStateEcGetSlaveNameSeq := eEcGetSlaveName_Start;
+			END_IF
+
+		eEcGetSlaveName_ErrorStep			:	(* Error detected *)
+
+			bBusy := FALSE;
+			bError := TRUE;
+
+			IF NOT bExecute
+			THEN
+				fbEcGetAllSlaveAddr(bExecute 	:= FALSE);
+				fbEcCoeSdoRead(		bExecute 	:= FALSE);
+				
+				bError 							:= FALSE;
+				nErrId 							:= 0;
+				
+				eStateEcGetSlaveNameSeq 		:= eEcGetSlaveName_Start;
+				eEcGetSlaveNameErrStep			:= eEcGetSlaveName_NoError;
+			END_IF
+		
+	ELSE
+
+		eStateEcGetSlaveNameSeq := eEcGetSlaveName_Start;
+		eEcGetSlaveNameErrStep	:= eEcGetSlaveName_NoError;
+	
+	END_CASE
+
+(* End *)]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

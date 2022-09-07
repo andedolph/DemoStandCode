@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_OOPCylinderRegulator" Id="{294f8caa-4cc3-4d15-b64e-18dbd9db98b7}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_OOPCylinderRegulator
+VAR
+	iCounter 				: DINT;	
+
+	(* Interface Instance of ICylinder *)
+	ipCylinder 				: ICylinder;
+
+	(* cylinder with feedback and without/with diag  *)
+	fbCylinder 				: FB_Cylinder;		//instance of cylinder without diag 
+	fbCylinderDiag			: FB_CylinderDiag;	//instance of cylinder with diag
+	bEnableDiag				: BOOL := FALSE;	//enable diagnose cylinder
+	bDiagAvailable			: BOOL;				//diag is enabled
+	lrTimerValue 			: LREAL := 0.2;		//simulation time [s]
+	tTimeOutDiag 			: TIME := T#1S100MS;//diagnose timeout
+	bDiag	 				: BOOL;				//diagnose feedback
+
+	(* cmds/state *)
+	bMoveToLeftReq AT %I*	: BOOL;		//cmd move to left side
+	bMoveToRightReq AT %I*	: BOOL;		//cmd move to right side
+	bCylinderAtLeft AT %Q* 	: BOOL;		//state at left side
+	bCylinderAtRight AT %Q*	: BOOL;		//state at left side
+
+
+	(* Interface Instance of IRegulator *)
+	ipRegulator 		: IRegulator;
+
+	(* P/PID Regulator *)
+	fbBasicP			: FB_BasicP;		// instance of P-Controller
+	fbBasicPID			: FB_BasicPID;		// instance of PID-Controller
+	bEnablePID			: BOOL;				// enable PID
+	bPIDEnabled			: BOOL;				// PID enabled
+	fSetpointValue		: LREAL;			// setpoint value
+	fActualValue		: LREAL;			// actual value
+	bReset				: BOOL;				// reset flag
+	stRegParams			: ST_RegParams;		// parameters for the regulator
+	fCtrlOutput			: LREAL;			// controller output command
+	bErrorFlag			: BOOL;				// controller error
+	
+
+	(* common *)
+	Timer 				: TON := (PT := T#5S);	 //simulation timer
+	bInit 				: BOOL := TRUE;
+	bSimulation			: BOOL := TRUE;
+	bMoveToLeftReqSim 	: BOOL := TRUE;		//cmd move to left side
+	bMoveToRightReqSim	: BOOL := FALSE;	//cmd move to right side
+	nErrorStatus		: UINT;				//controller error output (0: no error; >0:error)
+	fNoise				: LREAL;
+	bNoiseUp			: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[iCounter := iCounter + 1;
+
+(* initialization *)
+IF bInit THEN
+	A_Init();
+END_IF
+A_Simulation();
+
+
+(* --- CYLINDER --- assign FB instance to the interface instance *)
+IF NOT bEnableDiag THEN
+	ipCylinder := fbCylinder;
+	bDiagAvailable := FALSE;
+ELSE
+	ipCylinder := fbCylinderDiag;
+	bDiagAvailable := FALSE;
+END_IF
+
+(* access property via interface instance *)
+ipCylinder.P_TimerValue := lrTimerValue; //Set property
+lrTimerValue := ipCylinder.P_TimerValue; //Get property
+
+(* call FB via interface instance *)
+bDiag := ipCylinder.M_StateMachine(
+	bPosLeftReq 	:= bMoveToLeftReq,	
+	bPosRightReq 	:= bMoveToRightReq,
+	bAtLeftPos		=> bCylinderAtLeft,
+	bAtRightPos		=> bCylinderAtRight,
+);
+
+
+(* --- REGULATOR --- assign FB instance to the interface instance *)
+IF bEnablePID THEN
+	ipRegulator := fbBasicPID;
+	bPIDEnabled := TRUE;
+ELSE
+	ipRegulator := fbBasicP;
+	bPIDEnabled := FALSE;
+END_IF
+
+(* call FB via interface instance *)
+nErrorStatus := ipRegulator.M_Active(
+	fSetpointValue	:= fSetpointValue,
+	fActualValue	:= fActualValue,
+	bReset			:= bReset,
+	stRegParams		:= stRegParams,
+	fCtrlOutput		=> fCtrlOutput
+);
+
+(* access property via interface instance *)
+bErrorFlag := ipRegulator.P_Error; 	//Get
+ipRegulator.P_Error := FALSE; 		//Set
+
+]]></ST>
+    </Implementation>
+    <Action Name="A_Init" Id="{86058880-47af-4976-b3e4-30e23ead5873}">
+      <Implementation>
+        <ST><![CDATA[bInit := FALSE;
+
+fbCylinderDiag(tTimeOut := tTimeOutDiag);
+
+stRegParams.fCtrlCycleTime := 0.010; 
+stRegParams.fKp := 1.9; 
+stRegParams.fTd := 0; 
+stRegParams.fTn := 0; 
+stRegParams.fTv := 0; 
+fSetpointValue	:= 100;
+fNoise 			:= 2.2;
+bNoiseUp 		:= TRUE;
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Simulation" Id="{f2f4bd97-7de1-4050-8b06-3d4169c4ae2d}">
+      <Implementation>
+        <ST><![CDATA[Timer(IN := TRUE);
+
+IF Timer.Q THEN
+	Timer(IN := FALSE);
+	IF bMoveToLeftReqSim THEN
+		bMoveToLeftReqSim 	:= FALSE;
+		bMoveToRightReqSim 	:= TRUE;	//cmd move to right side
+ 	ELSE
+		bMoveToLeftReqSim 	:= TRUE;	//cmd move to left side
+		bMoveToRightReqSim	:= FALSE;
+	END_IF
+END_IF
+
+IF bSimulation THEN
+	MEMCPY(ADR(bMoveToLeftReq), ADR(bMoveToLeftReqSim), SIZEOF(bMoveToLeftReq));
+	MEMCPY(ADR(bMoveToRightReq), ADR(bMoveToRightReqSim), SIZEOF(bMoveToRightReq));
+
+	IF fNoise >= 10 THEN
+		bNoiseUp := FALSE;
+	ELSIF fNoise <= -10 THEN
+		bNoiseUp := TRUE;
+	END_IF
+
+	IF bNoiseUp THEN
+		fNoise := fNoise + 0.01;
+	ELSE
+		fNoise := fNoise - 0.01;
+	END_IF
+	fNoise := LIMIT(-11.0, fNoise, 11.0);
+  
+	fActualValue := fActualValue + LIMIT(-100,fCtrlOutput,100) + fNoise;
+END_IF 
+]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="FB_OOPCylinderRegulator">
+      <LineId Id="3" Count="52" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OOPCylinderRegulator.A_Init">
+      <LineId Id="2" Count="11" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OOPCylinderRegulator.A_Simulation">
+      <LineId Id="2" Count="14" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="18" Count="14" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

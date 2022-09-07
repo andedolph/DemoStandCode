@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="E_MoveCmd" Id="{b9de3213-fce6-4229-ac80-f4d5fa24c44b}">
+    <Declaration><![CDATA[TYPE E_MoveCmd :
+(
+	eCmd_Idle,
+	eCmd_MoveAbsolute,
+	eCmd_MoveModulo,
+	eCmd_MoveRelative,
+	eCmd_MoveVelocity
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

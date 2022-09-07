@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="IoT_JSON_XML" Id="{86441d78-7a43-41bd-ab52-071d97178c0e}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM IoT_JSON_XML
+VAR
+	
+	//Data Struct and data struct population
+	DataValues : IoTDataStruct;
+	ReceiveDataValues : IoTDataStruct;
+	
+	//String send/rec vars
+	fb_SendString : FB_MqttCom_String;
+	MyRecString: STRING(2000);
+	
+	//JSON Encoding of Data Struct
+	fb_EncodeJSON : FB_JSONEncoding; 
+	StringToSend: STRING(2000);
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//Populate Data Stuct with data
+prgPopulateStructure( DataStructure := DataValues);
+
+//Encode the Data Struct to JSON format
+fb_EncodeJSON(DataStruct := DataValues, sJsonDoc2 => StringToSend);
+
+//Send Data Struct as JSON
+fb_SendString(sTopicPub:= 'JSON_Data', sPayloadPub:= StringToSend, sTopicSub:= 'JSON_Data', sPayloadRcv => MyRecString);]]></ST>
+    </Implementation>
+    <LineIds Name="IoT_JSON_XML">
+      <LineId Id="116" Count="1" />
+      <LineId Id="111" Count="4" />
+      <LineId Id="103" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

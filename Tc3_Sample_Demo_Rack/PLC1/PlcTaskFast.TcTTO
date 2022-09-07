@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.3">
+  <Task Name="PlcTaskFast" Id="{9484f3cc-a874-495b-9b73-2d3b44c2f7e0}">
+    <!--CycleTime in micro seconds.-->
+    <CycleTime>100</CycleTime>
+    <Priority>4</Priority>
+    <PouCall>
+      <Name>MAINFast</Name>
+    </PouCall>
+    <TaskFBGuid>{16e214c3-b117-4b1a-8e4e-73026458d989}</TaskFBGuid>
+    <Fb_init>{49dfbe9d-da7c-4be3-8696-a7539855a781}</Fb_init>
+    <Fb_exit>{efe45776-45ef-4b19-83d5-144f3ad455c8}</Fb_exit>
+    <CycleUpdate>{9a7ba18f-cd71-4eee-9b77-d50809dc651c}</CycleUpdate>
+    <PostCycleUpdate>{a99118ef-a8da-4100-aaf7-78e7039ea029}</PostCycleUpdate>
+  </Task>
+</TcPlcObject>

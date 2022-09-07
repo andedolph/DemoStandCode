@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.3">
+  <DUT Name="ST_TsDiagObjectsBitsEK1914" Id="{123d52ea-1627-47b7-8afa-f209821b8447}">
+    <Declaration><![CDATA[TYPE ST_TsDiagObjectsBitsEK1914 :
+(*******************************************************************************************************
+Description			:	Index 16#800E Diagnostic objects
+Supported terminals : 	EK1914
+Documentation 		:	EK1914 TwinSAFE input/output terminal with 2 fail-safe inputs and 2 fail-safe outputs
+Version/Date 		:	V1.2.0/08.03.2016
+********************************************************************************************************)
+STRUCT
+
+(* Sensor test error *)
+	bErrInput1								:BOOL;	(* Error input 1 - Bit0 - Error at input 1 *)
+	bErrInput2								:BOOL;	(* Error input 2 - Bit1 - Error at input 2 *)
+
+(* Error during two channel evaluation *)
+	bErrFirstInputPair						:BOOL;	(* Error input 1..2 - Bit0 - Error in the first input pair *)
+
+(* Error in the safety mat operating mode: input pair disagree *)
+	bMatOpModeErrFirstInputPair				:BOOL;	(* Error input 1..2 - Bit1, Bit0 - Mat operating mode - Error in the first input pair *)
+
+(* Error in the safety mat operating mode: external supply *)
+	bMatOpModeExtSupplyErrInput1			:BOOL;	(* Error input 1 - Bit0 - Mat operating mode external supply - Error at input 1 *)
+	bMatOpModeExtSupplyErrInput2			:BOOL;	(* Error input 2 - Bit1 - Mat operating mode external supply - Error at input 2 *)
+
+(* Diagnosis μC1 *)
+	bCcErrOutput1							:BOOL;	(* Diagnosis μC1 - Value  5    - Cross-circuit output 1 and output 2 *)
+	bCcErrOutput2							:BOOL;	(* Diagnosis μC1 - Value  6    - Cross-circuit output 1 and output 2 *)
+	bOvervoltage							:BOOL;	(* Diagnosis μC1 - Value 10    - Overvoltage *)
+	bUndervoltage							:BOOL;	(* Diagnosis μC1 - Value 11    - Undervoltage *)
+	bErrTestFieldVolSitches					:BOOL;	(* Diagnosis μC1 - Value 21-27 - Error when testing the field voltage switches *)
+	bErrStartUpOutputCircuit				:BOOL;	(* Diagnosis μC1 - Value 30-33 - Start-up of the output circuit failed *)
+
+	bExtSupply0VOutput1MicroC1				:BOOL;	(* Diagnosis μC1 - Value 101   - External supply 0 V output 1, detected with set output *)
+	bExtSupply24VOutput1MicroC1				:BOOL;	(* Diagnosis μC1 - Value 102   - External supply 24 V output 1 *)
+	bExtSupply0VOutput2MicroC1				:BOOL;	(* Diagnosis μC1 - Value 103   - External supply 0 V output 2, detected with set output *)
+	bExtSupply24VOutput2MicroC1				:BOOL;	(* Diagnosis μC1 - Value 104   - External supply 24 V output 2 *)
+
+(* Diagnosis μC2 *)
+	bExtSupply0VOutput1MicroC2				:BOOL;	(* Diagnosis μC2 - Value 201 - External supply 0 V output 1, detected with set output *)
+	bExtSupply24VOutput1MicroC2				:BOOL;	(* Diagnosis μC2 - Value 202 - External supply 24 V output 1 *)
+	bExtSupply0VOutput2MicroC2				:BOOL;	(* Diagnosis μC2 - Value 203 - External supply 0 V output 2, detected with set output *)
+	bExtSupply24VOutput2MicroC2				:BOOL;	(* Diagnosis μC2 - Value 204 - External supply 24 V output 2 *)
+	
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

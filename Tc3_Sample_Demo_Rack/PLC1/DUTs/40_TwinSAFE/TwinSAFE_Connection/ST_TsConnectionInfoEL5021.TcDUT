@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="ST_TsConnectionInfoEL5021" Id="{08e3e396-32ac-41bf-9308-c105695e67e1}">
+    <Declaration><![CDATA[TYPE ST_TsConnectionInfoEL5021 :
+(*******************************************************************************************************
+Description			:	Connection information data of EtherCAT Slave EL5021-0090 with 1 counter (1 Vss) input 
+Supported terminals : 	EL5021-0090
+Date 				:	01.12.2016
+********************************************************************************************************)
+STRUCT
+
+	nState  								:USINT;
+	nDiag 	 								:USINT;
+	nInSafeDataCounterValue					:UDINT;
+	nInSafeDataFrequencyValue				:DINT;
+	nInSafeDataFrequencyValue16Bit			:INT;
+
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

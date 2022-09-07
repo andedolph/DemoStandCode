@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="FB_TwinSafeGroup" Id="{5331c7ad-83d7-4101-9159-639596d6827a}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_TwinSafeGroup
+(*******************************************************************************************************
+Description			:	Entries of the status and diagnostic TwinSAFE groups
+ocumentation 		:	TwinSAFE-Logik-FB TwinCAT function blocks for TwinSAFE logic terminals
+Supported hardware	: 	KL6904 / EL6900
+Version/Date 		:	V3.1.0/26.10.2016
+********************************************************************************************************)
+VAR_INPUT
+
+	bRun							AT %Q*	:BOOL;				(* TwinSAFE group run - linked with the associated TwinSAFE Group in the TwinSAFE projekt *)
+	bErrAck							AT %Q*	:BOOL;				(* TwinSAFE group error acknowledge - linked with the associated TwinSAFE Group in the TwinSAFE projekt *)
+	sName									:STRING;			(* TwinSAFE group name *)
+
+END_VAR
+VAR_OUTPUT
+
+	stInfoData						AT %I*	:ST_TsGroupInfo;	(* TwinSAFE Group Info Data *)
+	bFbErr							AT %I*	:BOOL;				(* TwinSAFE group function block error - linked with the associated TwinSAFE Group in the TwinSAFE projekt *)
+	bComErr							AT %I*	:BOOL;				(* TwinSAFE group communication error - linked with the associated TwinSAFE Group in the TwinSAFE projekt *)
+	bOutErr							AT %I*	:BOOL;				(* TwinSAFE group output error - linked with the associated TwinSAFE Group in the TwinSAFE projekt *)
+	sState									:STRING;
+	
+END_VAR
+VAR
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* TwinSAFE group status and diagnostic *)
+
+(* THIS CODE IS ONLY AN EXAMPLE - YOU HAVE TO CHECK APTITUDE FOR YOUR APPLICATION *)
+
+	CASE stInfoData.nState OF
+		1:	sState := 'RUN';
+		2:	sState := 'STOP';
+		3:	sState := 'SAFE';
+		4:	sState := 'ERROR';
+		5:	sState := 'RESET';
+	ELSE
+		sState := 'undefined';
+	END_CASE
+
+(* End *)]]></ST>
+    </Implementation>
+    <LineIds Name="FB_TwinSafeGroup">
+      <LineId Id="3" Count="8" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="13" Count="3" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

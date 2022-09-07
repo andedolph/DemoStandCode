@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="prgPopulateStructure" Id="{4a9be113-8281-4c5a-804f-86479ca756e9}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM prgPopulateStructure
+VAR_IN_OUT
+	DataStructure : IoTDataStruct;
+END_VAR
+VAR
+	fbGenerateData: FB_GenerateData;	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+fbGenerateData();
+
+IF DataStructure.bGenerateData THEN
+	DataStructure.Sinus_Slow := fbGenerateData.Sinus_Slow1;
+	DataStructure.Puls1 := fbGenerateData.Puls1;
+	DataStructure.Puls2 := fbGenerateData.Puls2;
+END_IF
+IF DataStructure.bClearValues THEN
+	DataStructure.Sinus_Slow := 0;
+	DataStructure.Puls1 := 0;
+	DataStructure.Puls2 := 0;
+	DataStructure.bClearValues := FALSE;
+END_IF
+
+
+(*
+	strText=> , 
+	t=> , 
+	Treppe=> , 
+	Rampe_Fast=> , 
+	Rampe_Slow=> , 
+	i=> , 
+	Peak=> , 
+	GrowSlow=> , 
+	iCounter=> , 
+	Cosinus_Half=> , 
+	Sinus_Fast=> , 
+	Sinus_Slow1=> , 
+	Sinus_Slow2=> , 
+	Sinus_VerySlow=> , 
+	Sinus_SqFast=> , 
+	Sinus_SqSlow=> , 
+	Sinus_Cos_Half=> , 
+	SinglePeak=> , 
+	phi=> , 
+	Ts=> , 
+	Rechteck1_1=> , 
+	Rechteck2_1=> , 
+	Rechteck3_1=> , 
+	Puls1=> , 
+	Puls2=> , 
+	dreieck=> , 
+	j=> , 
+	k=> , 
+	iValue=> , 
+	iValueBegin=> , 
+	iValueEnd=> , 
+	iValueArr=> , 
+	iValueArr2=> , 
+	bRed=> , 
+	bGreen=> , 
+	bYellow=> , 
+	bBlue=> , 
+	bGray=> , 
+	bBlue2=> , 
+	bGray2=> );
+	
+	*)]]></ST>
+    </Implementation>
+    <LineIds Name="prgPopulateStructure">
+      <LineId Id="6" Count="1" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="60" Count="1" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="67" Count="4" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="8" Count="38" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="56" Count="1" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

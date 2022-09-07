@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="AverageOut" Id="{3814f67d-c983-42a2-ad9f-840c643ff4c1}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM AverageOut
+VAR
+	
+(* Averaging - EL3702 analog input Ch1 oversampling *)
+	ni										:UINT;
+	fAverageAnalogInputCh1					:REAL;
+
+(* Averaging - EL3702 analog input Ch2 oversampling *)
+	fAverageAnalogInputCh2					:REAL;
+	aData									:ARRAY[0..99] OF INT;
+	nDataArrayCounter						:UINT;
+
+(* Read task target start time *)
+	dtActDcTime								:T_DCTIME;
+	stActDcTime								:DCTIMESTRUCT;
+
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Average out - Cycle Time 100µs - oversampling (Cycle Time 100µs / Factor 10 = 10µs) *)
+
+(* Read task target start time *)
+	dtActDcTime := F_GetCurDcTaskTime();
+	stActDcTime := DCTIME_TO_DCTIMESTRUCT(dtActDcTime);
+
+
+(* Averaging - EL3702 analog input Ch1 oversampling *)
+	fAverageAnalogInputCh1 := 0.0;
+	
+	FOR ni := 0 TO 9 BY 1 DO
+		fAverageAnalogInputCh1 := fAverageAnalogInputCh1 + INT_TO_REAL(aOsAnalogInR11[ni]);
+	END_FOR
+	
+	fAverageAnalogInputCh1 	  := fAverageAnalogInputCh1 / ni;
+	
+	nAnalogOutP11 			  := REAL_TO_INT(fAverageAnalogInputCh1);
+
+
+(* Averaging - EL3702 analog input Ch2 oversampling *)
+	fAverageAnalogInputCh2 	  := 0.0;
+	
+	FOR ni := 0 TO 9 BY 1 DO
+		fAverageAnalogInputCh2 	 := fAverageAnalogInputCh2 + INT_TO_REAL(aOsInputFromEL4732Out1[ni]);
+
+		aData[nDataArrayCounter] := aOsInputFromEL4732Out1[ni];
+		nDataArrayCounter 	     := nDataArrayCounter + 1;
+		
+		IF nDataArrayCounter > 99
+		THEN
+			nDataArrayCounter := 0;
+		END_IF
+	END_FOR
+	
+	fAverageAnalogInputCh2 	  := fAverageAnalogInputCh2 / ni;
+
+(* End *)]]></ST>
+    </Implementation>
+    <LineIds Name="AverageOut">
+      <LineId Id="3" Count="35" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

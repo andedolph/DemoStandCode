@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <Task Name="extMarkTask" Id="{3a4cee82-2d5d-4293-b627-9870f8b254ca}">
+    <!--CycleTime in micro seconds.-->
+    <CycleTime>1000</CycleTime>
+    <Priority>20</Priority>
+    <PouCall>
+      <Name>extMarksPrg</Name>
+    </PouCall>
+    <TaskFBGuid>{ad4b2ab0-27b5-4f1d-ba75-afbbe8b946de}</TaskFBGuid>
+    <Fb_init>{2342b0f3-afec-43ee-9347-fabaf536c312}</Fb_init>
+    <Fb_exit>{8547558b-3527-4801-b05e-6a70b13d493a}</Fb_exit>
+    <CycleUpdate>{7db19459-4f2a-4ad9-becf-7a2f07ee3ed4}</CycleUpdate>
+    <PostCycleUpdate>{7f148022-aac2-4769-af11-dade09c0290d}</PostCycleUpdate>
+  </Task>
+</TcPlcObject>

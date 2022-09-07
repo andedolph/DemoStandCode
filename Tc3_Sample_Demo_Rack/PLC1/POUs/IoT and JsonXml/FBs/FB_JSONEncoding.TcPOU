@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_JSONEncoding" Id="{43c09406-ce2b-48dd-a4c9-2dab5f7ad7cc}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_JSONEncoding
+VAR_INPUT
+	DataStruct : IoTDataStruct;
+END_VAR
+VAR_OUTPUT
+	sJsonDoc2 : STRING(2000);
+END_VAR
+VAR
+	fbJson : FB_JsonSaxWriter;
+	fbJsonDataType : FB_JsonReadWriteDatatype;
+	GetTime : FB_LocalSystemTime;
+	
+	sJsonDoc: STRING(2000);
+	
+	TimeAsStruct : TIMESTRUCT;
+
+	SystemTime : DATE_AND_TIME;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[GetTime(bEnable:= TRUE, dwCycle:=5, systemTime => TimeAsStruct);
+SystemTime := SystemTime_to_DT(TimeAsStruct);
+
+
+fbJson.ResetDocument(); //This method clears current JSON build buffer
+fbJson.StartObject(); //Generates new JSON object (inserts open curly bracket)
+fbJson.AddKeyDateTime('Timestamp', SystemTime); //Add key called timestamp and insert date
+fbJsonDataType.AddJsonKeyValueFromSymbol(fbJson, 'Values', 'ST_Data' , SIZEOF(DataStruct), ADR(DataStruct)); //Adds keys and data based on a structure
+fbJsonDataType.AddJsonKeyPropertiesFromSymbol(fbJson, 'MetaData', 'ST_Data', 'Unit|DisplayName');
+fbJson.EndObject(); //Ends JSON object (inserts closed curly brace)
+sJsonDoc := fbJson.GetDocument();
+fbJson.CopyDocument(sJsonDoc2, SIZEOF(sJsonDoc2));]]></ST>
+    </Implementation>
+    <LineIds Name="FB_JSONEncoding">
+      <LineId Id="28" Count="10" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

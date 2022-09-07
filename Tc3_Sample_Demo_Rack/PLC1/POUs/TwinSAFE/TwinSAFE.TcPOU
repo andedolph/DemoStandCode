@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="TwinSAFE" Id="{e17adb90-1faf-49b4-9d24-f6478f62ff4d}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM TwinSAFE
+(*******************************************************************************************************
+Description			:	Exsample handling of the TwinSAFE part
+Date 				:	04.04.2016
+********************************************************************************************************)
+VAR
+
+	bTsReadyToReset							:BOOL;
+	tBlinkerDelay							:TIME;
+	fbBlinker								:FB_Blinker;
+
+	fbSafeGroup1 							:FB_TwinSafeGroup;				(* TwinSAFE group 1 diagnosis *)
+
+	fbSafeFB_1_Group1 						:FB_TwinSafeFB;					(* TwinSAFE function block 1 diagnosis group 1 *)
+	fbSafeFB_2_Group1 						:FB_TwinSafeFB;					(* TwinSAFE function block 2 diagnosis group 1 *)
+	fbSafeFB_3_Group1 						:FB_TwinSafeFB;					(* TwinSAFE function block 3 diagnosis group 1 *)
+
+	fbSafeConnectionEL1904_1_Group1			:FB_TwinSafeConnectionEL1904;	(* TwinSAFE connection and module diagnosis EL1904-1 group 1 *)
+	fbSafeConnectionEL1904_2_Group1			:FB_TwinSafeConnectionEL1904;	(* TwinSAFE connection and module diagnosis EL1904-2 group 1 *)
+	fbSafeConnectionEL2904_1_Group1			:FB_TwinSafeConnectionEL2904;	(* TwinSAFE connection and module diagnosis EL2904-1 group 1 *)
+	fbSafeConnectionAX5805_1_Group1			:FB_TwinSafeConnectionAX5805;	(* TwinSAFE connection and module diagnosis AX5805-1 group 1 *)
+
+END_VAR
+(*******************************************************************************************************
+Version/Date:	
+V1.0.0 / 03.05.2016 / 
+********************************************************************************************************)
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* TwinSAFE sample *)
+
+(* THIS CODE IS ONLY AN EXAMPLE - YOU HAVE TO CHECK APTITUDE FOR YOUR APPLICATION *)
+
+	(* TwinSAFE group diagnosis *)
+		fbSafeGroup1(
+			bRun	:= TRUE,
+			bErrAck	:= bSwitchS31,
+			sName	:= 'Group 1');
+	
+		fbSafeGroup1.bFbErr;
+		fbSafeGroup1.bComErr;
+		fbSafeGroup1.bOutErr;
+		
+				
+	(* TwinSAFE function block diagnosis *)
+		fbSafeFB_1_Group1(
+			sName	:=	'FBEStop1',					(* Name in the TwinSAFE drawing *)
+			eFBType	:=	E_TsFbType.FB_TYPE_ESTOP, 	(* FB-Type *)
+			nFbId	:=	1);							(* Module number in the TwinSAFE drawing *)
+
+		fbSafeFB_2_Group1(
+			sName	:=	'FBMon1',					(* Name in the TwinSAFE drawing *)
+			eFBType	:=	E_TsFbType.FB_TYPE_MON,		(* FB-Type *)
+			nFbId	:=	3);							(* Module number in the TwinSAFE drawing *)
+
+		fbSafeFB_3_Group1(
+			sName	:=	'FBEStop2',					(* Name in the TwinSAFE drawing *)
+			eFBType	:=	E_TsFbType.FB_TYPE_ESTOP,	(* FB-Type *)
+			nFbId	:=	5);							(* Module number in the TwinSAFE drawing *)
+
+
+	(* TwinSAFE connection and module diagnostic *)
+		fbSafeConnectionEL1904_1_Group1(
+			tCoEReadCycle 	:= T#2S);	
+			
+		fbSafeConnectionEL1904_2_Group1(
+			tCoEReadCycle 	:= T#2S);	
+
+		fbSafeConnectionEL2904_1_Group1(
+			tCoEReadCycle 	:= T#2S); 	
+
+		fbSafeConnectionAX5805_1_Group1(
+			tCoEReadCycle	:= T#2S);
+			
+			
+	(* Ready to reset - bLedH31 *)
+		IF fbSafeConnectionEL1904_1_Group1.bChannel1			(* Switch S30 *)
+		AND fbSafeConnectionEL1904_1_Group1.bChannel2
+		AND ((fbSafeConnectionEL1904_2_Group1.bChannel1			(* Switch S32 *)
+			AND fbSafeConnectionEL1904_2_Group1.bChannel2)
+		OR (NOT fbSafeConnectionEL1904_2_Group1.bChannel3		(* Switch S33 *)
+			AND fbSafeConnectionEL1904_2_Group1.bChannel4))
+		AND fbSafeConnectionEL1904_1_Group1.nEcSlaveState.3		(* EterCAT Slave in OP *)	
+		AND fbSafeConnectionEL1904_2_Group1.nEcSlaveState.3		(* EterCAT Slave in OP *)
+		AND fbSafeConnectionEL2904_1_Group1.nEcSlaveState.3		(* EterCAT Slave in OP *)
+		THEN
+			bTsReadyToReset := TRUE;
+		ELSE
+			bTsReadyToReset := FALSE;
+		END_IF
+
+		IF  fbSafeGroup1.sState <> 'RUN'
+			OR fbSafeFB_1_Group1.sState <> 'RUN'
+		THEN
+			(* Blinker delay wait reset group or Estop *)
+			tBlinkerDelay := T#750MS;
+		ELSE
+			(* Blinker delay wait reset STO *)
+			tBlinkerDelay := T#250MS;
+		END_IF
+
+		IF fbSafeFB_3_Group1.sState = 'RUN'	
+		THEN
+			(* Estop and STO run *)
+			fbBlinker(bStart := FALSE);
+			bLedH31 := TRUE;
+		ELSE
+			(* Estop or STO not run *)
+			fbBlinker(
+				bStart			:= 	bTsReadyToReset,
+				tTurnOnDelay	:= 	tBlinkerDelay,
+				tTurnOffDelay	:= 	tBlinkerDelay,
+				bLed			=>	bLedH31);
+		END_IF
+
+		bLedH32 := (NOT fbSafeConnectionEL1904_2_Group1.bChannel1
+						OR NOT fbSafeConnectionEL1904_2_Group1.bChannel2)
+							AND fbSafeConnectionEL1904_2_Group1.nEcSlaveState.3;
+
+		bLedH33 := (NOT fbSafeConnectionEL1904_2_Group1.bChannel3
+						AND fbSafeConnectionEL1904_2_Group1.bChannel4)
+							AND fbSafeConnectionEL1904_2_Group1.nEcSlaveState.3;
+		
+(* End *)]]></ST>
+    </Implementation>
+    <LineIds Name="TwinSAFE">
+      <LineId Id="3" Count="33" />
+      <LineId Id="38" Count="2" />
+      <LineId Id="42" Count="2" />
+      <LineId Id="46" Count="2" />
+      <LineId Id="50" Count="50" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

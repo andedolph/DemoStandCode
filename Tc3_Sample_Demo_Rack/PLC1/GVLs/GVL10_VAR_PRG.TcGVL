@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.3">
+  <GVL Name="GVL10_VAR_PRG" Id="{7d4f4867-2972-470c-8a0e-9e56505b59de}">
+    <Declaration><![CDATA[(* Variables for program blocks *)
+VAR_GLOBAL PERSISTENT
+	
+	nPowerFailureCounter					:UINT;
+	
+END_VAR
+VAR_GLOBAL
+	
+	(* PLC start detected *)
+	bFirstCycleDetected						:BOOL;
+	bMachineSequenzAktiv					:BOOL;		(* PLC startup done (LED test) program in cyclic mode *)
+
+	(* Clock generator *)
+	bClock500ms								:BOOL;		(* Clock 500ms on/off *)
+	bClock1s								:BOOL;		(* Clock 1s on/off *)
+	bClock2s								:BOOL;		(* Clock 2s on/off *)
+	bRisingEdge500ms						:BOOL;		(* Rising edge all 500ms over one cycle *)
+	bRisingEdge1s							:BOOL;		(* Edge after 1s over a cycle *)
+	bRisingEdge2s							:BOOL;		(* Edge after 2s over a cycle *)
+
+END_VAR
+(* End *)]]></Declaration>
+  </GVL>
+</TcPlcObject>

@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_CSV_Access" Id="{0990a50e-0a5f-4af2-8e9a-7d3653e35317}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_CSV_Access
+VAR_INPUT
+	
+END_VAR
+VAR_OUTPUT
+	bError : BOOL := FALSE; 
+	ipTcResult : I_TcMessage;
+END_VAR
+VAR
+
+	sCmd : T_MaxString := '{ID};{Timestamp};{Name};{Velocity};{Temperature}'; 
+	
+	fbPLCDBCmd : FB_PLCDBCmdEvt(sNetID:= '', tTimeout := T#30S);
+	
+	para : ARRAY [0..4] OF ST_ExpParameter :=[
+			(eParaType:= E_ExpParameterType.Int64, nParaSize := 8, sParaName := 'ID'),
+			(eParaType:= E_ExpParameterType.DateTime, nParaSize := 4, sParaName := 'Timestamp'),
+			(eParaType:= E_ExpParameterType.STRING_, nParaSize := 81, sParaName := 'Name'),
+			(eParaType:= E_ExpParameterType.Double64, nParaSize := 8, sParaName := 'Velocity'),
+			(eParaType:= E_ExpParameterType.Double64, nParaSize := 8, sParaName := 'Temperature')];
+
+	fbPLCDBWrite: FB_PLCDBWriteEvt(sNetID:= '', tTimeout := T#30S);
+	fbPLCDBRead : FB_PLCDBReadEvt(sNetID:= '', tTimeout := T#30S);			
+	ColumnNames : ARRAY [0..4] OF STRING(50) := ['ID','Timestamp','Name','Velocity','Temperature'];  
+
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="ReadStruct" Id="{0e5cb26c-9f75-41de-9d97-8b33b623223a}">
+      <Declaration><![CDATA[METHOD ReadStruct : BOOL
+VAR_INPUT
+	hDBID : UDINT;
+	
+	pData : POINTER TO BYTE; //ARRAY[0..4] OF ST_CSVDataStruct;
+	cbData: UDINT;
+END_VAR
+VAR	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[ReadStruct := fbPLCDBRead.ReadStruct(
+	hDBID:= hDBID, 
+	sTableName:= 'CSV_Sample', 
+	pColumnNames:= ADR(ColumnNames), 
+	cbColumnNames:= SIZEOF(ColumnNames) , 
+	sOrderByColumn:= 'ID', 
+	eOrderType := E_OrderType.ASC, 
+	nStartIndex:=  0, 
+	nRecordCount:= 5, 
+	pData:= pData, 
+	cbData:= cbData);
+
+IF ReadStruct THEN
+	IF fbPLCDBRead.bError THEN
+		ipTcResult := fbPLCDBRead.ipTcResult;
+		bError:= TRUE;
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Write" Id="{a99f7a8f-5f52-4ecd-9baa-39a83f7d69a3}">
+      <Declaration><![CDATA[METHOD Write : BOOL
+VAR_INPUT
+	hDBID : UDINT;
+	InputData: ST_CSVDataStruct;	
+END_VAR
+
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[Write := fbPLCDBCmd.Execute(
+	hDBID:= hDBID, 
+	pExpression:= ADR(sCmd), 
+	cbExpression:= SIZEOF(sCmd), 
+	pData:= ADR(InputData), 
+	cbData:= SIZEOF(InputData) , 
+	pParameter:=  ADR(para), 
+	cbParameter:=SIZEOF(para));
+	
+IF Write THEN
+	IF fbPLCDBCmd.bError THEN
+		ipTcResult := fbPLCDBCmd.ipTcResult;
+		bError:= TRUE;
+	END_IF
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="WriteStruct" Id="{5fd86d9f-6cc7-47d1-b699-905194d37528}">
+      <Declaration><![CDATA[METHOD WriteStruct : BOOL
+VAR_INPUT
+	hDBID : UDINT;
+	Data : ST_CSVDataStruct; 
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[WriteStruct := fbPLCDBWrite.WriteStruct(
+	hDBID:= hDBID, 
+	sTableName:= 'CSV_Sample', 
+	pRecord:= ADR(Data), 
+	cbRecord:= SIZEOF(Data), 
+	pColumnNames:= ADR(ColumnNames), 
+	cbColumnNames:= SIZEOF(ColumnNames) );
+
+IF WriteStruct THEN
+	IF fbPLCDBWrite.bError THEN
+		ipTcResult := fbPLCDBWrite.ipTcResult;
+		bError:= TRUE;
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_CSV_Access">
+      <LineId Id="11" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CSV_Access.ReadStruct">
+      <LineId Id="21" Count="9" />
+      <LineId Id="12" Count="3" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CSV_Access.Write">
+      <LineId Id="6" Count="7" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CSV_Access.WriteStruct">
+      <LineId Id="10" Count="5" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="17" Count="2" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="20" Count="1" />
+      <LineId Id="16" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

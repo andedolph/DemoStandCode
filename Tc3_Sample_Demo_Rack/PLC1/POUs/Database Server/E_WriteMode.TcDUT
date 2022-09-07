@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="E_WriteMode" Id="{df356920-ad4d-420b-a15b-2f6d33c799fa}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_WriteMode :
+(
+	ePLCDBCmd   := 0,
+	ePLCDBWriteStruct	:= 1,
+	ePLCDBReadStruct 	:= 2
+	
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

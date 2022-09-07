@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_GenerateData" Id="{0da4cfba-0f08-480e-ac74-5f5279f22c5d}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_GenerateData
+VAR
+	bTest			: BOOL;	
+{attribute 'TcScope' := '< LineWidth:3, Color:green>'}
+{attribute 'BaseUnit' := '<Frequency, 1, 0, 0>'}
+	iTest			: INT;
+	forward			: BOOL:=TRUE;
+	bCheck			: BOOL := TRUE;
+	iRadio			: INT;
+END_VAR
+VAR_OUTPUT
+	strText			: STRING;	
+	t				: UINT;
+	Treppe			: INT;
+	Rampe_Fast		: REAL;
+	Rampe_Slow		: LREAL;
+	i				: UINT;
+	
+	Peak			: LREAL;
+	GrowSlow		: REAL;
+	iCounter 		: DINT;
+	Cosinus_Half	: LREAL;
+	Sinus_Fast		: LREAL;
+	Sinus_Slow1		: LREAL;
+	Sinus_Slow2		: LREAL;
+	Sinus_VerySlow	: LREAL;
+	Sinus_SqFast	: LREAL;
+	Sinus_SqSlow	: REAL;
+	Sinus_Cos_Half	: LREAL;
+	SinglePeak		: LREAL;
+	phi				: REAL;
+	Ts				: UINT;
+	Rechteck1_1		: BOOL;
+	Rechteck2_1		: BOOL;
+	Rechteck3_1		: BOOL;
+
+	Puls1			: REAL;
+	Puls2			: REAL;
+
+	dreieck			: REAL:=0;
+	j				: UINT:=1;
+	k				: UINT:=0;
+	iValue			: INT;
+	iValueBegin		: INT;
+	iValueEnd		: INT;
+	iValueArr		: ARRAY [0..100] OF DINT;
+	iValueArr2		: ARRAY [0..2,0..10] OF DINT;
+	
+	bRed			: BOOL;
+	bGreen			: BOOL;
+	bYellow			: BOOL;
+	bBlue			: BOOL;
+	bGray			: BOOL;
+	bBlue2			: BOOL;
+	bGray2			: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+//Toggle based on number of cycle counts
+t := t + 1;
+iTest := iTest + 1;
+IF iTest = 2500 THEN
+	bTest := TRUE;
+ELSIF iTest = 5000 THEN
+	bTest := FALSE;
+	iTest := 0;
+END_IF
+
+i:=i+1;
+Ts:=128*10;
+SinglePeak:=0;
+IF (t>=2*Ts) THEN
+	j:=j+1;
+	t:=t-2*Ts;
+END_IF
+
+phi:=t/Ts;
+Cosinus_Half:=COS(PI*t/(2*Ts));
+Sinus_VerySlow:=COS(1*PI*(t)/Ts);
+Sinus_Slow1:=COS(4*PI* (t+Ts/4+phi)/Ts);
+Sinus_Slow2:= 0.000001*COS(4*PI* (t+Ts/3+phi)/Ts);
+Sinus_Fast:=COS(12*PI*t/Ts);
+Sinus_SqFast:=Sinus_Fast* Sinus_Slow1;
+Sinus_SqSlow:=LREAL_TO_REAL(Sinus_VerySlow*Sinus_Slow1);
+
+Sinus_Cos_Half:=(Cosinus_Half+Sinus_Slow2)*Sinus_SqSlow;
+Rampe_Fast:=Rampe_Fast+0.1;
+
+IF (Rampe_Fast>10.0) THEN
+	Rampe_Fast:=-10.0;
+END_IF
+
+IF (t=0) THEN
+	Rechteck1_1:=TRUE;
+	Rechteck2_1:=TRUE;
+	Rechteck3_1:=TRUE;
+ELSIF (t=Ts/2) THEN
+	Rechteck1_1:=FALSE;
+ELSIF (t=Ts) THEN
+	Rechteck1_1:=TRUE;
+	Rechteck2_1:=FALSE;
+ELSIF (t=3*Ts/2) THEN
+	Rechteck1_1:=FALSE;
+	Rechteck3_1:=FALSE;
+END_IF
+
+IF(i>250) THEN
+	i:=0;
+	Treppe:=Treppe+1;
+END_IF
+
+IF (Treppe>25) THEN
+	Treppe:=0;
+	SinglePeak:=1;
+END_IF
+
+IF (j>=1) THEN
+	j:=0;
+	forward:= NOT forward;
+END_IF
+
+IF (forward) THEN
+	dreieck:=dreieck+0.002;
+ELSE
+	dreieck:=dreieck-0.002;
+END_IF
+
+Puls1:=LREAL_TO_REAL(Sinus_Fast*Sinus_VerySlow);
+Puls2:=LREAL_TO_REAL(Sinus_SqSlow*Sinus_Fast);
+
+Peak:=EXP(t*0.005)/10000;
+
+k:=k+1;
+
+IF (k>7) THEN
+	k:=0;
+	GrowSlow:=GrowSlow+(Sinus_SqSlow *(Puls1*Puls2*(Treppe+1)*0.01));
+END_IF
+
+iValueArr[iValue] := (iValueArr[iValue] + 1) MOD 101; 
+iValueArr2[iValue MOD 3, iValue MOD 11] := (iValueArr[iValue] + 1) MOD 101; 
+
+IF bCheck THEN
+	CASE iRadio OF
+		0: iValue := ABS(LREAL_TO_INT(100*Sinus_Slow1) MOD 101);
+			iValueBegin := ABS(LREAL_TO_INT(100*Sinus_Fast) MOD 101); 
+			iValueEnd := ABS(LREAL_TO_INT(100*Sinus_Slow1) MOD 101); 
+		1: iValue := ABS(LREAL_TO_INT(100*Sinus_VerySlow) MOD 101);
+			iValueBegin := ABS(LREAL_TO_INT(100*Sinus_Slow1) MOD 101); 
+			iValueEnd := ABS(LREAL_TO_INT(100*Sinus_Fast) MOD 101); 
+		2: iValue := ABS((Treppe * 10) MOD 101);
+			iValueBegin := ABS(LREAL_TO_INT(100*Sinus_Fast) MOD 101); 
+			iValueEnd := ABS(LREAL_TO_INT(100*Sinus_Fast + 50) MOD 101); 
+	END_CASE
+
+	bBlue			:= iValue > 20;
+	bGray			:= iValue > 30;
+	bYellow			:= iValue > 40;
+	bGreen			:= iValue > 50;
+	bBlue2			:= iValue > 60;
+	bGray2			:= iValue > 70;
+	bRed			:= iValue > 80;
+	
+END_IF
+
+strText := CONCAT('Value: ', INT_TO_STRING(iValue));
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_GenerateData">
+      <LineId Id="4" Count="108" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

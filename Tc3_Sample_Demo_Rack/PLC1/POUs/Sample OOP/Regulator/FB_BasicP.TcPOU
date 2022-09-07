@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_BasicP" Id="{848afc6f-b78b-46a5-9634-fc63cf4cd9c8}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_BasicP IMPLEMENTS IRegulator //regular FB that additionally implements an interface "IRegulator" as P-Controller
+VAR CONSTANT
+	nERR_NOERROR			: UINT := 0;	// no error
+	nERR_INVALIDPARAM		: UINT := 1;	// invalid parameter
+	nERR_INVALIDCYCLETIME	: UINT := 2;	// invalid cycle time				
+END_VAR
+VAR
+	(* STATIC VARIABLE *)
+	(* Internal Variable *)
+	fE						: LREAL := 0.0;	// error input
+	fE_1					: LREAL := 0.0;	// error input z^(-1)
+	fY						: LREAL := 0.0;	// control output
+	fY_1					: LREAL := 0.0;	// control output  z^(-1)
+	fYP						: LREAL := 0.0;	// P-part
+	nErrorStatus			: UINT;			// controller error output (0: no error; >0:error)
+	(* Internal Parameter *)
+	bInit					: BOOL	:= TRUE;// initialization flag for first cycle
+	fCtrlCycleTimeOld		: LREAL	:= 0.0;
+	fKpOld					: LREAL	:= 0.0;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[;
+]]></ST>
+    </Implementation>
+    <Method Name="M_Active" Id="{c85f0ba7-b877-42ba-903f-fb9478b95469}">
+      <Declaration><![CDATA[METHOD M_Active 	: UINT
+VAR_INPUT
+	(* controller input  *)
+	fSetpointValue	: LREAL;		// setpoint value
+	fActualValue	: LREAL;		// actual value
+	bReset			: BOOL;			// reset flag
+	(* controller values *)
+	stRegParams		: ST_RegParams;
+END_VAR
+VAR_OUTPUT
+	fCtrlOutput		: LREAL;		// controller output command
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[(* init necessary? *)
+IF (stRegParams.fCtrlCycleTime <> fCtrlCycleTimeOld) OR (stRegParams.fKp <> fKpOld) THEN
+	bInit := TRUE;
+END_IF
+
+(* controller init *)
+IF bInit OR bReset THEN
+	(* reset internal and external variables *)
+	fE	:= fE_1		:= 0.0;
+	fY	:= fY_1		:= 0.0;
+	fYP	:= 0.0;
+	fCtrlOutput		:= 0.0;
+	nErrorStatus	:= nERR_NOERROR;
+
+	(* check cycle time parameter: (CycleTime > 0 AND CycleTme <= 60) *)
+	IF ( stRegParams.fCtrlCycleTime <= 0) THEN
+		nErrorStatus := nERR_INVALIDCYCLETIME;
+		M_Active := nErrorStatus;
+		RETURN;
+	END_IF;
+
+	(* reset *)
+	IF bReset THEN
+		M_Active := nErrorStatus;
+		RETURN;
+	END_IF
+
+	(* set internal init flag *)
+	fCtrlCycleTimeOld 	:= stRegParams.fCtrlCycleTime;
+	fKpOld 				:= stRegParams.fKp;
+	bInit				:= FALSE;
+END_IF;
+
+(* 3. save old variable *)
+fE_1		:= fE;
+fY_1		:= fY;
+
+(* 4. set error/deviation input *)
+fE	:= fSetpointValue - fActualValue;
+
+(* 5. YP-part *)
+fYp		:= stRegParams.fKp * fE;
+
+(* 8. Ysum = YP *)
+fY	:= fYP;
+
+(* 10. set controller output *)
+fCtrlOutput := fY;
+
+M_Active := nErrorStatus;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Error" Id="{36757f77-b8ad-4bc6-a0f6-cf85d511a41d}">
+      <Declaration><![CDATA[PROPERTY P_Error : BOOL]]></Declaration>
+      <Get Name="Get" Id="{db35f452-5b2a-499b-9028-26c29d367590}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Error := (nErrorStatus <> 0); // get error status]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{db6d70fb-a946-4037-84e2-293f8af12457}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[nErrorStatus := 0; // clear error status]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_BasicP">
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BasicP.M_Active">
+      <LineId Id="3" Count="49" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BasicP.P_Error.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BasicP.P_Error.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

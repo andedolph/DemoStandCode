@@ -1,0 +1,194 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_Device" Id="{9444a253-70ed-42c7-8895-85a69f069c27}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Device IMPLEMENTS I_Mode
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	eCurrentState 	: E_Modes;
+	fbTrigAutoMode	: R_TRIG;
+	iSwitchAutoSeq	: INT;
+	fbTrigManualMode: R_TRIG;
+	iSwitchManualSeq: INT;
+	iDeviceID		: UDINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[P_DeviceID := iDeviceID;]]></ST>
+    </Implementation>
+    <Method Name="M_Auto" Id="{efc333d7-ffae-4715-96d0-7210a8cf9268}">
+      <Declaration><![CDATA[METHOD M_Auto : UDINT
+VAR_INPUT
+	bRequestAutoMode	: BOOL;
+END_VAR
+// Method confirms to the user it has complteted or that it is busy
+// 0: idle
+// 1: busy
+// 3: complete
+// > 3 Error condition]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbTrigAutoMode(CLK:= bRequestAutoMode);
+IF fbTrigAutoMode.Q THEN
+	iSwitchAutoSeq := 10;
+	M_Auto:=1;
+END_IF
+
+CASE iSwitchAutoSeq OF
+	0: (*Idle*)
+		;
+	10: (*wait for all sub components to declare Auto state*)
+		iSwitchAutoSeq := 20;
+		eCurrentState:= E_SwitchingToAuto;
+		M_Auto := 1;
+	
+	20: (*once all devices are in Auto confirm auto mode*)
+		eCurrentState := E_Auto;
+		iSwitchAutoSeq := 0;
+		M_Auto:=3;
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Disable" Id="{d2fbf8de-f0ca-43d3-85c1-ccd415a02e74}">
+      <Declaration><![CDATA[METHOD M_Disable : UDINT
+VAR_INPUT
+	bDisable : BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Manual" Id="{ff781034-074c-4cc1-9686-5d69e99eafd0}">
+      <Declaration><![CDATA[METHOD M_Manual : UDINT
+VAR_INPUT
+	bRequestManualMode	: BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbTrigManualMode(CLK:= bRequestManualMode);
+IF fbTrigManualMode.Q THEN
+	iSwitchManualSeq := 10;
+	M_Manual:=1;
+END_IF
+
+CASE iSwitchManualSeq OF
+	0: (*Idle*)
+		;
+	10: (*wait for all sub components to declare Manual state*)
+		iSwitchManualSeq := 20;
+		eCurrentState:= E_SwitchingToManual;
+	
+	20: (*once all devices are in Manual confirm Manual mode*)
+		eCurrentState := E_Manual;
+		iSwitchManualSeq := 0;
+		M_Manual:=3;
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Reset" Id="{8cf403ab-add4-403a-adcc-0ffe41eb3564}">
+      <Declaration><![CDATA[METHOD M_Reset : UDINT
+VAR_INPUT
+	bRequestReset	: BOOL;
+END_VAR
+
+VAR
+	fbTrigReset: R_TRIG;
+	iResetSeq: INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbTrigReset(CLK:= bRequestReset);
+IF fbTrigReset.Q THEN
+	iResetSeq := 10;
+	M_Reset:=1;
+END_IF
+
+CASE iResetSeq OF
+	0: (*Idle*)
+		;
+	10: (*wait for all sub components to declare Manual state*)
+		iResetSeq := 20;
+		eCurrentState:= E_Resetting;
+	
+	20: (*once all devices are in Manual confirm Manual mode*)
+		eCurrentState := E_Reset;
+		iResetSeq := 0;
+		M_Reset:=3;
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_CurrentState" Id="{dfb980e1-0b08-4389-835e-2358ac4fb45e}">
+      <Declaration><![CDATA[PROPERTY P_CurrentState : E_Modes
+]]></Declaration>
+      <Get Name="Get" Id="{c899d299-f152-4b02-bd22-e06e4294fed5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_CurrentState:=eCurrentState;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{b509a439-e074-4af0-8310-327bffe2d8ce}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[//It is not allowed to set the state of the module
+;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_DeviceID" Id="{731fcfdd-492b-480b-a6fb-2c63e57e5feb}">
+      <Declaration><![CDATA[PROPERTY PUBLIC P_DeviceID  : UDINT]]></Declaration>
+      <Get Name="Get" Id="{4b615690-5903-44f6-825b-0c7232f562db}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_DeviceID := iDeviceID	;
+]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{59d21567-6702-4bbe-a052-109ac4b2a473}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[iDeviceID := P_DeviceID;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_Device">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Device.M_Auto">
+      <LineId Id="3" Count="17" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Device.M_Disable">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Device.M_Manual">
+      <LineId Id="3" Count="16" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Device.M_Reset">
+      <LineId Id="3" Count="16" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Device.P_CurrentState.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Device.P_CurrentState.Set">
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Device.P_DeviceID.Get">
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Device.P_DeviceID.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

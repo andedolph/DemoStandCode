@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="E_TsFbType" Id="{ca09eb85-118f-464c-baf5-19c2fe66e9d1}">
+    <Declaration><![CDATA[TYPE E_TsFbType :
+(*******************************************************************************************************
+Description			:	Enumeration TwinSAFE function block list
+Documentation 		:	TwinSAFE-Logik-FB TwinCAT function blocks for TwinSAFE logic terminals
+Supported hardware	: 	KL6904 / EL6900 / EL6910 / EJ6910 / EK1960
+Version/Date 		:	V3.1.0/26.10.2016
+********************************************************************************************************)
+(
+	
+(* KL6904 / EL6900 / EL6910 / EJ6910 / EK1960 *)
+	FB_TYPE_AND								:=0,
+	FB_TYPE_OR								,
+	FB_TYPE_OPMODE							,
+	FB_TYPE_ESTOP							,
+	FB_TYPE_MON								,
+	FB_TYPE_DECOUPLER						,
+	FB_TYPE_TWOHAND							,
+	FB_TYPE_MUTING							,
+	FB_TYPE_EDM								,
+	FB_TYPE_RS								,
+	FB_TYPE_SR								,
+	FB_TYPE_TON								,
+	FB_TYPE_TOF								,
+	FB_TYPE_CONSHUT							,
+
+(* only EL6910 / EJ6910 / EK1960 *)
+	FB_TYPE_ADD								,
+	FB_TYPE_SUB								,
+	FB_TYPE_MUL								,
+	FB_TYPE_DIV								,
+	FB_TYPE_COMPARE							,
+	FB_TYPE_LIMIT							,
+	FB_TYPE_COUNTER							,
+	FB_TYPE_SCALE							,
+	FB_TYPE_SPEED							,
+	FB_TYPE_LOADSENSING						,
+	FB_TYPE_CAMMONITOR						,
+	FB_TYPE_SLI								,
+	FB_TYPE_ENVELOPE						,
+	FB_TYPE_VIOLATIONCOUNTER				
+
+);
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <POU Name="MC_Reset_Ax5xxx" Id="{2e5c9b27-c363-4d5e-a4fc-b63acf9c6d18}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK MC_Reset_Ax5xxx
+VAR_INPUT
+
+	Execute									:BOOL;
+
+END_VAR
+VAR_IN_OUT
+
+	Axis	 								:AXIS_REF;
+
+END_VAR
+VAR_OUTPUT
+
+	Done									:BOOL;
+	Busy									:BOOL;
+	Error									:BOOL;
+	ErrorId									:DWORD;
+
+END_VAR
+VAR
+
+	bDriveProtected							:BOOL;
+	bDriveDeviceError						:BOOL;
+	bDriveIoDataInvalid						:BOOL;
+	bDriveError								:BOOL;
+
+	fbNcReset								:MC_Reset;
+	fbSoEReset								:FB_SoEReset;
+
+	eStateResetSeq							:E_McResetStatus;
+	eResetSeqErrStep						:E_McResetStatus := eMcReset_NoError;
+
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* MC_Reset_Ax5xxx *)
+
+(* Evaluate messages *)
+	bDriveProtected 	:= TO_BOOL(Axis.NcToPlc.StateDWord.5);
+	bDriveDeviceError   := TO_BOOL(Axis.NcToPlc.StateDWord.28);
+	bDriveIoDataInvalid	:= TO_BOOL(Axis.NcToPlc.StateDWord.30);
+	bDriveError			:= TO_BOOL(Axis.NcToPlc.StateDWord.31);
+
+	
+(* Reset sequence *)
+	CASE eStateResetSeq OF
+	
+		eMcReset_Start			:	(* Wait for start *)
+		
+				Busy := FALSE;
+				Done := FALSE;
+	
+				IF Execute
+				THEN
+				
+					Busy := TRUE;
+					eStateResetSeq := eMcReset_Init;
+
+				END_IF
+
+
+		eMcReset_Init			:	(* Initialize *)
+			
+				fbSoEReset(	
+					NetId		:=	'',
+					Execute		:=	FALSE,
+					Timeout		:=	T#12S,
+					Axis		:=	Axis);
+
+				fbNcReset(	
+					Execute		:=	FALSE,
+					Axis		:=	Axis);
+
+				eStateResetSeq 		:= eMcReset_ResetHardware;
+
+	
+		eMcReset_ResetHardware	:	(* Reset hardware *)
+		
+				fbSoEReset(	
+					NetId	:=	'' ,
+					Execute	:=	Execute
+									AND (bDriveDeviceError
+										OR bDriveIoDataInvalid),
+					Timeout	:=	T#12S ,
+					Axis	:=	Axis);
+	
+				IF NOT fbSoEReset.Busy
+					AND NOT fbSoEReset.Error
+				THEN
+	
+					fbSoEReset(	
+						NetId	:=	'',
+						Execute	:=	FALSE,
+						Timeout	:=	T#12S,
+						Axis	:=	Axis);
+	
+					eStateResetSeq := eMcReset_ResetNc;
+	
+				ELSIF NOT fbSoEReset.Busy
+					AND fbSoEReset.Error
+				THEN
+
+					eResetSeqErrStep := eStateResetSeq;
+					eStateResetSeq   := eMcReset_ErrorStep;
+	
+				END_IF
+
+
+		eMcReset_ResetNc		:	(* Reset NC *)
+		
+				fbNcReset(	
+					Execute	:=	Execute
+									AND bDriveError
+										AND NOT bDriveDeviceError
+											AND NOT fbSoEReset.Busy
+												AND NOT bDriveProtected,
+					Axis	:=	Axis);
+	
+				IF NOT fbNcReset.Busy
+					AND NOT fbNcReset.Error
+				THEN
+	
+					fbNcReset(	
+						Execute	:=	FALSE,
+						Axis	:=	Axis);
+	
+					eStateResetSeq := eMcReset_Done;
+
+				ELSIF NOT fbNcReset.Busy
+					AND fbNcReset.Error
+				THEN
+
+					eResetSeqErrStep := eStateResetSeq;
+					eStateResetSeq   := eMcReset_ErrorStep;
+	
+				END_IF
+				
+	
+		eMcReset_Done			:	(* Reset done *)
+		
+				Busy := FALSE;
+				Done := TRUE;
+	
+				IF NOT Execute
+				THEN
+					eStateResetSeq := eMcReset_Start;
+				END_IF
+
+
+		eMcReset_ErrorStep			:	(* Error step *)
+
+			IF NOT Execute
+			THEN
+				eResetSeqErrStep := eMcReset_NoError;
+				eStateResetSeq   := eMcReset_Start;
+			END_IF
+
+
+	ELSE
+
+		(* If not a valid step is active, then put on start *)
+		eResetSeqErrStep := eMcReset_NoError;
+		eStateResetSeq 	 := eMcReset_Start;
+
+	END_CASE
+
+	Error	:= bDriveError
+					OR bDriveDeviceError;
+
+	ErrorId	:= Axis.NcToPlc.ErrorCode;
+
+(* End *)]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

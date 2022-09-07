@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="ST_TsConnectionInfoEL3214" Id="{2be78124-9b32-4609-bfab-fccdd1cccbfd}">
+    <Declaration><![CDATA[TYPE ST_TsConnectionInfoEL3214 :
+(*******************************************************************************************************
+Description			:	Connection information data of EtherCAT Slave EL3214-0090 with 4 analog inputs  
+Supported terminals : 	EL3214-0090
+Date 				:	01.12.2016
+********************************************************************************************************)
+STRUCT
+
+	nState  								:USINT;
+	nDiag 	 								:USINT;
+	nInSafeDataValue1						:INT;
+	nInSafeDataValue2						:INT;
+	nInSafeDataValue3						:INT;
+	nInSafeDataValue4						:INT;
+
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

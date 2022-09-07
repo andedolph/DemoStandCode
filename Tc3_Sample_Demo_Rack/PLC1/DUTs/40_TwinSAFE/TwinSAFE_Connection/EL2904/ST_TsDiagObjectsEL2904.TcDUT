@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <DUT Name="ST_TsDiagObjectsEL2904" Id="{05df4aec-c58a-4748-b9e7-b889e424cea5}">
+    <Declaration><![CDATA[TYPE ST_TsDiagObjectsEL2904 :
+(*******************************************************************************************************
+Description			:	Index 16#800E Diagnostic objects
+Supported terminals : 	EL2904
+Documentation 		:	EL2904 TwinSAFE output terminal with 4 fail-safe outputs
+Version/Date 		:	V1.6.2/02.10.2015
+********************************************************************************************************)
+STRUCT
+	
+	nDummyData1								:ARRAY[0..10] OF UINT;
+
+(* Error at the outputs *)
+	nErrorOutputs							:UINT;
+
+(* Supply error *)
+	nSupplyError							:UINT;
+
+(* Temperature error *)
+	nTemperatureError						:UINT;
+
+	nDummyData2								:ARRAY[0..1] OF UINT;
+
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,294 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="NCI" Id="{33fb6f40-3fc0-420b-bbad-adc3ab735d3d}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM NCI
+VAR
+(* NCI G code stuff *)
+
+	in_stItpToPlc		AT 	%I*:	NCTOPLC_NCICHANNEL_REF;
+	out_stPlcToItp		AT	%Q*:	PLCTONC_NCICHANNEL_REF;
+	
+	bRunNCI				: BOOL;
+	bErrorAck			: BOOL;
+
+(*
+	g_strProgram:	STRING := 'Hard Disk2\TestIt.nc';	(* USB stick with CE OS *)
+*)
+	g_strProgram		: STRING := 'C:\btest.nc';
+
+	bNCIExec			: BOOL;
+	bNCIBusy			: BOOL := FALSE;
+	bNciErr				: BOOL := FALSE;
+	nNciErrId			: UDINT := 0;
+
+	nNCI_State			: UDINT := 0;
+	nLastState			: UDINT	:= 0;	(* for debugging purposes *)
+	fbBuildGrp			: CfgBuildExt3DGroup;
+	fbLoadProg			: ItpLoadProgEx;
+	fbStart				: ItpStartStopEx;
+	
+	fbConfirm			: ItpConfirmHsk;
+	bConfirm			: BOOL := FALSE;
+	
+	fbClearGrp			: CfgReconfigGroup;
+	fbResetItp			: ItpResetEx2;
+	nItpState			: UDINT;
+
+	bPenDown : BOOL;
+
+	fbADSREAD_NciLine	: ADSREAD;
+	sGCodeLine			: STRING(254);
+	sGCodeLineLast		: STRING(254);
+	bReadGcodeLine		: BOOL;
+	bItpReset			: BOOL;
+
+	aGCodeLines			: ARRAY[0..9] OF STRING[254];
+	iLine				: UINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[ItpSetOverridePercent(100.0, out_stPlcToItp);
+
+CASE nNCI_State OF
+0:
+	if bRunNCI then
+		nNCI_State := 5;
+	END_IF
+	
+5:
+	bNCIBusy	:= TRUE;
+	bNciErr	:= FALSE;
+	nNciErrId	:= 0;
+	nLastState	:= 0;
+	nNCI_State 	:= 10;
+	FOR iLine := 0 TO 9 DO
+			aGCodeLines[iLine]:='';
+	END_FOR
+
+
+10:
+	(* build interpolation group *)
+	fbBuildGrp(
+		bExecute	:= TRUE ,
+		nGroupId	:= ItpGetGroupId(sNciToPlc:=in_stItpToPlc),
+		nXAxisId	:= stAxis3.NcToPlc.AxisId,
+		nYAxisId	:= stAxis4.NcToPlc.AxisId,
+		nZAxisId	:= 0,
+		nQ1AxisId:= 0,
+		nQ2AxisId:= 0,
+		nQ3AxisId:= 0,
+		nQ4AxisId:= 0,
+		nQ5AxisId:= 0,
+		tTimeOut:= T#200ms);
+
+	IF NOT fbBuildGrp.bBusy THEN
+		fbBuildGrp( bExecute := FALSE );
+		IF NOT fbBuildGrp.bErr THEN
+			nNCI_State	:= 20;
+		ELSE
+			(* an error occured *)
+			bNciErr		:= TRUE;
+			nNciErrId	:= fbBuildGrp.nErrId;
+			nLastState	:= nNCI_State;
+			nNCI_State	:= 9999;
+		END_IF
+	END_IF
+
+20:
+	(* load part program *)
+	fbLoadProg(
+		bExecute	:= TRUE,
+		sPrg		:= g_strProgram,
+		nLength		:= INT_TO_UDINT(LEN(g_strProgram)),
+		tTimeOut	:= t#200ms,
+		sNciToPlc:= in_stItpToPlc );
+
+	IF NOT fbLoadProg.bBusy THEN
+		fbLoadProg( bExecute:=FALSE, sNciToPlc:=in_stItpToPlc );
+		IF NOT fbLoadProg.bErr THEN
+			nNCI_State	:= 30;
+		ELSE
+			(* an error occured *)
+			bNciErr		:= TRUE;
+			nNciErrId	:= fbLoadProg.nErrId;
+			nLastState	:= nNCI_State;
+			nNCI_State	:= 9999;
+		END_IF
+	END_IF
+
+30:
+	(* wait until interpreter is in ready state *)
+	nItpState	:=	ItpGetStateInterpreter( in_stItpToPlc );
+	IF nItpState = NCI_INTERPRETER_READY THEN
+		(* load part program succeeded *)
+		nNCI_State	:= 40;
+	ELSIF nItpState = NCI_INTERPRETER_ABORTED THEN
+		(* load program failed - probably there is a load time error, e.g. syntax error *)
+		(* add error handling here *)
+		bNciErr		:= TRUE;
+		nNciErrId	:= 4711;	(* substitute with own error code *)
+		nLastState	:= nNCI_State;
+		nNCI_State	:= 9999;
+	END_IF
+
+40:
+	(* start part program *)
+	fbStart(
+		bStart	:= TRUE,
+		bStop		:= FALSE,
+		tTimeOut	:= t#200ms,
+		sNciToPlc:= in_stItpToPlc );
+
+	IF NOT fbStart.bBusy THEN
+		fbStart( bStart:=FALSE, sNciToPlc:=in_stItpToPlc );
+		IF NOT fbStart.bErr THEN
+			nNCI_State	:= 50;
+		ELSE
+			(* an error occured *)
+			bNciErr		:= TRUE;
+			nNciErrId	:= fbStart.nErrId;
+			nLastState	:= nNCI_State;
+			nNCI_State	:= 9999;
+		END_IF
+	END_IF
+
+50:
+	(* check if the part program is really started *)
+	(* as long as the part program is active we are not in the ready state *)
+	(* if the part program has finished without an error we switch back to the ready state *)
+	(* if the program has finished with an error the interpreter is in the aborted state *)
+	nItpState	:=	ItpGetStateInterpreter( in_stItpToPlc );
+	IF nItpState <> NCI_INTERPRETER_READY THEN
+		nNCI_State	:= 60;
+		// bReadGcodeLine := TRUE;
+	END_IF
+
+60:
+	(* Confirmed m-functions *)
+	(*
+	IF ( ItpIsHskMFunc(in_stItpToPlc) ) THEN
+		bConfirm	:= TRUE;
+	ELSE
+		bConfirm	:= FALSE;
+	END_IF
+
+	fbConfirm(
+		bExecute:= bConfirm,
+		sNciToPlc:= in_stItpToPlc,
+		sPlcToNci:= out_stPlcToItp );
+
+	IF NOT fbConfirm.bBusy THEN
+		IF fbConfirm.bErr THEN
+			(* an error occured *)
+			(* this usually can just occur, if a confirmation is triggered without a request *)
+			bNCIErr		:= TRUE;
+			iNCIErrId	:= fbStart.nErrId;
+			iNCILastState	:= iNCIState;
+			iNCIState	:= 9999;
+		END_IF
+	END_IF
+	*)
+
+(* code for fast M function with no handshaking - example M100/M101 to trigger 'Pen down' boolean *)
+	IF ItpIsFastMFunc(100, in_stItpToPlc ) THEN
+		bPenDown:= TRUE;
+	ELSE
+		bPenDown:= FALSE;
+	END_IF
+
+	nItpState	:=	ItpGetStateInterpreter( in_stItpToPlc );
+	IF nItpState = NCI_INTERPRETER_READY THEN
+		(* part program is finished without an error *)
+		nNCI_State	:= 70;
+	ELSIF nItpState = NCI_INTERPRETER_ABORTED THEN
+		(* a runtime error occured - e.g. a lag distance error occured *)
+		bNciErr		:= TRUE;
+		nNciErrId	:= ItpGetError(in_stItpToPlc);
+		nLastState	:= nNCI_State;
+		nNCI_State	:= 9999;
+	END_IF
+
+	(* Read executing Gcode lines *)
+	fbADSREAD_NciLine(
+		NETID:= '',
+		PORT:= 500,
+		IDXGRP:= 16#2302,
+		IDXOFFS:= 16#20000001,
+		LEN:= 248,
+		DESTADDR:= ADR(sGCodeLine),
+		READ:= bReadGcodeLine,
+		TMOUT:= t#200ms,
+		BUSY=> ,
+		ERR=> ,
+		ERRID=> );
+
+	IF fbADSREAD_NciLine.BUSY = FALSE THEN
+		IF bReadGcodeLine = TRUE THEN
+			bReadGcodeLine:=FALSE;
+			IF sGCodeLineLast<>sGCodeLine THEN
+				// shift table down and add line to top of table
+				MEMMOVE(destAddr:= ADR(aGCodeLines[1]), srcAddr:= ADR(aGCodeLines[0]), n:= 254*9);
+				aGCodeLines[0]:=sGCodeLine;
+				sGCodeLineLast:=sGCodeLine;
+			END_IF
+		ELSE
+			bReadGcodeLine:=TRUE;
+		END_IF
+	END_IF
+
+70:
+	(* clear interpolation group *)
+	fbClearGrp(
+		bExecute:= TRUE,
+		nGroupId:= ItpGetGroupId(sNciToPlc:=in_stItpToPlc),
+		tTimeOut:= T#200ms);
+
+	IF NOT fbClearGrp.bBusy THEN
+		fbClearGrp(bExecute:= FALSE);
+		IF NOT fbClearGrp.bErr THEN
+			nNCI_State	:= 100;
+		ELSE
+			(* an error occured *)
+			bNciErr		:= TRUE;
+			nNciErrId	:= fbClearGrp.nErrId;
+			nLastState	:= nNCI_State;
+			nNCI_State	:= 9999;
+		END_IF
+	END_IF
+
+100:	(* Finished NCI successfully *)
+	bNciBusy	:= FALSE;
+	fbBuildGrp( bExecute:=FALSE );
+	fbLoadProg( bExecute:=FALSE, sNciToPlc:=in_stItpToPlc );
+	fbStart( bStart:=FALSE, bStop:=FALSE, sNciToPlc:=in_stItpToPlc );
+	fbClearGrp(bExecute:= FALSE);
+
+	bPenDown:= FALSE;
+	bReadGcodeLine:=FALSE;
+
+	nNci_State	:= 0;
+
+9999:
+	bNCIBusy	:= FALSE;
+	fbBuildGrp( bExecute:=FALSE );
+	fbLoadProg( bExecute:=FALSE, sNciToPlc:=in_stItpToPlc );
+	fbStart( bStart:=FALSE, bStop:=FALSE, sNciToPlc:=in_stItpToPlc );
+	fbClearGrp(bExecute:= FALSE);
+
+	bPenDown:= FALSE;
+	bReadGcodeLine:=FALSE;
+
+	IF bErrorAck THEN
+		nNCI_State	:= 0;
+		nNciErrId	:= 0;
+	END_IF
+
+END_CASE
+]]></ST>
+    </Implementation>
+    <LineIds Name="NCI">
+      <LineId Id="4" Count="236" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,292 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_OOPConveyor" Id="{d69ddb99-b473-46c4-a9c8-3ebda1051ee9}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_OOPConveyor
+VAR_INPUT
+	eSampleModeIn		: E_SampleMode;	
+END_VAR
+VAR_IN_OUT
+	AxisRef				: ARRAY [1..iMAX_AXES_REF] OF AXIS_REF;			// axis reference (process data plc/nc)
+END_VAR
+VAR_OUTPUT
+	eSampleModeOut		: E_SampleMode;	
+END_VAR
+VAR
+	iCounter 			: DINT;	
+
+	//axes FB instances
+	fbConv1Axis			: FB_AxisNc;
+	fbConv2Axis 		: FB_VeryBasicMotor;
+	fbConv3Axis 		: FB_AX5000;
+	
+	//axes interfaces	
+	ipConv1Axis 		: I_Axis;
+	ipConv2Axis 		: I_Axis;
+	ipConv3Axis 		: I_Axis;
+	
+	//drive references
+	stConv3DriveRef 	: ST_DRIVEREF;
+	
+	//station
+	fbStation			: FB_Station;
+	fbTransfer1 		: FB_TransferStation;
+	fbTransfer2 		: FB_TransferStation;
+	
+	//conveyor
+	fbInfeedConveyor 	: FB_Conveyor;
+	fbConveyor2 		: FB_Conveyor;
+	fbConveyor3 		: FB_Conveyor;
+
+	//other variables
+	bAllowJog			: BOOL;
+	bEnableAxis1		: BOOL := TRUE;
+	bJogActive			: BOOL;
+	eMachineState		: E_Modes := E_SwitchingToAuto;
+	iInfeedManualRequest: UDINT;
+	bJogBwd AT %I*		: BOOL;
+	bJogFwd AT %I*		: BOOL;
+	I					: INT;
+	fJogSpeed			: LREAL :=200;
+	fConveyorCmdSpeed	: LREAL :=10;
+	bRunConveyor		: BOOL := TRUE;
+	iAnalogValue		: INT;
+	bPartPresent		: BOOL;
+	iAcceptPartStatus	: UDINT;
+	bPickPart			: BOOL;
+	iTransferPartStatus	: UDINT;
+	fbTrigNewPart		: R_TRIG;
+	iTransferPlacePartStatus: UDINT;
+	bPlacePart			: BOOL;
+	iTransfer2Status	: UDINT;
+	bPickPart2			: BOOL;
+	bPlacePart2			: BOOL;
+	iRemoveFromConveyor3Status: UDINT;
+	stOutfeedpart 		: ST_PartData;
+	bRemovePart			: BOOL;
+	bPartRemoved		: BOOL;
+	stEmptyPart			: ST_PartData;
+	bBusy				: BOOL;
+	Timer				: TON := (PT := T#30s);
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[iCounter := iCounter + 1;
+
+IF (eSampleModeIn = eSMode_OOPConv_Req) OR (eSampleModeOut = eSMode_OOPConv_Act) THEN
+	//call conveyor axes
+	fbConv1Axis(stAxisRef := AxisRef[1]); //FB_Axis
+	fbConv2Axis(iAnalogInput := iAnalogValue, fScalingFactor:= 1, iAnalogOutput=>iAnalogValue ); //FB_VeryBasicMotor
+	fbConv3Axis(stAxisRef := AxisRef[2], stDriveRef:= stConv3DriveRef); //FB_AX5000
+	
+	//assign axes interfaces
+	ipConv1Axis := fbConv1Axis;
+	ipConv2Axis := fbConv2Axis;
+	ipConv3Axis := fbConv3Axis;
+	
+	//call conveyor FBs
+	fbInfeedConveyor(fbAxis:= ipConv1Axis);
+	fbConveyor2(fbAxis := ipConv2Axis);
+	fbConveyor3(fbAxis := ipConv3Axis);
+	
+	//call stations 
+	fbTransfer1(fbConveyorToPickFrom:= fbInfeedConveyor , fbConveyorToPlaceTo:= fbConveyor2 , fbStation:= fbStation);
+	fbTransfer2(fbConveyorToPickFrom:= fbConveyor2 , fbConveyorToPlaceTo:= fbConveyor3 , fbStation:= fbStation);
+	
+	//call station
+	fbStation();
+	CASE eMachineState OF
+		E_Disabled: 
+			//Machine is disabled
+			fbInfeedConveyor.P_DeviceID :=1;
+			fbTransfer1.P_DeviceID := 2;
+			fbStation.P_DeviceID:= 3;
+			fbConveyor2.P_DeviceID := 4;
+			fbConveyor3.P_DeviceID := 5;
+			fbInfeedConveyor.P_MinimumSpacing := 50;
+			fbInfeedConveyor.P_StartLocation := 10;
+			fbInfeedConveyor.P_PickLocation := 300;
+			fbConveyor2.P_MinimumSpacing:= 75;
+			fbConveyor2.P_StartLocation := 10;
+			fbConveyor2.P_PickLocation := 200;
+			fbConveyor3.P_MinimumSpacing:= 20;
+			fbConveyor3.P_StartLocation := 10;
+			fbConveyor3.P_PickLocation := 600;
+			FOR I := 1 TO 100 DO   
+				arrParts[I].fLength := 10;
+			END_FOR  
+			
+		E_Error: 
+			;  //Machine is in an error state
+			
+		E_SwitchingToAuto: 
+			//Reqeuest Auto from all devices 
+			fbInfeedConveyor.M_Auto(bRequestAutoMode:= TRUE);
+			fbStation.M_Auto(bRequestAutoMode:=TRUE );
+			fbConveyor2.M_Auto(bRequestAutoMode:= TRUE);
+			fbConveyor3.M_Auto(bRequestAutoMode:= TRUE);
+			fbTransfer1.M_Auto(bRequestAutoMode:= TRUE);
+			
+			// If all devices are in auto mode then the machine is in Auto mode
+			IF fbInfeedConveyor.P_CurrentState = E_Auto  
+			  AND fbStation.P_CurrentState = E_Auto 
+			  AND fbConveyor2.P_CurrentState = E_Auto 
+			  AND fbTransfer1.P_CurrentState = E_Auto
+			  AND fbConveyor3.P_CurrentState = E_Auto THEN 
+					eMachineState:= E_Auto;
+					fbInfeedConveyor.M_Auto(bRequestAutoMode:= FALSE);
+					fbTransfer1.M_Auto(bRequestAutoMode := FALSE);
+					fbStation.M_Auto(bRequestAutoMode:=FALSE);
+					fbConveyor2.M_Auto(bRequestAutoMode:= FALSE);
+					fbConveyor3.M_Auto(bRequestAutoMode:= FALSE);
+					
+			//If any devices are in Error mode then the machine is in the error state
+			ELSIF fbInfeedConveyor.P_CurrentState = E_Error  
+			  OR fbStation.P_CurrentState = E_Error 
+			  OR fbConveyor2.P_CurrentState = E_Error     
+			  OR fbTransfer1.P_CurrentState = E_Error
+			  OR fbConveyor3.P_CurrentState = E_Error THEN  
+					eMachineState:= E_Error;
+					fbTransfer1.M_Auto(bRequestAutoMode := FALSE);
+					fbInfeedConveyor.M_Auto(bRequestAutoMode:= FALSE);
+					fbStation.M_Auto(bRequestAutoMode:=FALSE );
+					fbConveyor2.M_Auto(bRequestAutoMode:= FALSE);
+					fbConveyor3.M_Auto(bRequestAutoMode:= FALSE);
+			END_IF
+			
+		E_SwitchingToManual:
+			//Reqeuest Manual from all devices 
+			fbInfeedConveyor.M_Manual(bRequestManualMode:= TRUE);
+			fbStation.M_Manual(bRequestManualMode:= TRUE);
+			fbConveyor2.M_Manual(bRequestManualMode:=TRUE );
+			fbConveyor3.M_Manual(bRequestManualMode:=TRUE );
+			fbTransfer1.M_Manual(bRequestManualMode:=TRUE);
+			// If all devices are in Manual mode then the machine is in Manual mode
+			IF fbInfeedConveyor.P_CurrentState = E_Manual 
+			  AND fbConveyor2.P_CurrentState = E_Manual 
+			  AND fbConveyor3.P_CurrentState = E_Manual
+			  AND fbTransfer1.P_CurrentState = E_Manual
+			  AND fbStation.P_CurrentState = E_Manual  THEN
+					eMachineState:= E_Manual;
+					fbInfeedConveyor.M_Manual(bRequestManualMode:= FALSE);
+					fbStation.M_Manual(bRequestManualMode:= FALSE);
+					fbConveyor2.M_Manual(bRequestManualMode:=FALSE );
+					fbTransfer1.M_Manual(bRequestManualMode:=FALSE);
+					fbConveyor3.M_Manual(bRequestManualMode:=FALSE);
+			//If any devices are in Error mode then the machine is in the error state
+			ELSIF fbInfeedConveyor.P_CurrentState = E_Error 
+			  OR fbConveyor2.P_CurrentState = E_Error 
+			  OR fbConveyor3.P_CurrentState = E_Error
+			  OR fbTransfer1.P_CurrentState = E_Error
+			  OR  fbStation.P_CurrentState = E_Error THEN 
+					eMachineState:= E_Error;
+					fbInfeedConveyor.M_Manual(bRequestManualMode:= FALSE);
+					fbStation.M_Manual(bRequestManualMode:= FALSE);
+					fbTransfer1.M_Manual(bRequestManualMode:=FALSE);
+					fbConveyor2.M_Manual(bRequestManualMode:=FALSE );
+					fbConveyor3.M_Manual(bRequestManualMode:=FALSE);
+			END_IF
+		
+		E_Resetting: 
+			fbInfeedConveyor.M_Reset(bRequestReset:=TRUE );
+			fbConveyor2.M_Reset(bRequestReset:=TRUE);
+			fbConveyor3.M_Reset(bRequestReset:=TRUE);
+			fbStation.M_Reset(bRequestReset:= TRUE);
+			IF fbInfeedConveyor.P_CurrentState = E_Reset 
+			  AND fbConveyor2.P_CurrentState = E_Reset 
+			  AND fbConveyor3.P_CurrentState = E_Reset
+			  AND fbStation.P_CurrentState = E_Reset THEN
+				eMachineState := E_Reset;
+				fbInfeedConveyor.M_Reset(bRequestReset:=FALSE );
+				fbConveyor2.M_Reset(bRequestReset:=FALSE);
+				fbConveyor3.M_Reset(bRequestReset:=FALSE);
+				fbStation.M_Reset(bRequestReset:= FALSE);
+			ELSIF fbInfeedConveyor.P_CurrentState = E_Error   
+			  OR fbConveyor2.P_CurrentState = E_Error 
+			  OR fbConveyor3.P_CurrentState = E_Error
+			  OR  fbStation.P_CurrentState = E_Error THEN 
+					eMachineState:= E_Error;
+					fbInfeedConveyor.M_Reset(bRequestReset:=FALSE );
+					fbConveyor2.M_Reset(bRequestReset:=FALSE);
+					fbConveyor3.M_Reset(bRequestReset:=FALSE);
+					fbStation.M_Reset(bRequestReset:= FALSE);
+			END_IF
+		
+		E_Reset: 
+			// Machine has been reset and awaits a mode change to Manual or Auto
+			 ;
+	
+							
+		E_Manual :  
+			// Manual Mode allow all manual commands
+			fbInfeedConveyor.bJogConveyorFwd:=bJogFwd; 
+			fbInfeedConveyor.bJogConveyorBwd:=bJogBwd; 
+			fbInfeedConveyor.fJogSpeed:= fJogSpeed;
+			fbConveyor2.fJogSpeed:=fJogSpeed;
+			fbConveyor2.bJogConveyorFwd:=bJogFwd; 
+			fbConveyor2.bJogConveyorBwd:=bJogBwd;
+			fbConveyor3.bJogConveyorFwd:=bJogFwd;
+			fbConveyor3.bJogConveyorBwd:=bJogBwd; 
+			fbConveyor3.fJogSpeed:=fJogSpeed;
+			
+		E_Auto :		
+			fbInfeedConveyor.fCmdSpeed:= fConveyorCmdSpeed;
+			fbInfeedConveyor.bRunConveyor := bRunConveyor;
+			fbConveyor2.bRunConveyor := bRunConveyor;
+			fbConveyor2.fCmdSpeed := fConveyorCmdSpeed +5;
+			fbConveyor3.bRunConveyor := bRunConveyor;
+			fbConveyor3.fCmdSpeed := fConveyorCmdSpeed +3;
+			//button triggers a part is presetn
+			fbTrigNewPart(CLK:= bPartPresent);
+			IF fbTrigNewPart.Q THEN 
+				arrParts[1].iIDNumber:= arrParts[1].iIDNumber + 5 ;
+			END_IF
+			iAcceptPartStatus := fbInfeedConveyor.M_AcceptPart(bPartPresentAtEntrance:=bPartPresent , stPartAtEntrance:=arrParts[1] );
+			//Part has been accepted by conveyor 
+			IF iAcceptPartStatus = 3 THEN 
+				bPartPresent := FALSE;
+			END_IF
+			iTransferPartStatus := fbTransfer1.M_PickPart(bGetPart:=bPickPart, bPartAvailable := fbInfeedConveyor.bPartInPickLocation );
+			IF  bPlacePart (*fbTransfer1.bHavePart*) THEN 
+				iTransferPlacePartStatus := fbTransfer1.M_PlacePart(bPlacePart:=TRUE );
+			END_IF
+			iTransfer2Status := fbTransfer2.M_PickPart(bGetPart:=bPickPart2, bPartAvailable := fbConveyor2.bPartInPickLocation );
+			IF  bPlacePart2 (*fbTransfer1.bHavePart*) THEN 
+				iTransfer2Status := fbTransfer2.M_PlacePart(bPlacePart:=TRUE);
+			END_IF
+	
+			IF fbConveyor3.bPartInPickLocation THEN 
+				bRemovePart := TRUE;
+			END_IF
+			IF stOutfeedpart.iIDNumber <>0 THEN 
+				bPartRemoved := TRUE; 
+			END_IF 	
+			iRemoveFromConveyor3Status := fbConveyor3.M_ReleasePart(bReleasePartReq:=bRemovePart , bPartHandedOff:=bPartRemoved , stPartToRelease=>stOutfeedpart );
+			IF iRemoveFromConveyor3Status = 3 THEN 
+				stOutfeedpart := stEmptyPart;
+				bRemovePart:=FALSE;
+				bPartRemoved := FALSE;
+			END_IF	
+			
+	END_CASE
+
+	Timer(IN := TRUE);
+	IF Timer.Q THEN
+		Timer(IN := FALSE);
+		bBusy := FALSE;
+	ELSE
+		bBusy := TRUE;
+	END_IF
+	
+	IF bBusy THEN
+		eSampleModeOut := eSMode_OOPConv_Act;
+	ELSE
+		eSampleModeOut := eSMode_Idle;
+	END_IF
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_OOPConveyor">
+      <LineId Id="3" Count="211" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

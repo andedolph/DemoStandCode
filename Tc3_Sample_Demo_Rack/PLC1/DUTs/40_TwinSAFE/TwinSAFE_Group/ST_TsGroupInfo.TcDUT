@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <DUT Name="ST_TsGroupInfo" Id="{70377ce2-5274-424e-ad50-b6ada875c2fc}">
+    <Declaration><![CDATA[TYPE ST_TsGroupInfo :
+STRUCT
+
+	nState	 	 							:USINT;
+	nDiag 	 								:USINT;
+
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

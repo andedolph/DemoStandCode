@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <POU Name="SignalLengthMeasurementCamAxis2" Id="{ce2c5ff0-fdc7-4db7-ab93-764b0fad3f89}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM SignalLengthMeasurementCamAxis2
+VAR
+	
+(* EL1262 digital input oversampling*)	
+	aData									:ARRAY[0..9999] OF BOOL;	(* 0..9999 -> Maximum signal length 1000ms *)
+	nDataArrayCounter						:UINT;
+
+	ni1										:UINT;						(* Loop index 1 *)
+	ni2										:INT;						(* Loop index 2 *)
+
+	bSignalRisingEdgeDetected				:BOOL;
+	bSignalFallingEdgeDetected				:BOOL;
+	nSignalRisingEdge						:UINT;
+	nSignalFallingEdge						:UINT;
+
+	fCurrentSpeedAxis						:LREAL;
+
+	nSignalLengthMicroSec					:UDINT;
+	tSignalLength							:LTIME;
+	fSignalLengthDegree						:LREAL;
+
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* EL1262 - digital input Ch1 oversampling - signal length measurement *)	
+
+(* evaluate the rising and falling edge *) 
+	FOR ni1 := 0 TO 9 BY 1 DO
+		(* detected the rising edge *) 
+			IF aAxis2RefCamOs[ni1] = TRUE
+				AND NOT bSignalRisingEdgeDetected
+			THEN
+				bSignalRisingEdgeDetected  := TRUE;
+				bSignalFallingEdgeDetected := FALSE;
+
+				(* Save the storage agency of the rising edge *)
+				nSignalRisingEdge 		   := ni1;
+				
+				(* Save the current speed of the axis *)
+				fCurrentSpeedAxis 		   := stAxis2.NcToPlc.ActVelo;
+				
+				(* Reset the data array *)
+				FOR ni2 := 0 TO 9999 BY 1 DO
+					aData[ni2] := 0;
+				END_FOR
+	
+				nDataArrayCounter := 0;
+			END_IF
+	
+		(* detected the falling edge *) 
+			IF aAxis2RefCamOs[ni1] = FALSE
+				AND bSignalRisingEdgeDetected
+			THEN
+				bSignalRisingEdgeDetected  := FALSE;
+				bSignalFallingEdgeDetected := TRUE;
+
+				(* Save the storage agency of the falling edge *)
+				nSignalFallingEdge 		   := nDataArrayCounter + ni1;
+			END_IF
+	END_FOR
+
+(* Save and evaluate the data *)
+	IF bSignalRisingEdgeDetected
+		OR bSignalFallingEdgeDetected
+	THEN
+		(* Save the data *)
+			FOR ni1 := 0 TO 9 BY 1 DO
+				aData[nDataArrayCounter] := aAxis2RefCamOs[ni1];
+				nDataArrayCounter 	     := nDataArrayCounter + 1;
+				
+				IF nDataArrayCounter > 9999
+				THEN
+					nDataArrayCounter		   := 0;
+					bSignalRisingEdgeDetected  := FALSE;
+					bSignalFallingEdgeDetected := FALSE;
+				END_IF
+			END_FOR
+
+		(* Evaluate the data *)
+			IF bSignalFallingEdgeDetected
+			THEN
+				bSignalFallingEdgeDetected := FALSE;
+			
+				(* Calculate signal length in time *)
+				nSignalLengthMicroSec 	   := UINT_TO_UDINT((nSignalFallingEdge - nSignalRisingEdge)) * 100;
+				tSignalLength 		       := UDINT_TO_LTIME(nSignalLengthMicroSec * 1000);
+	
+				(* Calculate signal length in degree *)
+				fSignalLengthDegree        := (fCurrentSpeedAxis / 1000000) * nSignalLengthMicroSec;
+			END_IF
+	END_IF
+
+(* End *)]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

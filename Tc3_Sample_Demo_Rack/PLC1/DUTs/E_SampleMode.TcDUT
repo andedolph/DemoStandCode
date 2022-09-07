@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="E_SampleMode" Id="{2b76b653-a619-44d4-96a0-e639e77611fb}">
+    <Declaration><![CDATA[TYPE E_SampleMode :
+(
+	eSMode_Idle,
+	eSMode_MC2_Req,
+	eSMode_MC2_Act,
+	eSMode_NCI_Req,
+	eSMode_NCI_Act,
+	eSMode_OOP_Req,
+	eSMode_OOP_Act,
+	eSMode_OOPConv_Req,
+	eSMode_OOPConv_Act,
+	eSMode_Last
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="E_PartQuality" Id="{4bcaa3be-86f3-407d-b5d1-8def99ed09f7}">
+    <Declaration><![CDATA[TYPE E_PartQuality :
+(
+	eRejected 	:= 0,
+	eLow 		:= 1,
+	eMid 		:= 2, 
+	eHigh 		:= 3
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

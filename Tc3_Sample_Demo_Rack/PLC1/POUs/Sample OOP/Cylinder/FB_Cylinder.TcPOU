@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_Cylinder" Id="{26d99bd9-6523-414d-8dcd-90ff44f12574}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Cylinder IMPLEMENTS ICylinder //regular FB that additionally implements an interface "ICylinder"
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	//internal TIME variable that is being accessed via property "P_Timervalue" (Get/Set)
+	tTimerValue 	: TIME := T#500MS;
+
+	iState			: INT;
+	bAtLeftPosFbk	: BOOL;
+	bAtRightPosFbk	: BOOL;
+	TimerReach 		: TON;
+	TimerStart 		: TON;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[;
+]]></ST>
+    </Implementation>
+    <Method Name="M_StateMachine" Id="{f8681306-1db0-44c4-87f3-43eb1a9dfb2e}">
+      <Declaration><![CDATA[METHOD M_StateMachine : BOOL
+VAR_INPUT
+	bPosLeftReq	: BOOL;
+	bPosRightReq: BOOL;
+END_VAR
+VAR_OUTPUT
+	bAtLeftPos	: BOOL;
+	bAtRightPos	: BOOL;
+END_VAR
+// variables of a method are temporary and therefore cleared in teh next cycle 
+// variables of the FB can be used for keeping variable values over many PLC cycles]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[(* simple cylinder with feedback  *)
+CASE iState OF
+0: (* at left pos *)
+	bAtLeftPosFbk := TRUE;
+	bAtRightPosFbk := FALSE;
+	
+	IF bPosRightReq THEN
+		TimerStart(IN := FALSE);
+		TimerReach(IN := FALSE);
+		iState := iState + 1;
+	END_IF
+
+1: (* start motion to right side *)
+	 TimerStart(IN := TRUE, PT := tTimerValue);
+	 IF TimerStart.Q THEN
+		bAtLeftPosFbk := FALSE;
+		TimerStart(IN := FALSE);
+		TimerReach(IN := TRUE);
+		iState := iState + 1;
+	 END_IF
+
+2: (* moving *)
+	 TimerReach(IN := TRUE, PT := tTimerValue);
+	 IF TimerReach.Q THEN
+		bAtRightPosFbk := TRUE;
+		TimerReach(IN := FALSE);
+		iState := iState + 1;
+	 END_IF
+
+3: (* right pos reached *)
+	bAtLeftPosFbk := FALSE;
+	bAtRightPosFbk := TRUE;
+	
+	IF bPosLeftReq THEN
+		TimerStart(IN := FALSE);
+		TimerReach(IN := FALSE);
+		iState := iState + 1;
+	END_IF
+
+4: (* start motion to left side *)
+	 TimerStart(IN := TRUE, PT := tTimerValue);
+	 IF TimerStart.Q THEN
+		bAtRightPosFbk := FALSE;
+		TimerStart(IN := FALSE);
+		TimerReach(IN := TRUE);
+		iState := iState + 1;
+	 END_IF
+
+5: (* moving *)
+	 TimerReach(IN := TRUE, PT := tTimerValue);
+	 IF TimerReach.Q THEN
+		bAtLeftPosFbk := TRUE;
+		TimerReach(IN := FALSE);
+		iState := 0;
+	 END_IF
+END_CASE
+
+bAtLeftPos 		:= bAtLeftPosFbk;
+bAtRightPos 	:= bAtRightPosFbk;
+
+M_StateMachine 	:= FALSE;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_TimerValue" Id="{427f050c-a78e-489e-bae6-c01e83c3eb14}">
+      <Declaration><![CDATA[PROPERTY P_TimerValue : LREAL //encapsulates internal variable tTimerValue]]></Declaration>
+      <Get Name="Get" Id="{358df6a5-72fc-48a0-847c-02e94f094ccc}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[//read property (returns value of of internal variable)
+P_TimerValue := TIME_TO_LREAL(tTimerValue) * LREAL#0.001; //convert ms (TIME) to s (LREAL)]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{8d3baa8f-0b53-4dd2-885a-7937d67bfeba}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[//write property (set value of of internal variable)
+tTimerValue := LREAL_TO_TIME(P_TimerValue * LREAL#1000); //convert s (LREAL) to ms (TIME)]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_Cylinder">
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Cylinder.M_StateMachine">
+      <LineId Id="3" Count="60" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Cylinder.P_TimerValue.Get">
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Cylinder.P_TimerValue.Set">
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

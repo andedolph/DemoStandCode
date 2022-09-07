@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <DUT Name="ST_TsSlave2Temp" Id="{f7c95547-a0eb-41c7-bb22-26f2f1e5217e}">
+    <Declaration><![CDATA[TYPE ST_TsSlave2Temp :
+(*******************************************************************************************************
+Description			:	EtherCAT Slaves with 2 internal temperatures
+Supported terminals : 	EL1904, AX5805, AX5806
+Date 				:	04.04.2016
+********************************************************************************************************)
+STRUCT
+
+	nInternalTemperature1				:INT;	(* Temperature 1 [°C] *)
+	nInternalTemperature2				:INT;	(* Temperature 2 [°C] *)
+	
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

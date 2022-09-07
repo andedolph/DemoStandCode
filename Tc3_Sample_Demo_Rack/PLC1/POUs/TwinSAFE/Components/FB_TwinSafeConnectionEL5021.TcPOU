@@ -1,0 +1,261 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="FB_TwinSafeConnectionEL5021" Id="{b88e210a-81b0-44cd-87f9-1e4a829056ea}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_TwinSafeConnectionEL5021
+(*******************************************************************************************************
+Description			:	Evaluate a TwinSAFE connection status and diagnosis to an EtherCAT terminal
+Supported terminals : 	EL5021-0090
+Documentation 		:	
+Version/Date 		:	
+Required libraries 	: 	TcSystem.lib (Tc2_System), TcEtherCAT.lib (Tc2_EtherCAT)
+********************************************************************************************************)
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+
+	stInfoData						AT %I*	:ST_TsConnectionInfoEL5021;		(* EL6900 \ Connection Info Data \ Message_X Info Data*)
+	nEcSlaveState					AT %I*	:UINT ;							(* EL5021-0090 \ InfoData \ State *)
+	stEcAdsAddr						AT %I*	:ST_AdsAddr;					(* EL5021-0090 \ InfoData \ AdsAddr *)
+
+(* act_EcSlaveIdentify *)
+	sEcSlaveType							:STRING(15);
+	sEcSlaveName							:STRING(31) := '';
+	bSlaveIdentify							:BOOL;
+	bSlaveTypeError							:BOOL;
+	
+(* act_Signals *)
+	nInSafeDataCounterValue					:UDINT;
+	nInSafeDataFrequencyValue				:DINT;
+	nInSafeDataFrequencyValue16Bit			:INT;
+
+(* act_ConnectionState *)
+	sState									:STRING;
+	
+(* act_ConnectionDiag *)
+	sDiag									:STRING;
+	sFault									:STRING;						(* FailSafe Error (Hardware)*)
+	bError									:BOOL;							(* TwinSAFE-Error *)
+	
+END_VAR
+VAR
+
+(* act_ConnectionDiag *)
+	nDiag0_3								:BYTE;
+
+(* act_EcSlaveIdentify *)
+	fbEcCoeSdoRead							:FB_EcCoESdoReadEx;
+	fbEcGetSlaveName						:FB_EcGetSlaveName;
+
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Function Block TwinSAFE connection status and diagnosis for EL1904 Terminals *)
+
+(* THIS CODE IS ONLY AN EXAMPLE - YOU HAVE TO CHECK APTITUDE FOR YOUR APPLICATION *)
+
+	(* Identify the EtherCAT slave *)
+		act_EcSlaveIdentify();
+
+	(* Evaluate the connection state *)
+		act_ConnectionState();
+	
+	(* Evaluate the connection diagnosis *)
+		act_ConnectionDiag();
+	
+	(* Evaluate the EL1904 input signals *)
+		act_Signals();
+	
+(* End *)]]></ST>
+    </Implementation>
+    <Action Name="act_ConnectionDiag" Id="{29040c98-a7a1-4a3a-af7a-e02a9a202faa}">
+      <Implementation>
+        <ST><![CDATA[(* Evaluate the connection diagnosis *)
+
+	(* Evaluate Bit 0..3 *)
+	nDiag0_3 := USINT_TO_BYTE(stInfoData.nDiag) AND 16#0F;
+
+	CASE nDiag0_3 OF
+		0:		sDiag := 'No error';
+		1:		sDiag := 'Invalid command';
+		2:		sDiag := 'Unknown command';
+		3:		sDiag := 'Invalid connection ID';
+		4:		sDiag := 'Invalid CRC';
+		5:		sDiag := 'Watchdog time elapsed';
+		6:		sDiag := 'Invalid FSOE address';
+		7:		sDiag := 'Invalid data';
+		8:		sDiag := 'Invalid communication parameter length';
+		9:		sDiag := 'Invalid communication parameters';
+		10:		sDiag := 'Invalid user parameter length';
+		11:		sDiag := 'Invalid user parameter';
+		12:		sDiag := 'FSoE master reset';
+		13:		sDiag := 'Module err detected on slave, with option "Module error is ComError" activated';
+		14:		sDiag := 'Module err detected on EL290x, with option "Error acknowledge active" activated';
+		15:		sDiag := 'Slave not yet started, or unexpected error argument';
+	END_CASE
+
+	(* Evaluate Bit 4..7 *)
+	sFault:='';
+
+	IF stInfoData.nDiag.4 
+	THEN
+		sFault	:= 'FSoE slave error detected - '; 
+	END_IF
+
+	IF stInfoData.nDiag.5 
+	THEN
+		sFault	:= concat(sFault,'FSoE slave reports Failsafe Value active - ');
+	END_IF
+
+	IF stInfoData.nDiag.6 
+	THEN
+		sFault	:= concat(sFault,'StartUp - ');
+	END_IF
+
+	IF stInfoData.nDiag.7 
+	THEN
+		sFault	:= concat(sFault, 'FSoE master reports Failsafe Value active');
+	END_IF
+		
+	(* Error *)
+	bError := stInfoData.nDiag <> 0;
+
+(* End *)]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="act_ConnectionState" Id="{879272dd-39b9-44ef-ae0a-21e8bad068f5}">
+      <Implementation>
+        <ST><![CDATA[(* Evaluate the connection state *)
+
+	CASE stInfoData.nState OF
+		100:	sState := 'Reset state';
+		101:	sState := 'Session state';
+		102:	sState := 'Connection state';
+		103:	sState := 'Parameter state';
+		104:	sState := 'Data state';
+		105:	sState := 'Shutdown state';
+	ELSE
+		sState := 'unknown';
+	END_CASE
+	
+(* End *)]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="act_EcSlaveIdentify" Id="{cf3134cd-5a43-4413-9da8-96e6d3928be2}">
+      <Implementation>
+        <ST><![CDATA[(* Identify the EtherCAT slave *)
+
+	IF NOT nEcSlaveState.3
+	THEN
+		bSlaveIdentify  := FALSE;
+		bSlaveTypeError := FALSE;
+		sEcSlaveType    := '';
+	END_IF
+
+	IF nEcSlaveState.3
+		AND NOT bSlaveIdentify
+		AND NOT bSlaveTypeError
+ 		AND F_CreateAmsNetId(stEcAdsAddr.netId) <> '0.0.0.0.0.0' 
+		AND stEcAdsAddr.port <> 0
+	THEN
+
+		fbEcCoeSdoRead(
+			sNetId			:= 	F_CreateAmsNetId(stEcAdsAddr.netId),
+			nSlaveAddr		:= 	stEcAdsAddr.port,
+			nSubIndex		:= 	0,
+			nIndex			:= 	16#1008,
+			pDstBuf			:= 	ADR(sEcSlaveType),
+			cbBufLen		:= 	SIZEOF(sEcSlaveType),
+			bExecute		:= 	TRUE,
+			tTimeout		:= 	DEFAULT_ADS_TIMEOUT);
+	
+
+		fbEcGetSlaveName(
+			bExecute		:=	TRUE, 
+			sNetId			:=	F_CreateAmsNetId(stEcAdsAddr.netId), 
+			nSlaveAddr		:=	stEcAdsAddr.port, 
+			tTimeout		:=	DEFAULT_ADS_TIMEOUT, 
+			bBusy			=>	, 
+			sSlaveName		=>	sEcSlaveName, 
+			bError			=>	, 
+			nErrId			=>	);
+
+		IF NOT fbEcCoeSdoRead.bBusy
+			AND NOT fbEcCoeSdoRead.bError
+			AND NOT fbEcGetSlaveName.bBusy
+			AND NOT fbEcGetSlaveName.bError
+		THEN
+		
+			fbEcCoeSdoRead(bExecute := FALSE); 
+			fbEcGetSlaveName(bExecute := FALSE); 
+
+			IF sEcSlaveType = 'EL5021-0090' 
+				AND fbEcGetSlaveName.sSlaveName <> ''
+			THEN
+				bSlaveIdentify := TRUE;
+			ELSE
+				bSlaveTypeError := TRUE;
+			END_IF
+
+		ELSIF NOT fbEcCoeSdoRead.bBusy
+			AND fbEcCoeSdoRead.bError
+		OR (NOT fbEcGetSlaveName.bBusy
+			AND fbEcGetSlaveName.bError)
+		THEN
+		
+			fbEcCoeSdoRead(bExecute := FALSE); 
+			fbEcGetSlaveName(bExecute := FALSE); 
+
+		END_IF
+
+	END_IF
+	
+(* End *)]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="act_Signals" Id="{9ffd1e2c-99ee-44b0-a329-20f023b43a57}">
+      <Implementation>
+        <ST><![CDATA[(* Evaluate the input (EL5021-0090) signals *)
+
+	IF nEcSlaveState.3 (* Slave in operational state *)
+	THEN
+		(* OP -> transfer the signal states *)
+		nInSafeDataCounterValue			:= stInfoData.nInSafeDataCounterValue;			
+		nInSafeDataFrequencyValue		:= stInfoData.nInSafeDataFrequencyValue;
+		nInSafeDataFrequencyValue16Bit	:= stInfoData.nInSafeDataFrequencyValue16Bit;
+	ELSE
+		(* Error -> clear the signal states *)
+		nInSafeDataCounterValue 	   := 0;
+		nInSafeDataFrequencyValue 	   := 0; 
+		nInSafeDataFrequencyValue16Bit := 0;
+	END_IF
+
+(* End *)
+]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="FB_TwinSafeConnectionEL5021">
+      <LineId Id="3" Count="15" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TwinSafeConnectionEL5021.act_ConnectionDiag">
+      <LineId Id="2" Count="49" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TwinSafeConnectionEL5021.act_ConnectionState">
+      <LineId Id="2" Count="12" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TwinSafeConnectionEL5021.act_EcSlaveIdentify">
+      <LineId Id="2" Count="66" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TwinSafeConnectionEL5021.act_Signals">
+      <LineId Id="2" Count="4" />
+      <LineId Id="17" Count="1" />
+      <LineId Id="10" Count="2" />
+      <LineId Id="19" Count="1" />
+      <LineId Id="13" Count="3" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

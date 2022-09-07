@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_CylinderDiag" Id="{7d5e19f8-87d2-4aed-8636-be53d03e2d7e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_CylinderDiag EXTENDS FB_Cylinder
+VAR_INPUT
+	tTimeOut 	  : TIME;
+END_VAR
+VAR
+	WatchDogTimer : TON;
+END_VAR
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[;
+]]></ST>
+    </Implementation>
+    <Method Name="M_Diag" Id="{73c6a29e-1061-4f20-bdeb-4d07f65ee0d3}">
+      <Declaration><![CDATA[METHOD M_Diag : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (iState = 0) OR (iState = 3) THEN
+	WatchDogTimer(IN := FALSE, PT := tTimeOut);
+ELSE
+	WatchDogTimer(IN := TRUE, PT := tTimeOut);
+END_IF
+
+M_Diag := WatchDogTimer.Q;
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_StateMachine" Id="{98623343-e6a4-416f-9974-15bcd879522f}">
+      <Declaration><![CDATA[METHOD M_StateMachine : BOOL
+VAR_INPUT
+	bPosLeftReq  : BOOL;
+	bPosRightReq : BOOL;
+END_VAR
+VAR_OUTPUT
+	bAtLeftPos  : BOOL;
+	bAtRightPos : BOOL; 
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//call M_StateMachine of base class (FB_Cylinder) via 'SUPER^.' (access to things of FB_CylinderDiag via 'THIS^.')  
+SUPER^.M_StateMachine(
+	bPosLeftReq 	:= bPosLeftReq,	
+	bPosRightReq 	:= bPosRightReq,
+	bAtLeftPos		=> bAtLeftPos,
+	bAtRightPos		=> bAtRightPos,
+);
+
+//additional diagnosis
+M_StateMachine 		:= M_Diag();
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_CylinderDiag">
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CylinderDiag.M_Diag">
+      <LineId Id="3" Count="7" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CylinderDiag.M_StateMachine">
+      <LineId Id="3" Count="9" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

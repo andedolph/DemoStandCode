@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_AX5000Axis" Id="{4719b370-8f6a-449d-b69c-ff51c4d24964}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_AX5000Axis EXTENDS FB_NcAxis
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	fbSoEReadDiagNumber : FB_SoEReadDiagNumber;
+	iDiagNumber			: UDINT;
+	fbSoEReset			: FB_SoEReset;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="M_HardwareDiag" Id="{7396981f-eb9d-4340-8fe5-c5db7c22fa8d}">
+      <Declaration><![CDATA[METHOD M_HardwareDiag : BOOL
+VAR_INPUT
+	bExecute	: BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//get hardware diag
+CASE eCurState OF
+eAxisState_Idle:
+	IF bExecute AND NOT bExecHWDiag_  THEN
+		fbSoEReadDiagNumber(
+			NetId:= '', 
+			Execute:= TRUE, 
+			Axis:= sAxis, 
+		);
+		eCurState := eAxisState_Diag;
+	END_IF
+
+eAxisState_Diag:
+	fbSoEReadDiagNumber(
+		NetId:= '', 
+		Execute:= TRUE, 
+		Axis:= sAxis, 
+	);
+	IF NOT fbSoEReadDiagNumber.Busy  THEN
+		fbSoEReadDiagNumber(
+			Execute:= FALSE, 
+			Axis:= sAxis, 
+			DiagNumber=> iDiagNumber
+		);
+		eCurState := eAxisState_Idle;
+	END_IF
+	
+END_CASE
+
+M_HardwareDiag 	:= eCurState <> eAxisState_Idle;	
+bExecHWDiag_	:= bExecute;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_HardwareReset" Id="{1feceb75-440c-4e1a-8b6a-e294b2105390}">
+      <Declaration><![CDATA[METHOD M_HardwareReset : BOOL
+VAR_INPUT
+	bExecute	: BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//reset axis
+CASE eCurState OF
+eAxisState_Idle:
+	IF bExecute AND NOT bExecHWRes_ THEN
+		fbSoEReset(
+			NetId:= '', 
+			Execute:= TRUE, 
+			Axis:= sAxis, 
+		);
+		eCurState := eAxisState_Reset;
+	END_IF
+
+eAxisState_Reset:
+	fbSoEReset(
+		NetId:= '', 
+		Execute:= TRUE, 
+		Axis:= sAxis, 
+	);
+	IF NOT fbSoEReset.Busy THEN
+		fbSoEReset(
+			Execute:= FALSE, 
+			Axis:= sAxis, 
+		);
+		eCurState := eAxisState_Idle;
+	END_IF
+
+END_CASE
+
+M_HardwareReset := eCurState <> eAxisState_Idle;	
+bExecHWRes_		:= bExecute;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_AX5000Axis">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AX5000Axis.M_HardwareDiag">
+      <LineId Id="3" Count="30" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AX5000Axis.M_HardwareReset">
+      <LineId Id="3" Count="28" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

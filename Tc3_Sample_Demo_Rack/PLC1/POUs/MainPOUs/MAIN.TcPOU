@@ -1,0 +1,495 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="MAIN" Id="{e2b2a3fc-e8d0-4be4-8f0a-860656e09c92}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+(*******************************************************************************************************
+Title				:	Main program 
+Description			:	Calling the created subroutines (Task 1ms)
+Version / Date		:	1.0.0 / 23.05.2016 / created program (Version progress see below)
+
+Supported hardware	: 	Demo-Rack (LAGE version)
+
+Used Documentation	:	
+Documentation	
+Version/Date 		:	
+
+Required libraries 	: 	Please look in the "References" folder
+********************************************************************************************************)
+VAR
+	
+(* Cycle counter *)
+	nCycleCounter							:UDINT;
+
+(* act_SUps - 1s UPS - Uninterruptible power supply *)
+	fbSUps									:FB_S_UPS_CX51x0 := (eUpsMode:=eSUPS_WrPersistData_Shutdown);
+	bPowerFailDetect						:BOOL;
+
+(* act_SystemStart *)
+	eStateSystemStartSeq					:E_SystemStartupSequence;
+	eSystemStartSeqErrStep					:E_SystemStartupSequence := eSystemStart_NoError;
+	bSystemStartErr							:BOOL;
+	bSystemStartEnd							:BOOL;
+	fbTimerSystemStart						:TON;
+
+
+(*******************************************************************************************************
+Version / Date / Description:
+1.0.0   / 23.05.2016 / created program
+********************************************************************************************************)
+(* End *)
+
+	{attribute 'TcContextName':='PlcTask'}
+	iCounter AT %Q*		: DINT;
+	
+	//fbMC2				: FB_MC2;
+	//fbNCI				: FB_NCI;
+	fbOOPAxisTable		: FB_OOPAxisTable;
+	fbOOPCylReg			: FB_OOPCylinderRegulator;
+	fbOOPConveyor		: FB_OOPConveyor;
+	
+	{attribute 'TcAnalytics'}
+	fbScope				: FB_GenerateData;
+	fbUmlSc				: FB_UML_SC_Composite;
+	fbUmlSc_Lamp		: FB_UML_SC_Lamp;
+
+	fbModeChangeTimer	: TON := (PT := T#60S);
+	nRemainingModeTime	: UDINT;
+	
+	eSampleMode			: E_SampleMode;	
+	eSampleModeMC2		: E_SampleMode;	
+	eSampleModeNCI		: E_SampleMode;	
+	eSampleModeOOP		: E_SampleMode;	
+	eSampleModeOOPConv	: E_SampleMode;	
+
+	nRadioButton		: INT;
+	AxisRef				: ARRAY [1..iMAX_AXES_REF] OF AXIS_REF;			// axis reference (process data plc/nc)
+	
+	{attribute 'TcContextName':='PlcTask'}
+	wFrmXWcState_MAIN AT %I*	: WORD; 			// link to NC-task related ethercat frame state (Frm0WcState)
+	x1: WORD;
+	
+	fblog : FB_RTMon_LogMark;
+
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* MAIN - 1ms *)
+
+(* THIS CODE IS ONLY AN EXAMPLE - YOU HAVE TO CHECK APTITUDE FOR YOUR APPLICATION *)
+
+(* Cycle counter *)
+	nCycleCounter := nCycleCounter + 1;
+
+
+(* 1s USV *)
+	act_SUps();
+
+
+(* Startup detect *)
+	IF TwinCAT_SystemInfoVarList._TaskInfo[GETCURTASKINDEXEX()].FirstCycle
+	THEN
+		bFirstCycleDetected	:= TRUE;
+	END_IF
+
+
+(* Startup- or machine sequence *)
+	IF bFirstCycleDetected
+	THEN
+	(* Startup sequenz *)
+		act_SystemStart();
+
+		IF bSystemStartEnd
+		THEN
+			bFirstCycleDetected := FALSE;
+			bMachineSequenzAktiv := TRUE;
+		END_IF
+
+	ELSIF bMachineSequenzAktiv
+	THEN
+	(* Machine sequenz *)
+		(* Test general *)
+			GeneralPlc();
+		
+		(* Test blinker *)
+			Blinker();
+
+		(* Test clock generator *)
+			ClockGenerator();
+		
+		(* Test axis *)
+			AxisGeneral();
+			Axis1();
+			Axis2();
+			Axis3();
+			Axis4();
+			stAxis5.ReadStatus();
+
+		(* Test EtherCAT diacnostic *)
+			DiagnosticEtherCAT();
+			
+		(* Test - XFC - extrem fast control *)	
+			DcTimes();
+			AnalogOutputOversampling();
+			PositionCamTimeStampAxis2();
+			SignalLengthMeasurementCamAxis2();
+			TouchProbeTimeStampCamAxis2();
+
+		(* Test TwinSAFE *)	
+			TwinSAFE();
+		
+	END_IF
+
+(* End *)
+
+iCounter := iCounter + 1;
+
+//switch mode (MC2, NCI, OOP)
+A_ModeSwitch();
+
+(*//call MC2 sample
+fblog.LogStart(1,0); //added this
+fbMC2(AxisRef := AxisRef, eSampleModeIn := eSampleMode, eSampleModeOut => eSampleModeMC2);
+fblog.LogStop(1,0); // added this*)
+
+
+//call NCI sample
+fblog.LogStart(2,0); //added this
+NCI();
+//fbNCI(AxisRef := AxisRef, eSampleModeIn := eSampleMode, eSampleModeOut => eSampleModeNCI);
+fblog.LogStop(2,0);
+
+//Call Cam Table Sample
+CamTable();
+
+//Call External Setpoint Generator Sample
+Ext_SP_Gen();
+
+//call OOP sample
+fblog.LogStart(3,0);
+fbOOPAxisTable(AxisRef := AxisRef, eSampleModeIn := eSampleMode, eSampleModeOut => eSampleModeOOP);
+fbOOPCylReg();
+fblog.LogStop(3,0);
+
+//call OOP conveyor sample
+fblog.logstart(4,0);
+fbOOPConveyor(AxisRef := AxisRef, eSampleModeIn := eSampleMode, eSampleModeOut => eSampleModeOOPConv);
+fblog.logstop(4,0);
+
+//call language samples
+fblog.LogMark(5,0);
+MAIN_CFC();					//continuous flow chart
+fblog.LogMark(5,1);
+MAIN_CFC_PageOriented();	//continuous flow chart, page oriented
+fblog.LogMark(5,2);
+MAIN_FBD_IL_LD();			//use language switching via menu "FBD/IL/LD, function block diagram, instruction list, ladder logic 
+fblog.LogMark(5,3);
+MAIN_SFC();					//sequential flow chart 
+fblog.LogMark(5,4);
+MAIN_ST();					//structured text
+fblog.LogStop(5,0);
+
+
+//call UML SC composite sample
+fblog.LogStart(6,0);
+fbUmlSc();
+fbUmlSc_Lamp();
+fblog.LogStop(6,0);
+
+x1 := wFrmXWcState_MAIN;
+
+//Call TwinSAFE Program
+TwinSAFE();
+
+//Call IoT Program
+IoT_JSON_XML();
+
+//Call Database Server Sample
+CSVSample();
+]]></ST>
+    </Implementation>
+    <Action Name="A_ModeSwitch" Id="{85728a4b-8855-471d-9297-38b6d0686c25}">
+      <Implementation>
+        <ST><![CDATA[//decide for an active motion sample
+fbModeChangeTimer(IN := TRUE);
+nRemainingModeTime := TIME_TO_UDINT(fbModeChangeTimer.PT-fbModeChangeTimer.ET)/1000;
+
+IF fbModeChangeTimer.Q OR (eSampleMode = eSMode_Idle) OR (nRadioButton > 0) THEN
+	//switch if ready 
+	
+	IF (eSampleModeMC2 = eSMode_Idle) AND (eSampleModeNCI = eSMode_Idle) AND (eSampleModeOOP = eSMode_Idle) AND (eSampleModeOOPConv = eSMode_Idle) THEN
+		//ready to switch
+		fbModeChangeTimer(IN := FALSE);
+		
+		CASE eSampleMode OF
+		eSMode_Idle:
+			CASE nRadioButton OF
+			1:
+				eSampleMode := eSMode_MC2_Req;
+			2:			
+				eSampleMode := eSMode_NCI_Req;
+			3:			
+				eSampleMode := eSMode_OOP_Req;
+			4:			
+				eSampleMode := eSMode_OOPConv_Req;
+			ELSE //idle
+				eSampleMode := eSMode_MC2_Req;
+			END_CASE
+			
+		eSMode_MC2_Req:
+			CASE nRadioButton OF
+			1:
+				eSampleMode := eSMode_MC2_Req;
+			2:			
+				eSampleMode := eSMode_NCI_Req;
+			3:			
+				eSampleMode := eSMode_OOP_Req;
+			4:			
+				eSampleMode := eSMode_OOPConv_Req;
+			ELSE //idle
+				eSampleMode := eSMode_NCI_Req;
+			END_CASE
+			
+		eSMode_NCI_Req:
+			CASE nRadioButton OF
+			1:
+				eSampleMode := eSMode_MC2_Req;
+			2:			
+				eSampleMode := eSMode_NCI_Req;
+			3:			
+				eSampleMode := eSMode_OOP_Req;
+			4:			
+				eSampleMode := eSMode_OOPConv_Req;
+			ELSE //idle
+				eSampleMode := eSMode_OOP_Req;
+			END_CASE
+			
+		eSMode_OOP_Req:
+			CASE nRadioButton OF
+			1:
+				eSampleMode := eSMode_MC2_Req;
+			2:			
+				eSampleMode := eSMode_NCI_Req;
+			3:			
+				eSampleMode := eSMode_OOP_Req;
+			4:			
+				eSampleMode := eSMode_OOPConv_Req;
+			ELSE //idle
+				eSampleMode := eSMode_MC2_Req;
+			END_CASE
+			
+		eSMode_OOPConv_Req:
+			CASE nRadioButton OF
+			1:
+				eSampleMode := eSMode_MC2_Req;
+			2:			
+				eSampleMode := eSMode_NCI_Req;
+			3:			
+				eSampleMode := eSMode_OOP_Req;
+			4:			
+				eSampleMode := eSMode_OOPConv_Req;
+			ELSE //idle
+				eSampleMode := eSMode_MC2_Req;
+			END_CASE
+			
+		ELSE
+			eSampleMode := eSMode_MC2_Req;
+		END_CASE
+		
+		nRadioButton := 0;
+	END_IF 
+END_IF
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="act_SUps" Id="{0f6955e2-16a7-45ee-8def-c0f5faea3a24}">
+      <Implementation>
+        <ST><![CDATA[(* Aktion - 1s UPS - Uninterruptible power supply *)
+
+	fbSUps(); (* see instance declaration for initalisation of eUpsMode parameter *) 
+
+	(*
+	Default Values of FB_S_UPS_CX51x0-Inputs:
+						sNetID 			:=	'' -> local netid
+						iPLCPort 		:=	AMSPORT_R0_PLC_RTS1 -> 801 = 1st PLC Runtime 
+						iUPSPort		:=	16#588 -> Port for reading Power State of UPS
+						tTimeout 		:=	DEFAULT_ADS_TIMEOUT -> 5S
+						eUpsMode 		:=	eSUPS_WrPersistData_Shutdown -> writing persistent data + shutdown
+						ePersistentMode :=	SPDM_2PASS -> All data is from same plc cycle, cycletime exceeds possible. Plc stops with the shutdown, a few cycles after writing persistent data. 
+						tRecoverTime 	:=	T#10s -> 10s power to recover from short power failure before eSUPS_PowerOK is reported (in mode eSUPS_WrPersistData_NoShutdown/eSUPS_CheckPowerStatus)
+
+	eUpsMode =							in case of powerfailure:
+	 	eSUPS_WrPersistData_Shutdown 	->	writing of persistent data + shutdown
+	 	eSUPS_WrPersistData_NoShutdown 	->	writing of PERSISTENT data, no shutdown
+	 	eSUPS_CheckPowerStatus 			->	reports powerfailure without ACTION (no writing, no shutdown) 
+	 	eSUPS_ImmediateShutdown 		->	skips writing of data, immediate shutdown
+	*)	
+
+(* Power fail detected *)
+	IF fbSUps.bPowerFailDetect
+		AND NOT bPowerFailDetect
+	THEN
+	
+		(* Count the power failures *)
+		nPowerFailureCounter := nPowerFailureCounter + 1;
+		bPowerFailDetect	 := TRUE;
+	
+	ELSE
+
+		IF NOT fbSUps.bPowerFailDetect
+		THEN
+			bPowerFailDetect:=FALSE;
+		END_IF
+
+	END_IF
+
+(* End *)]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="act_SystemStart" Id="{dce55c13-ec4c-4525-a179-48ce359b3b18}">
+      <Implementation>
+        <ST><![CDATA[(* Aktion system start *)
+
+	CASE eStateSystemStartSeq OF
+
+	
+		eSystemStart_Start			: 	(* Waiting for start *)
+		
+				eStateSystemStartSeq := eSystemStart_Init;
+
+				
+		eSystemStart_Init			:	(* Initialize *)
+
+				fbTimerSystemStart(IN := FALSE);
+				eStateSystemStartSeq := eSystemStart_LedOn;
+
+				
+		eSystemStart_LedOn			:	(* Sequence Leds on *)
+
+				fbTimerSystemStart(	
+					IN := TRUE,
+					PT := T#2250MS);
+
+				bLedH10	:=	fbTimerSystemStart.ET > T#250MS;
+				bLedH20 :=  bLedH10;
+				bLedH31 :=  bLedH10;
+				bLedH11	:=	fbTimerSystemStart.ET > T#500MS;
+				bLedH21 :=  bLedH11;
+				bLedH32 :=  bLedH11;
+				bLedH12	:=	fbTimerSystemStart.ET > T#750MS;
+				bLedH22 :=  bLedH12;
+				bLedH33 :=  bLedH12;
+				bLedH13	:=	fbTimerSystemStart.ET > T#1000MS;
+				bLedH23 :=  bLedH13;
+				bLedH14	:=	fbTimerSystemStart.ET > T#1250MS;
+				bLedH24 :=  bLedH14;
+				bLedH15	:=	fbTimerSystemStart.ET > T#1500MS;
+				bLedH25 :=  bLedH15;
+				bLedH16	:=	fbTimerSystemStart.ET > T#1750MS;
+				bLedH26 :=  bLedH16;
+				bLedH17	:=	fbTimerSystemStart.ET > T#2000MS;
+				nAX5203DigitalOutputs.7 :=  bLedH17;
+
+				IF fbTimerSystemStart.Q
+				THEN
+					fbTimerSystemStart(IN := FALSE);
+					eStateSystemStartSeq := eSystemStart_LedOff;
+				ELSIF FALSE
+				THEN
+					(* If error then notice the step *)
+					eSystemStartSeqErrStep := eStateSystemStartSeq;
+					eStateSystemStartSeq   := eSystemStart_ErrorStep;
+				END_IF
+
+				
+		eSystemStart_LedOff			:	(* Sequence Leds off *)
+
+				fbTimerSystemStart(	
+					IN := TRUE,
+					PT := T#2250MS);
+
+				bLedH10	:=	fbTimerSystemStart.ET < T#250MS;
+				bLedH20 :=  bLedH10;
+				bLedH31 :=  bLedH10;
+				bLedH11	:=	fbTimerSystemStart.ET < T#500MS;
+				bLedH21 :=  bLedH11;
+				bLedH32 :=  bLedH11;
+				bLedH12	:=	fbTimerSystemStart.ET < T#750MS;
+				bLedH22 :=  bLedH12;
+				bLedH33 :=  bLedH12;
+				bLedH13	:=	fbTimerSystemStart.ET < T#1000MS;
+				bLedH23 :=  bLedH13;
+				bLedH14	:=	fbTimerSystemStart.ET < T#1250MS;
+				bLedH24 :=  bLedH14;
+				bLedH15	:=	fbTimerSystemStart.ET < T#1500MS;
+				bLedH25 :=  bLedH15;
+				bLedH16	:=	fbTimerSystemStart.ET < T#1750MS;
+				bLedH26 :=  bLedH16;
+				bLedH17	:=	fbTimerSystemStart.ET < T#2000MS;
+				nAX5203DigitalOutputs.7 :=  bLedH17;
+									
+				IF fbTimerSystemStart.Q
+				THEN
+					eStateSystemStartSeq := eSystemStart_Done;
+				ELSIF FALSE
+				THEN
+					(* If error then notice the step *)
+					eSystemStartSeqErrStep := eStateSystemStartSeq;
+					eStateSystemStartSeq   := eSystemStart_ErrorStep;
+				END_IF
+
+				
+		eSystemStart_Done			:	(* System start done *)
+
+				bSystemStartEnd := TRUE;
+
+				
+		eSystemStart_ErrorStep		:	(* Error on system start *)
+
+				bSystemStartErr := TRUE;
+
+				IF FALSE
+				THEN
+					bSystemStartErr        := FALSE;
+					eSystemStartSeqErrStep := eSystemStart_NoError;
+					eStateSystemStartSeq   := eSystemStart_Start;
+				END_IF 
+
+	ELSE
+		
+		(* If not a valid step is active, then put on start *)
+		eSystemStartSeqErrStep := eSystemStart_NoError;
+		eStateSystemStartSeq   := eSystemStart_Start;
+	
+	END_CASE
+
+(* End *)]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="MAIN">
+      <LineId Id="3" Count="65" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="141" Count="13" />
+      <LineId Id="269" Count="0" />
+      <LineId Id="155" Count="1" />
+      <LineId Id="271" Count="0" />
+      <LineId Id="270" Count="0" />
+      <LineId Id="272" Count="0" />
+      <LineId Id="344" Count="0" />
+      <LineId Id="343" Count="0" />
+      <LineId Id="345" Count="0" />
+      <LineId Id="157" Count="41" />
+      <LineId Id="140" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.A_ModeSwitch">
+      <LineId Id="2" Count="88" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.act_SUps">
+      <LineId Id="2" Count="38" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.act_SystemStart">
+      <LineId Id="2" Count="114" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

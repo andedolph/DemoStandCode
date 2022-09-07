@@ -1,0 +1,788 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="FB_TwinSafeFB" Id="{11468feb-eff3-45a6-a3e5-e253ddcba86b}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_TwinSafeFB
+(*******************************************************************************************************
+Description			:	Entries of the status and diagnostic TwinSAFE function blocks
+Documentation 		:	TwinSAFE-Logik-FB TwinCAT function blocks for TwinSAFE logic terminals
+Supported hardware	: 	KL6904 / EL6900 / EL6910 / EJ6910 / EK1960
+Version/Date 		:	V3.1.0/26.10.2016
+********************************************************************************************************)
+VAR_INPUT
+
+	sName									:STRING;		(* TwinSAFE function block Name in the TwinSAFE project *)
+	eFBType									:E_TsFbType;	(* TwinSAFE function block type in the TwinSAFE project *)
+	nFbId									:UINT;			(* TwinSAFE function block ID in the TwinSAFE project *)
+
+END_VAR
+VAR_OUTPUT
+	
+	stInfoData						AT%I* 	:ST_TsFbInfo;	(* Function Block Info Data *)
+	sType									:STRING;
+	sState									:STRING;
+	sDiag									:STRING;
+
+END_VAR
+VAR
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* TwinSAFE function block status and diagnosis *)	
+
+(* THIS CODE IS ONLY AN EXAMPLE - YOU HAVE TO CHECK APTITUDE FOR YOUR APPLICATION *)
+
+	CASE eFBType OF
+		
+		FB_TYPE_AND					:	(* TwinSAFE function block - AND *)
+
+			sType := 'AND';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+			
+			sDiag := 'NOT IN USE';
+
+
+		FB_TYPE_OR					:	(* TwinSAFE function block - OR *)
+
+			sType := 'OR';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+			ELSE 	
+				sState := 'undefined';
+			END_CASE
+
+			sDiag := 'NOT IN USE';
+
+			
+		FB_TYPE_OPMODE				:	(* TwinSAFE function block - OPMODE *)
+
+			sType := 'OPMODE';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+				6:		sState := 'START';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+			
+			CASE stInfoData.nDiag OF
+				0:	sDiag := 'No error';		
+				1:	sDiag := 'Discrepancy monitoring error';		
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+
+
+		FB_TYPE_ESTOP				:	(* TwinSAFE function block - ESTOP *)
+
+			sType := 'ESTOP';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+				6:		sState := 'START';	
+				8:		sState := 'DELAYOUT';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			
+			sDiag := '';
+			
+			CASE TO_WORD(stInfoData.nDiag) AND 16#00FF OF
+				1:		sDiag := 'Discrepancy error input group 1';
+				2:		sDiag := 'Discrepancy error input group 2';
+				4:		sDiag := 'Discrepancy error input group 3';
+				8:		sDiag := 'Discrepancy error input group 4';
+				16:		sDiag := 'EDM monitoring error EDM1';
+				32:		sDiag := 'EDM monitoring error EDM2';
+			END_CASE
+
+			CASE TO_WORD(stInfoData.nDiag) AND 16#FF00 OF
+				256:	sDiag := CONCAT(sDiag, ' - option "SAFE Inputs after Disc Error" aktiv');
+				512:	sDiag := CONCAT(sDiag, ' - option "SAFE Inputs after Disc Error" aktiv');
+				1024:	sDiag := CONCAT(sDiag, ' - option "SAFE Inputs after Disc Error" aktiv');
+				2048:	sDiag := CONCAT(sDiag, ' - option "SAFE Inputs after Disc Error" aktiv');
+			END_CASE
+				
+			IF stInfoData.nDiag = 0
+			THEN
+				sDiag := 'No error';
+			ELSIF sDiag = ''
+			THEN
+				sDiag := 'undefined';		
+			END_IF
+
+			
+		FB_TYPE_MON					:	(* TwinSAFE function block - MON *)
+
+			sType := 'MON';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+				6:		sState := 'START';	
+				7:		sState := 'ERRORDELAY';	
+				8:		sState := 'DELAYOUT';	
+				9:		sState := 'FUNCTEST';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+			
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'No error';		
+				1:		sDiag := 'Discrepancy error input group 1';	
+				2:		sDiag := 'Discrepancy error input group 1';		
+				4:		sDiag := 'Discrepancy error in Secure input group';	
+				16:		sDiag := 'EDM monitoring error EDM1';	
+				32:		sDiag := 'EDM monitoring error EDM2';	
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+
+
+		FB_TYPE_DECOUPLER			:	(* TwinSAFE function block - DECOUPLER *)
+
+			sType := 'DECOUPLER';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			sDiag := 'NOT IN USE';
+
+			
+		FB_TYPE_TWOHAND				:	(* TwinSAFE function block - TWOHAND *)
+
+			sType := 'TWO-HAND';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				4:		sState := 'ERROR';		
+				5:		sState := 'RESET';	
+				6:		sState := 'START';	
+				11:		sState := '1BUTTON';	
+				12:		sState := '2BUTTON';	
+				13:		sState := 'RELEASE';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+			
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'No error';		
+				1:		sDiag := 'Discrepancy error input group 1';	
+				2:		sDiag := 'Discrepancy error input group 1';	
+				4:		sDiag := 'Discrepancy error between the two input groups';	
+				64:		sDiag := 'Two-hand error';	
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+
+	
+		FB_TYPE_MUTING				:	(* TwinSAFE function block - MUTING  *)
+
+			sType := 'MUTING';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+				8:		sState := 'DELAYOUT';	
+				9:		sState := 'MUTING1';	
+				10:		sState := 'MUTING2';	
+				11:		sState := 'MUTING3';	
+				12:		sState := 'MUTING4';	
+				13:		sState := 'MUTING5';	
+				14:		sState := 'MUTING6';	
+				15:		sState := 'MUTING7';	
+				16:		sState := 'MUTING8';	
+				17:		sState := 'MUTING9';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+			
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'No error';		
+				1:		sDiag := 'Discrepancy error in muting input group 1';	
+				2:		sDiag := 'Discrepancy error in the OSSD input group';	
+				4:		sDiag := 'Discrepancy error in muting input group 2';	
+				16:		sDiag := 'EDM monitoring error EDM1';	
+				32:		sDiag := 'EDM monitoring error EDM2';	
+				64:		sDiag := 'Muting sequence was violated';	
+				128:	sDiag := 'Maximum muting time was exceeded';	
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+
+		
+		FB_TYPE_EDM					:	(* TwinSAFE function block - EDM *)
+
+			sType := 'EDM';
+			
+			CASE stInfoData.nState OF
+				2:		sState := 'STOP';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+				14:		sState := 'MON_OFF';	
+				15:		sState := 'MON_ON';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+			
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'No error';		
+				1:		sDiag := 'Switch-OFF timer elapsed';	
+				2:		sDiag := 'Switch-ON timer elapsed';	
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+
+			
+		FB_TYPE_RS					:	(* TwinSAFE function block - RS *)
+
+			sType := 'RS';
+
+			CASE stInfoData.nState OF
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				9:		sState := 'SET';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			sDiag := 'NOT IN USE';
+
+
+		FB_TYPE_SR					:	(* TwinSAFE function block - SR *)
+
+			sType := 'SR';
+			
+			CASE stInfoData.nState OF
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				9:		sState := 'SET';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+			
+			sDiag := 'NOT IN USE';
+	
+
+		FB_TYPE_TON					:	(* TwinSAFE function block - TON *)
+
+			sType := 'TON';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				9:		sState := 'DELAY_IN';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			sDiag := 'NOT IN USE';
+
+
+		FB_TYPE_TOF					:	(* TwinSAFE function block - TOF *)
+
+			sType := 'TOF';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				8:		sState := 'DELAY_OUT';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			sDiag := 'NOT IN USE';
+
+
+		FB_TYPE_CONSHUT				:	(* TwinSAFE function block - CONNECTION SHUTDOWN *)
+
+			sType := 'ConShut';
+			
+			CASE stInfoData.nState OF
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+				10:		sState := 'ACTIVE';	
+				11:		sState := 'DEACTIVE';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+			
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'No error';		
+				1:		sDiag := 'Discrepancy error input group 1';	
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+			
+			
+		FB_TYPE_ADD					:	(* TwinSAFE function block - ADD *)
+
+			sType := 'ADD';
+			
+			CASE stInfoData.nState OF
+				0:		sState := 'not in use';	
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'not in use';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'AnalogOut is correct';		
+				1:		sDiag := 'AnalogOut has an underflow';	
+				2:		sDiag := 'AnalogOut has an overflow';	
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+			
+			
+		FB_TYPE_SUB					:	(* TwinSAFE function block - SUB *)
+
+			sType := 'SUB';
+			
+			CASE stInfoData.nState OF
+				0:		sState := 'not in use';	
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'not in use';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'AnalogOut is correct';		
+				1:		sDiag := 'AnalogOut has an underflow';	
+				2:		sDiag := 'AnalogOut has an overflow';	
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+
+			
+		FB_TYPE_MUL					:	(* TwinSAFE function block - MUL *)
+
+			sType := 'MUL';
+			
+			CASE stInfoData.nState OF
+				0:		sState := 'not in use';	
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'not in use';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'AnalogOut is correct';		
+				1:		sDiag := 'AnalogOut has an underflow';	
+				2:		sDiag := 'AnalogOut has an overflow';	
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+
+			
+		FB_TYPE_DIV					:	(* TwinSAFE function block - DIV *)
+
+			sType := 'DIV';
+			
+			CASE stInfoData.nState OF
+				0:		sState := 'not in use';	
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'not in use';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'AnalogOut is correct';		
+				1:		sDiag := 'AnalogOut has an underflow';	
+				2:		sDiag := 'AnalogOut has an overflow';	
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+
+
+		FB_TYPE_COMPARE				:	(* TwinSAFE function block - COMPARE *)
+
+			sType := 'COMPARE';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+				8:		sState := 'DELAYOUT';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'CompOut is correct';		
+				1:		sDiag := 'The output CompOut has an underflow';	
+				2:		sDiag := 'The output CompOut has an overflow';	
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+			
+			
+		FB_TYPE_LIMIT				:	(* TwinSAFE function block - LIMIT *)
+
+			sType := 'LIMIT';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'No error';		
+				1:		sDiag := 'MinValue > MaxValue';	
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+			
+			
+		FB_TYPE_COUNTER				:	(* TwinSAFE function block - COUNTER *)
+
+			sType := 'COUNTER';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'No error';		
+				1:		sDiag := 'ActValue has an underflow';	
+				2:		sDiag := 'ActValue has an overflow';	
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+
+
+		FB_TYPE_SCALE				:	(* TwinSAFE function block - SCALE *)
+
+			sType := 'SCALE';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'No error';		
+				1:		sDiag := 'AnalogOut has an underflow';	
+				2:		sDiag := 'AnalogOut has an overflow';	
+				3:		sDiag := 'A 32-bit overflow occurs during the multiplication';	
+				4:		sDiag := 'A 32-bit overflow occurs during by rounding up at the division ';	
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+
+
+		FB_TYPE_SPEED				:	(* TwinSAFE function block - SPEED *)
+
+			sType := 'SPEED';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'No error';		
+				1:		sDiag := 'The output Speed has an underflow';	
+				2:		sDiag := 'The output Speed has an overflow';	
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+
+
+		FB_TYPE_LOADSENSING			:	(* TwinSAFE function block - LOAD SENSING *)
+
+			sType := 'LOADSENSING';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				16:		sState := 'INACTIVE';	
+				17:		sState := 'WARNING';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			sDiag := 'NOT IN USE';
+
+
+		FB_TYPE_CAMMONITOR			:	(* TwinSAFE function block - CAM MONITOR *)
+
+			sType := 'CAMMONITOR';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+				6:		sState := 'START';	
+				15:		sState := 'WAIT-FOR-RESET';	
+				16:		sState := 'MOVE-STOP';	
+				17:		sState := 'MOVE-START';	
+				18:		sState := 'MOVE-DOWN';	
+				19:		sState := 'MOVE-UP';	
+				20:		sState := 'MOVE-TDC';	
+				32:		sState := 'MOVE-DOWN-CLOCKWISE';	
+				33:		sState := 'MOVE-UP-CLOCKWISE';	
+				34:		sState := 'MOVE-UP-TDC1';	
+				35:		sState := 'MOVE-STOP-TDC1';	
+				36:		sState := 'MOVE-START-TDC1';	
+				37:		sState := 'MOVE-DOWN-CONTRA-CLOCKWISE';	
+				38:		sState := 'MOVE-UP-CONTRA-CLOCKWISE';	
+				39:		sState := 'MOVE-UP-TDC2';	
+				40:		sState := 'MOVE-STOP-TDC2';	
+				41:		sState := 'MOVE-START-TDC2';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			sDiag := 'NOT IN USE';
+
+
+		FB_TYPE_SLI					:	(* TwinSAFE function block - SLI *)
+
+			sType := 'SLI';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'No error';		
+				1:		sDiag := 'Underflow (PositionDiff < -NegLimit)';		
+				2:		sDiag := 'Overflow (PositionDiff > PosLimit)';		
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+
+
+		FB_TYPE_ENVELOPE			:	(* TwinSAFE function block - ENVELOPE *)
+
+			sType := 'ENVELOPE';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				4:		sState := 'ERROR';	
+				5:		sState := 'RESET';	
+				8:		sState := 'DELAYOUT';	
+				9:		sState := 'MONITOR';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			CASE stInfoData.nDiag OF
+				0:		sDiag := 'No error';		
+				1:		sDiag := 'Underflow (InValue below the envelope curve)';		
+				2:		sDiag := 'Overflow (InValue above the envelope curve)';		
+				3:		sDiag := 'InValue error';		
+				4:		sDiag := 'Max time expired)';		
+			ELSE 
+				sDiag := 'undefined';
+			END_CASE
+
+
+		FB_TYPE_VIOLATIONCOUNTER	:	(* TwinSAFE function block - VIOLATION COUNTER *)
+
+			sType := 'VIOLATIONCOUNTER';
+			
+			CASE stInfoData.nState OF
+				1:		sState := 'RUN';	
+				2:		sState := 'STOP';	
+				3:		sState := 'SAFE';	
+				6:		sState := 'START';	
+			ELSE 
+				sState := 'undefined';
+			END_CASE
+
+			sDiag := 'NOT IN USE';
+
+
+	ELSE
+		
+		sType  := 'UNKNOWN FB';
+		sState := 'UNKNOWN';
+		sDiag  := 'UNKNOWN';
+
+	END_CASE
+	
+	sType := CONCAT(' : ', sType);
+	sType := CONCAT(UINT_TO_STRING(nFbId), sType);
+	sType := CONCAT('FB ', sType);
+	
+(* End *)]]></ST>
+    </Implementation>
+    <LineIds Name="FB_TwinSafeFB">
+      <LineId Id="3" Count="318" />
+      <LineId Id="359" Count="0" />
+      <LineId Id="563" Count="0" />
+      <LineId Id="360" Count="1" />
+      <LineId Id="414" Count="0" />
+      <LineId Id="402" Count="4" />
+      <LineId Id="415" Count="1" />
+      <LineId Id="407" Count="1" />
+      <LineId Id="411" Count="2" />
+      <LineId Id="417" Count="0" />
+      <LineId Id="419" Count="2" />
+      <LineId Id="425" Count="0" />
+      <LineId Id="422" Count="2" />
+      <LineId Id="536" Count="0" />
+      <LineId Id="383" Count="0" />
+      <LineId Id="362" Count="0" />
+      <LineId Id="448" Count="0" />
+      <LineId Id="428" Count="19" />
+      <LineId Id="537" Count="0" />
+      <LineId Id="385" Count="0" />
+      <LineId Id="363" Count="0" />
+      <LineId Id="449" Count="20" />
+      <LineId Id="538" Count="0" />
+      <LineId Id="387" Count="0" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="471" Count="21" />
+      <LineId Id="389" Count="0" />
+      <LineId Id="365" Count="0" />
+      <LineId Id="513" Count="0" />
+      <LineId Id="493" Count="2" />
+      <LineId Id="497" Count="4" />
+      <LineId Id="514" Count="0" />
+      <LineId Id="502" Count="10" />
+      <LineId Id="539" Count="0" />
+      <LineId Id="391" Count="0" />
+      <LineId Id="366" Count="0" />
+      <LineId Id="515" Count="8" />
+      <LineId Id="525" Count="6" />
+      <LineId Id="533" Count="2" />
+      <LineId Id="540" Count="0" />
+      <LineId Id="393" Count="0" />
+      <LineId Id="367" Count="0" />
+      <LineId Id="541" Count="3" />
+      <LineId Id="546" Count="1" />
+      <LineId Id="549" Count="13" />
+      <LineId Id="395" Count="0" />
+      <LineId Id="368" Count="0" />
+      <LineId Id="564" Count="14" />
+      <LineId Id="584" Count="1" />
+      <LineId Id="588" Count="0" />
+      <LineId Id="580" Count="3" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="369" Count="0" />
+      <LineId Id="590" Count="19" />
+      <LineId Id="399" Count="0" />
+      <LineId Id="370" Count="0" />
+      <LineId Id="610" Count="5" />
+      <LineId Id="630" Count="0" />
+      <LineId Id="616" Count="5" />
+      <LineId Id="742" Count="0" />
+      <LineId Id="629" Count="0" />
+      <LineId Id="401" Count="0" />
+      <LineId Id="371" Count="0" />
+      <LineId Id="647" Count="0" />
+      <LineId Id="631" Count="7" />
+      <LineId Id="650" Count="12" />
+      <LineId Id="664" Count="0" />
+      <LineId Id="666" Count="2" />
+      <LineId Id="639" Count="3" />
+      <LineId Id="743" Count="0" />
+      <LineId Id="648" Count="1" />
+      <LineId Id="372" Count="0" />
+      <LineId Id="687" Count="0" />
+      <LineId Id="669" Count="12" />
+      <LineId Id="690" Count="2" />
+      <LineId Id="683" Count="3" />
+      <LineId Id="379" Count="0" />
+      <LineId Id="373" Count="0" />
+      <LineId Id="693" Count="8" />
+      <LineId Id="714" Count="1" />
+      <LineId Id="702" Count="7" />
+      <LineId Id="716" Count="1" />
+      <LineId Id="710" Count="3" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="374" Count="0" />
+      <LineId Id="741" Count="0" />
+      <LineId Id="718" Count="5" />
+      <LineId Id="725" Count="0" />
+      <LineId Id="728" Count="3" />
+      <LineId Id="744" Count="0" />
+      <LineId Id="322" Count="13" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

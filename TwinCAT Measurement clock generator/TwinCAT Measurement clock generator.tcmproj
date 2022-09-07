@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{d2298b9f-48a4-40e0-9b53-41d77fdd2557}</ProjectGuid>
+    <AssemblyName>TwinCAT Measurement clock generator</AssemblyName>
+    <Name>TwinCAT Measurement clock generator</Name>
+    <RootNamespace>TwinCAT Measurement clock generator</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="C:\Users\AlyssaH\Desktop\Active Projects\DemoStandCode\Tc3_Sample_Demo_Rack\TwinCAT Measurement clock generator\Scope YT Project1.tcscopex" />
+  </ItemGroup>
+</Project>

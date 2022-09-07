@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <DUT Name="ST_TsSlave3Temp" Id="{7bae7206-9587-48b7-a75e-f30b4416d573}">
+    <Declaration><![CDATA[TYPE ST_TsSlave3Temp :
+(*******************************************************************************************************
+Description			:	EtherCAT Slaves with 3 internal temperatures
+Supported terminals : 	EL2904
+Date 				:	04.04.2016
+********************************************************************************************************)
+STRUCT
+	
+	nInternalTemperature1					:INT;	(* Temperature 1 [°C] *)
+	nInternalTemperature2					:INT;	(* Temperature 2 [°C] *)
+	nInternalTemperatureOutputs				:INT;	(* Temperature 2 [°C] *)
+	
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

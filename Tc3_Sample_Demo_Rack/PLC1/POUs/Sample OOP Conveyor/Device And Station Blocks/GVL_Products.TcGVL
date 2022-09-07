@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <GVL Name="GVL_Products" Id="{f22a8823-63aa-4099-9a84-23031927c8e6}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	arrParts : ARRAY[0..100] OF ST_PartData; // all the products currently in the machine
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4019.2">
+  <GVL Name="GVL30_DiagnosticEtherCAT" Id="{60ddb16b-c747-4977-a348-8f2aff42e458}">
+    <Declaration><![CDATA[(* GVL30_DiagnosticEtherCAT *)
+{attribute 'TcContextName' := 'PlcTask'}
+VAR_GLOBAL
+
+	fbDiagnosticEtherCAT					:FB_DiagnosticEtherCAT;
+
+END_VAR
+(* End *)]]></Declaration>
+  </GVL>
+</TcPlcObject>

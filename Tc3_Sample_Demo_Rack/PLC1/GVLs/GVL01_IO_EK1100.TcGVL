@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.3">
+  <GVL Name="GVL01_IO_EK1100" Id="{31fcc3dd-5c71-47d1-b303-652d4d420e05}">
+    <Declaration><![CDATA[(* GVL01_IO_EK1100 *)
+{attribute 'TcContextName' := 'PlcTask'}
+VAR_GLOBAL
+
+	(* EL1859 digital inputs/outputs *)
+	bSwitchS20						AT%I*	:BOOL;	(* Start sequence axis 1-4 *)
+	bSwitchS21						AT%I*	:BOOL;	(* Reset axis 1-4 *)
+	bSwitchS22						AT%I*	:BOOL;	(* not in use *)
+	bSwitchS31						AT%I*	:BOOL;	(* Error acknowledge / reset Axis 1 - 4 *)
+	bAxis2ReferenceCamEL1			AT%I*	:BOOL;	(* servo reference cam on a standard input (Axis 2 Servo EL) *)
+
+	bLedH31							AT%Q*	:BOOL;	(* Led reset button *)
+	bLedH32							AT%Q*	:BOOL;	(* S32 aktiv *)
+	bLedH33							AT%Q*	:BOOL;	(* S33 aktiv *)
+
+	bLedH23							AT%Q*	:BOOL;	(* stepper homing done *)
+	bLedH24							AT%Q*	:BOOL;	(* not in use *)
+	bLedH25							AT%Q*	:BOOL;	(* Modulo touch probe aktiv *)
+	bLedH26							AT%Q*	:BOOL;	(* Reference cam axis 3 *)
+
+	(* EL1904 digital inputs TwinSAFE *)
+	
+	(* EL2904 digital outputs TwinSAFE *)	
+	
+	(* EL9110 potential supply diagnosis switched from the contactor -K1 (TwinSAFE) *)
+	bPotentialConduktorK124VOk		AT%I*	:BOOL;	(* Power on *)
+	
+	(* EL2004 digital outputs *)
+	bLedH20							AT%Q*	:BOOL;	(* Sequence axis 1-4 busy (flashes) *)
+	bLedH21							AT%Q*	:BOOL;	(* Error axis 1-4 (flashes) *)
+	bLedH22							AT%Q*	:BOOL;	(* not in use *)
+
+	(* EL9410 potential supply diagnosis *)
+	bPotentialEBusUs24VNotOk		AT%I*	:BOOL;	(* E-BUS power not ok *)
+	bPotentialServoUp24VNotOk		AT%I*	:BOOL;	(* Power servo (EL7201) not ok *)
+
+	(* EL7201 (Axis 2 Servo EL) servomotor terminal inputs *)
+	bAxis2ReferenceCamEL7 			AT%I*	:BOOL;	(* servo reference cam on the EL7201 input (Axis 2 Servo EL) *)
+	bSwitchS25						AT%I*	:BOOL;	(* Modulo touch probe on *)
+	nAxis2ActTorque					AT%I*	:INT;	(* axis 2 current +/- 1000 *)
+
+END_VAR
+(* End *)]]></Declaration>
+  </GVL>
+</TcPlcObject>

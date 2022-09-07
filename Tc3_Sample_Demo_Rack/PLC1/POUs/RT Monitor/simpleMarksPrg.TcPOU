@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="simpleMarksPrg" Id="{11eac21a-2e64-4d76-8ba3-927623aa73cb}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM simpleMarksPrg
+VAR
+	// Instance of the function block for using the "simple" marks
+	
+	fblog : fb_RTmon_LogMark;
+END_VAR
+
+    ]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fblog.LogStart(100,0);
+
+
+// process counting, sequence start
+IF GVL.fbCrititcalSection.Enter() THEN
+	GVL.iGlobalCounter:=GVL.iGlobalCounter+1;
+	ConsumeTime(50);
+    GVL.fbCrititcalSection.Leave();
+END_IF
+
+fblog.LogStop(100,0);
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="simpleMarksPrg">
+      <LineId Id="18" Count="1" />
+      <LineId Id="3" Count="9" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="E_Commands" Id="{7c956a50-75bc-4630-8ca1-8da3e6b8837e}">
+    <Declaration><![CDATA[TYPE E_Commands :
+(
+		eCommandIdle := 0,
+		eCommandRun,
+		eCommandStop
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <DUT Name="ST_TsDiagObjectsBitsEL2904" Id="{7430d80a-24ff-4651-943f-d4257eb26b26}">
+    <Declaration><![CDATA[TYPE ST_TsDiagObjectsBitsEL2904 :
+(*******************************************************************************************************
+Description			:	Index 16#800E Diagnostic objects
+Supported terminals : 	EL2904
+Documentation 		:	EL2904 TwinSAFE output terminal with 4 fail-safe outputs
+Version/Date 		:	V1.6.2/02.10.2015
+********************************************************************************************************)
+STRUCT
+	
+(* Error at the outputs *)
+	bEsOrCcErrOutput1						:BOOL;	(* Error output 1 - Bit0 - External supply or cross circuit *)
+	bEsOrCcErrOutput2						:BOOL;	(* Error output 2 - Bit1 - External supply or cross circuit *)
+	bEsOrCcErrOutput3						:BOOL;	(* Error output 3 - Bit2 - External supply or cross circuit *)
+	bEsOrCcErrOutput4						:BOOL;	(* Error output 4 - Bit3 - External supply or cross circuit *)
+	bOlOrCvErrOutput1						:BOOL;	(* Error output 1 - Bit4 - Open load or current below minimum value of 20 mA or current above maximum value of 500mA *)
+	bOlOrCvErrOutput2						:BOOL;	(* Error output 2 - Bit5 - Open load or current below minimum value of 20 mA or current above maximum value of 500mA *)
+	bOlOrCvErrOutput3						:BOOL;	(* Error output 3 - Bit6 - Open load or current below minimum value of 20 mA or current above maximum value of 500mA *)
+	bOlOrCvErrOutput4						:BOOL;	(* Error output 4 - Bit7 - Open load or current below minimum value of 20 mA or current above maximum value of 500mA *)
+
+(* Supply error *)
+	bFieldVoltageTooHigh					:BOOL;	(* Supply error - Bit 0 - Field voltage too high *)
+	bFieldVoltageTooLow						:BOOL;	(* Supply error - Bit 1 - Field voltage too low *)
+
+(* Temperature error *)
+	nOvertemperatureC1						:BOOL;	(* Temperature error - Bit 0 - Overtemperature µC1 *)
+	nOvertemperatureC2						:BOOL;	(* Temperature error - Bit 1 - Overtemperature µC2 *)
+	nOvertemperatureOutputs					:BOOL;	(* Temperature error - Bit 2 - Overtemperature of the output board *)
+	nTemperatureTooLowC1					:BOOL;	(* Temperature error - Bit 3 - Temperature too low µC1 *)
+	nTemperatureTooLowC2					:BOOL;	(* Temperature error - Bit 4 - Temperature too low µC2 *)
+	nTemperatureTooLowOutputs				:BOOL;	(* Temperature error - Bit 5 - Temperature of the output board too low *)
+	nOvertemperatureDiffBoard				:BOOL;	(* Temperature error - Bit 6 - Temperature difference on the processor board too large *)
+	nOvertemperatureDiffBetwBoards			:BOOL;	(* Temperature error - Bit 7 - Temperature difference between the boards is too large *)
+	
+END_STRUCT
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

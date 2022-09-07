@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{fe9fe102-56c7-4eed-bebd-8aa52fcec889}</ProjectGuid>
+    <AssemblyName>TwinCAT Measurement XFC</AssemblyName>
+    <Name>TwinCAT Measurement XFC</Name>
+    <RootNamespace>TwinCAT Measurement XFC</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Scope YT Averaging EL3702 analog input Ch2 oversampling.tcscope">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Scope YT SignalLengthMeasurementCamAxis2.tcscope">
+      <SubType>Content</SubType>
+    </Content>
+  </ItemGroup>
+</Project>

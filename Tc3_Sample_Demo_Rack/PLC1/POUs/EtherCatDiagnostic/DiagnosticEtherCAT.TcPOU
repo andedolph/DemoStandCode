@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <POU Name="DiagnosticEtherCAT" Id="{82c1e4ad-6a0e-4cd2-96b4-e5f30f640e81}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM DiagnosticEtherCAT
+VAR
+END_VAR
+(* End *)
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Diagnosis of the EtherCat System *)
+
+	fbDiagnosticEtherCAT(bEnable :=	TRUE);
+	
+(* End *)]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_ST_SamplePOU" Id="{804e7a08-57a3-4969-b2f1-5aed47ebf1a0}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ST_SamplePOU
+VAR_INPUT
+//	eOperation	: INT;
+	eOperation	: E_Operation;
+END_VAR
+VAR_OUTPUT
+	iResultC	: DINT;
+END_VAR
+VAR
+	arrDataA	: ARRAY [1..iMax] OF DINT;
+	arrDataB	: ARRAY [1..iMax] OF DINT;
+	arrDataC	: ARRAY [1..iMax] OF DINT;
+	I 			: DINT;
+	bInit		: BOOL := TRUE;
+END_VAR
+VAR CONSTANT
+	iMax 		: DINT := 10;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* IF/ELSE - construct: for conditional code *)
+IF bInit THEN
+	bInit := FALSE;
+
+	(* FOR loop: for array access *)
+	FOR I := 1 TO iMax DO
+		arrDataA[I] := I;
+		arrDataB[I] := iMax - I + 1;
+	END_FOR
+END_IF
+
+(* CASE construct: for state machines or switch cases *)
+CASE eOperation OF
+eOp_Add:
+	(* WHILE - LOOP with check before first execution *)
+	iResultC := 0;
+	I := 1;
+	WHILE I <= iMax DO
+		arrDataC[I] := arrDataA[I] + arrDataB[I];
+		iResultC 	:= iResultC + arrDataC[I];
+		I := I + 1;
+	END_WHILE
+
+eOp_Sub:
+	(* REPEAT - LOOP: for array access *)
+	iResultC := 0;
+	I := 1;
+	REPEAT
+		arrDataC[I] := arrDataA[I] - arrDataB[I];
+		iResultC 	:= iResultC - arrDataC[I];
+		I := I + 1;
+	UNTIL I > iMax END_REPEAT
+
+eOp_Mul:
+	(* FOR - LOOP with check before first execution *)
+	iResultC := 1;
+	FOR I := 1 TO iMax DO
+		arrDataC[I] := arrDataA[I] * arrDataB[I];
+		iResultC 	:= iResultC * arrDataC[I];
+	END_FOR
+END_CASE
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_ST_SamplePOU">
+      <LineId Id="3" Count="40" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

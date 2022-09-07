@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <POU Name="FB_Axis" Id="{2b5ecccc-bfee-4e3e-a987-c578df9f7ad9}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Axis
+VAR_INPUT
+	
+	bPowerEnable							:BOOL;
+	fPowerOverride							:LREAL;
+	bMoveAbsExecute							:BOOL;
+	fMoveAbsPosition						:LREAL;
+	fMoveAbsVelocity						:LREAL;
+	bReset									:BOOL;
+	bStopAxis								:BOOL;
+	bRevSeqStart							:BOOL;
+	bRevSeqStop								:BOOL;
+	fRevSeqTargetPos1						:LREAL; 
+	fRevSeqTargetVelo1						:LREAL;	 
+	fRevSeqTargetPos2						:LREAL;	 
+	fRevSeqTargetVelo2						:LREAL; 
+	nRevSeqIdleTime							:UINT;
+	
+END_VAR
+VAR_OUTPUT
+
+	bPowerStatus							:BOOL;
+	bMoveAbsDone							:BOOL;
+	bMoveAbsBusy							:BOOL;
+	bAxisErr								:BOOL;
+	nAxisErrId								:DWORD;
+	bStopAxisDone							:BOOL;
+	bStopAxisBusy							:BOOL;
+	bRevSeqDone								:BOOL;
+	bRevSeqBusy								:BOOL;
+	
+END_VAR
+VAR_IN_OUT
+
+	stAxis									:Axis_Ref;
+
+END_VAR
+VAR
+
+	fbMcPower								:MC_Power;
+	fbMoveAbsolute							:MC_MoveAbsolute;
+	fbReadAxisError							:MC_ReadAxisError;
+	fbReset									:MC_Reset;
+	fbStop									:MC_Stop;
+	fbReversingSequence						:FB_ReversingSequence;
+
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* FB_Axis *)
+
+(* Read status of the axis *)
+	stAxis.ReadStatus();
+
+(* Enable axis *)
+	fbMcPower(
+		Enable			:= 	bPowerEnable,
+		Enable_Positive	:= 	bPowerEnable,
+		Enable_Negative	:= 	bPowerEnable,
+		Override		:= 	fPowerOverride,
+		Axis			:= 	stAxis,
+		Status			=> 	bPowerStatus);
+
+(* Start axis at an absolute position *)
+	fbMoveAbsolute(
+		Execute		:=	bMoveAbsExecute,
+		Position	:=	fMoveAbsPosition,
+		Velocity	:=	fMoveAbsVelocity,
+		Axis		:=	stAxis,
+		Done		=>	bMoveAbsDone,
+		Busy		=>	bMoveAbsBusy);
+
+(* Read the error code of the axis *)
+	fbReadAxisError(
+		Enable		:=	TRUE,
+		Axis		:=	stAxis,
+		AxisErrorID	=>	nAxisErrId);
+		
+	bAxisErr := nAxisErrId <> 0;
+
+(* Reset axis in case of failure *)
+	fbReset(
+		Execute		:= 	bReset,
+		Axis		:= 	stAxis);
+
+(* Stop axis *)
+	fbStop(
+		Execute 	:=	bStopAxis,
+		Axis		:=	stAxis,
+		Done		=>	bStopAxisDone,
+		Busy		=>	bStopAxisBusy);
+
+(* Axis reversing sequence *)	
+	fbReversingSequence(
+		bStart				:= 	bRevSeqStart,
+		bStop				:= 	bRevSeqStop,
+		fTargetPosition1	:= 	fRevSeqTargetPos1,
+		fTargetVelocity1	:= 	fRevSeqTargetVelo1,
+		fTargetPosition2	:= 	fRevSeqTargetPos2,
+		fTargetVelocity2	:= 	fRevSeqTargetVelo2,
+		tIdleTime			:= 	TO_TIME(nRevSeqIdleTime),
+		bDone				=> 	bRevSeqDone,
+		bBusy				=> 	bRevSeqBusy,
+		bErr				=> 	,
+		nErrID				=> 	,
+		stAxis				:= 	stAxis);
+		
+(* End *)]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

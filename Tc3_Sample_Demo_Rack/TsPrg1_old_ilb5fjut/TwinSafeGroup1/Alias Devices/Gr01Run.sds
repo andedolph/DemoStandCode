@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SafetyDeviceDesc>
+  <Direction>input</Direction>
+  <NumberOfChannels>1</NumberOfChannels>
+  <Type>standard</Type>
+  <Values>
+    <Param>
+      <Name>SDSID</Name>
+      <Value>9</Value>
+    </Param>
+    <Param>
+      <Name>IsExternalDevice</Name>
+      <Value>False</Value>
+    </Param>
+    <Param>
+      <Name>MAPPINGINFO_TN</Name>
+      <Value />
+    </Param>
+    <Param>
+      <Name>MAPPINGINFO_AMSNETID</Name>
+      <Value />
+    </Param>
+    <Param>
+      <Name>MAPPINGINFO_VENDORID</Name>
+      <Value />
+    </Param>
+    <Param>
+      <Name>MAPPINGINFO_PRODUCTCODE</Name>
+      <Value />
+    </Param>
+    <Param>
+      <Name>MAPPINGINFO_REVISIONNO</Name>
+      <Value />
+    </Param>
+    <Param>
+      <Name>MAPPINGINFO_FIELDBUSADD</Name>
+      <Value />
+    </Param>
+    <Param>
+      <Name>MAPPINGINFO_ITEMID</Name>
+      <Value />
+    </Param>
+    <Param>
+      <Name>ConnectionId</Name>
+      <Value>0</Value>
+    </Param>
+    <Param>
+      <Name>Watchdog</Name>
+      <Value>0</Value>
+    </Param>
+    <Param>
+      <Name>Mode</Name>
+      <Value>slave</Value>
+    </Param>
+    <Param>
+      <Name>ModuleFault</Name>
+      <Value>false</Value>
+    </Param>
+    <Param>
+      <Name>MapState</Name>
+      <Value>false</Value>
+    </Param>
+    <Param>
+      <Name>MapDiag</Name>
+      <Value>false</Value>
+    </Param>
+    <Param>
+      <Name>MapInputs</Name>
+      <Value>false</Value>
+    </Param>
+    <Param>
+      <Name>MapOutputs</Name>
+      <Value>false</Value>
+    </Param>
+    <Param>
+      <Name>FSOEAdd</Name>
+      <Value />
+    </Param>
+    <Param>
+      <Name>SIL</Name>
+      <Value />
+    </Param>
+    <Param>
+      <Name>ConnectionNo</Name>
+      <Value>0</Value>
+    </Param>
+  </Values>
+</SafetyDeviceDesc>

@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="AnalogOutputOversampling" Id="{2ec3cffe-5c3d-441d-b715-b601116ceaf4}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM AnalogOutputOversampling
+VAR
+
+(* Freeze writing *)
+	bFreezeWriting							:BOOL; (* Force to freeze writing. You will be able to see actual oversampling output at the corresponding oversampling input termnal *)
+	
+(* EL4732 analog output Ch1 oversampling *)
+	ni										:UINT;
+	nCounter								:UINT;
+
+(* Read task target start time *)
+	dtActDcTime								:T_DCTIME;
+	stActDcTime								:DCTIMESTRUCT;
+
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* EL4732 - analog output Ch1 oversampling - ongoing value 0 - 29900 *)
+
+
+(* Read task target start time *)
+	dtActDcTime := F_GetCurDcTaskTime();
+	stActDcTime  := DCTIME_TO_DCTIMESTRUCT(dtActDcTime);
+
+
+(* EL4732 analog output Ch1 oversampling *)
+	IF NOT bFreezeWriting
+	THEN 
+
+		FOR ni := 0 TO 99 BY 1 DO
+			IF nCounter >= 30000
+			THEN
+				nCounter := 0;
+			END_IF
+		
+			aOsOutputToEL3702In2[ni] := UINT_TO_INT(nCounter);
+			
+			nCounter := nCounter + 100;
+		END_FOR
+	
+	END_IF
+		
+(* End *)]]></ST>
+    </Implementation>
+    <LineIds Name="AnalogOutputOversampling">
+      <LineId Id="3" Count="24" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

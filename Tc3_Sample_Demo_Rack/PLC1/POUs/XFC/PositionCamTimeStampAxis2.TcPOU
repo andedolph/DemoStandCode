@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <POU Name="PositionCamTimeStampAxis2" Id="{ed39ac83-3243-4d0e-8d96-8dd65f131816}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PositionCamTimeStampAxis2
+VAR
+	
+	(* Parameterize and control of the channel 1 *)
+	stCamSwitchOptionsOut1					:ST_CamSwitchOptions;
+	fbXfcPositionCamOut1					:XFC_PositionCam;
+	stXfcPositionCamOut1					:OUTPUT_REF;
+	stXfcPositionCamTrackRefOut1			:TRACK_REF;
+
+	(* Parameterize and control of the channel 2 *)
+	stCamSwitchOptionsOut2					:ST_CamSwitchOptions;
+	fbXfcPositionCamOut2 					:XFC_PositionCam;
+	stXfcPositionCamOut2					:OUTPUT_REF;
+	stXfcPositionCamTrackRefOut2			:TRACK_REF;
+
+	(* XFC_EL2252_V2 handles the output of a digital cam with the XFC time stamp terminal EL2252 *)	
+	fbXfcEL2252								:XFC_EL2252_V2;
+	
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* EL2252 - digital output Ch1 and Ch2 time stamp - position cam *)	
+
+(* Ch1 - position cam axis 2  90 - 180 Degree
+   Ch2 - position cam axis 2  30 - 90  Degree 
+*)
+
+(* Parameterize and control of the channel 1 *)
+	stCamSwitchOptionsOut1.EncoderIndex		:= 0;	
+	stCamSwitchOptionsOut1.UseAcceleration	:= FALSE;
+
+	fbXfcPositionCamOut1(
+		FirstOnPosition	:= 	90, 
+		LastOnPosition	:= 	180, 
+		Modulo			:= 	TRUE, 
+		ModuloFactor	:= 	360.0, 
+		OnCompensation	:= 	0.0, 
+		OffCompensation	:= 	0.0, 
+		Options			:= 	stCamSwitchOptionsOut1, 
+		Error			=> 	, 
+		ErrorID			=> 	, 
+		Output			:= 	stXfcPositionCamOut1, 
+		Axis			:= 	stAxis2);	
+
+	stXfcPositionCamTrackRefOut1.ModuloPositions 	:= TRUE;
+	stXfcPositionCamTrackRefOut1.ModuloFactor 		:= 360.0;
+	stXfcPositionCamTrackRefOut1.OnCompensation 	:= 0.0;
+	stXfcPositionCamTrackRefOut1.OffCompensation 	:= 0.0;
+	stXfcPositionCamTrackRefOut1.Hysteresis 		:= 0.0;
+	stXfcPositionCamTrackRefOut1.BreakRelease 		:= FALSE;
+	stXfcPositionCamTrackRefOut1.Force 				:= FALSE;
+	stXfcPositionCamTrackRefOut1.Disable 			:= FALSE;
+
+	
+(* Parameterize and control of the channel 2 *)
+	stCamSwitchOptionsOut2.EncoderIndex		:= 0;	
+	stCamSwitchOptionsOut2.UseAcceleration	:= FALSE;
+
+	fbXfcPositionCamOut2(
+		FirstOnPosition	:= 	30, 
+		LastOnPosition	:= 	90, 
+		Modulo			:= 	TRUE, 
+		ModuloFactor	:= 	360.0, 
+		OnCompensation	:= 	0.0, 
+		OffCompensation	:= 	0.0, 
+		Options			:= 	stCamSwitchOptionsOut2, 
+		Error			=> 	, 
+		ErrorID			=> 	, 
+		Output			:= 	stXfcPositionCamOut2, 
+		Axis			:= 	stAxis2);	
+
+	stXfcPositionCamTrackRefOut2.ModuloPositions 	:= TRUE;
+	stXfcPositionCamTrackRefOut2.ModuloFactor 		:= 360.0;
+	stXfcPositionCamTrackRefOut2.OnCompensation 	:= 0.0;
+	stXfcPositionCamTrackRefOut2.OffCompensation 	:= 0.0;
+	stXfcPositionCamTrackRefOut2.Hysteresis 		:= 0.0;
+	stXfcPositionCamTrackRefOut2.BreakRelease 		:= FALSE;
+	stXfcPositionCamTrackRefOut2.Force 				:= FALSE;
+	stXfcPositionCamTrackRefOut2.Disable 			:= FALSE;
+
+	
+(* XFC_EL2252_V2 handles the output of a digital cam with the XFC time stamp terminal EL2252 *)	
+	fbXfcEL2252(
+		ForceWhenLate		:= 	TRUE, 
+		Error				=> 	, 
+		ErrorID				=> 	, 
+		ErrorOutputMissed	=> 	, 
+		PrecisionReduced	=> 	, 
+		Output1				:= 	stXfcPositionCamOut1, 
+		Output2				:= 	stXfcPositionCamOut2, 
+		TrackOptions1		:= 	stXfcPositionCamTrackRefOut1, 
+		TrackOptions2		:= 	stXfcPositionCamTrackRefOut2, 
+		EL2252				:= 	stEL2252);
+	
+(* End *)]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

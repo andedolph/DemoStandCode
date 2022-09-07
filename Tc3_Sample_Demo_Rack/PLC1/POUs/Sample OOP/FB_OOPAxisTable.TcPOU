@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_OOPAxisTable" Id="{24c90dd5-7cce-473e-8b9e-0c30b19ee4f9}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_OOPAxisTable
+VAR_INPUT
+	eSampleModeIn	: E_SampleMode;	
+END_VAR
+VAR_IN_OUT
+	AxisRef			: ARRAY [1..iMAX_AXES_REF] OF AXIS_REF;			// axis reference (process data plc/nc)
+END_VAR
+VAR_OUTPUT
+	eSampleModeOut	: E_SampleMode;	
+END_VAR
+VAR
+	iCounter 			: DINT;
+END_VAR	
+VAR
+	//instances of axes FBs (of type FB_NcAxes or derived from FB_NcAxis, like AX5000, Servo Termins, Stepper, DC, ...)
+	fbAX5000Axis1	: FB_AX5000Axis;
+	fbAX5000Axis2	: FB_AX5000Axis;
+	fbNcAxis		: FB_NcAxis;
+		
+	//interface pointers
+	ipAxisX			: IAxis;
+	ipAxisY			: IAxis;
+	ipAxisZ			: IAxis;
+
+	//device
+	fbTable			: FB_Table;
+	bExecute		: BOOL;
+	bBusy			: BOOL;
+	
+	Timer			: TON := (PT := T#3s);
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[iCounter := iCounter + 1;
+
+IF (eSampleModeIn = eSMode_OOP_Req) OR (eSampleModeOut = eSMode_OOP_Act) THEN
+	//assign axes instances to the interface pointers
+	ipAxisX := fbAX5000Axis1;
+	ipAxisY := fbAX5000Axis2;
+	ipAxisZ	:= fbNcAxis;
+	
+	//call axes with their axes references
+	fbAX5000Axis1(sAxis	:= AxisRef[1]);
+	fbAX5000Axis2(sAxis	:= AxisRef[2]);
+	fbNcAxis(sAxis	:= AxisRef[3]);
+	
+	Timer(IN := TRUE);
+	IF Timer.Q THEN
+		Timer(IN := FALSE);
+		bExecute := TRUE;
+	END_IF
+	
+	//call device that uses axes via interface, therefore the axis type does not matter anymore
+	fbTable(
+		fbServoAxisX := ipAxisX,
+		fbServoAxisY := ipAxisY,
+		fbServoAxisZ := ipAxisZ,
+		bExecute	 := bExecute,
+		bBusy		 => bBusy
+	);
+		
+	bExecute := FALSE;
+
+	IF bBusy THEN
+		eSampleModeOut := eSMode_OOP_Act;
+	ELSE
+		eSampleModeOut := eSMode_Idle;
+	END_IF
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_OOPAxisTable">
+      <LineId Id="3" Count="34" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

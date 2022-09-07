@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="Axis3" Id="{89ff8257-227f-4c6a-8138-0b26e1b4ea8e}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM Axis3
+VAR
+	
+	sAxisDescription						:STRING	:= 'Axis 3 - AX5203-A - AM8111-0F10';	
+
+(* Axis - basic functions *)
+	fbAxis									:FB_AxisAX5xxx;
+	fMoveAbsPosition						:LREAL;				(* Target position *)
+	fMoveAbsVelocity						:LREAL	:= 500.0;	(* Target speed axis 3 max. 18000.0 Degree/s *)
+	bStartMoveAbs							:BOOL;
+	bMoveAbsBusy							:BOOL;
+	bMoveAbsDone							:BOOL;
+	bAxisErr								:BOOL;
+	nAxisErrId								:DWORD;
+	bReset									:BOOL;
+	bStop									:BOOL;
+	bStopAxisDone							:BOOL;
+	bStopAxisBusy							:BOOL;
+	bRevSeqStart							:BOOL;
+	bStartparameterSet						:BOOL;
+	
+(* Test - change target position - Axis 3 *)
+	bTestChangeTargetPos					:BOOL;				(* Test - change target position *)
+	bMaxPositionReached						:BOOL;	
+
+(* Couple Axis 3 on Axis 5 (Handwheel) *)
+	fbGearIn								:MC_GearIn;
+	bGearInDone								:BOOL;
+	bAxisCoupled							:BOOL;
+
+(* Uncouple Axis 3 *)
+	fbGearOut								:MC_GearOut;
+	bGearOutDone							:BOOL;
+	
+(*Superimposed and Buffered Moves*)
+	mv_Axis3Abs : MC_MoveAbsolute;
+	mv_Axis3Rel : MC_MoveRelative;
+	iMstrMvMode2	: INT;
+	bMvMstr2		: BOOL;
+	lrMstrTarg2		: LREAL := 90;
+	lrMstrVelo2		: LREAL := 10;
+	mv_MasterSprImp	: MC_MoveSuperImposed;
+	bMvMstr3		: BOOL;
+	lrMstrTarg3		: LREAL := 90;
+
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Axis 3 *)
+
+(* Axis - basic functions  *)
+
+	IF NOT bStartparameterSet
+	THEN
+		(* Startup Parameter reversing sequence *)
+		fbAxis.fRevSeqTargetPos1	:= 720.0;
+		fbAxis.fRevSeqTargetVelo1	:= 5000.0;
+		fbAxis.fRevSeqTargetPos2	:= 0.0;
+		fbAxis.fRevSeqTargetVelo2	:= 5000.0;
+		fbAxis.nRevSeqIdleTime		:= 250;
+		bStartparameterSet			:=TRUE;
+	END_IF
+		
+	fbAxis(
+		bPowerEnable		:= 	bSwitchS14,
+		fPowerOverride		:= 	F_Scaling(aOsAnalogInR11[0], 100.0, 32767.0),
+		bMoveAbsExecute		:= 	(bStartMoveAbs OR bSwitchS16) AND NOT stAxis3.Status.Coupled,
+		fMoveAbsPosition	:= 	fMoveAbsPosition,
+		fMoveAbsVelocity	:= 	fMoveAbsVelocity,
+		bReset				:= 	bReset OR bSwitchS21,
+		bStopAxis			:= 	bStop,
+		bRevSeqStart		:=  (bSwitchS20 OR bRevSeqStart) AND fbAxis.bPowerStatus, 
+		stAxis				:= 	stAxis3,
+		bPowerStatus		=> 	bLedH14,
+		bMoveAbsDone		=> 	bMoveAbsDone,
+		bMoveAbsBusy		=> 	bMoveAbsBusy,
+		bAxisErr			=> 	bAxisErr,
+		nAxisErrId			=> 	nAxisErrId,
+		bStopAxisDone		=> 	bStopAxisDone,
+		bStopAxisBusy		=> 	bStopAxisBusy);
+
+(* Test - change target position - Axis *)
+	IF bTestChangeTargetPos
+		AND (fMoveAbsPosition <= stAxis3.NcToPlc.ActPos)
+			AND NOT bMaxPositionReached
+	THEN
+		fMoveAbsPosition := fMoveAbsPosition + 180.0;
+	ELSE
+		IF bTestChangeTargetPos
+			AND (fMoveAbsPosition >= 3600.0)
+		THEN
+			fMoveAbsPosition 	:= 0.0;
+			bMaxPositionReached	:= TRUE;
+		END_IF
+	END_IF
+
+	IF bTestChangeTargetPos
+		AND (stAxis3.NcToPlc.ActPos < 1.0)
+	THEN
+		bMaxPositionReached	:= FALSE;
+	END_IF
+
+	IF bSwitchS17
+	THEN
+		bMaxPositionReached	:= FALSE;
+		fMoveAbsPosition 	:= 0.0;
+	END_IF
+	
+(* Couple Axis on Handwheel *)
+	fbGearIn(
+		Execute			:= 	bHandwheelSwitchS28,
+		RatioNumerator	:= 	1,
+		RatioDenominator:= 	1,
+		Acceleration	:= 	,
+		Deceleration	:= 	,
+		Jerk			:= 	,
+		BufferMode		:= 	,
+		Options			:= 	,
+		Master			:= 	stAxis5,
+		Slave			:= 	stAxis3,
+		InGear			=> 	bGearInDone,
+		Busy			=> 	,
+		Active			=> 	,
+		CommandAborted	=> 	,
+		Error			=> 	,
+		ErrorID			=> 	);
+
+(* Axis coupled *)
+	bAxisCoupled := stAxis3.Status.Coupled;
+
+(* Uncouple Axis *)
+	fbGearOut(
+		Execute	:= 	bSwitchS17,
+		Options	:= 	,
+		Slave	:= 	stAxis3,
+		Done	=> 	bGearOutDone,
+		Busy	=> 	,
+		Error	=> 	,
+		ErrorID	=> 	);
+
+		
+(*Buffered Move*)
+	mv_Axis3Abs(
+		Axis:= stAxis3, 
+		Execute:= iMstrMvMode2=0 AND bMvMstr2, 
+		Position:= lrMstrTarg2, 
+		Velocity:= lrMstrVelo2);
+		
+	mv_Axis3Rel(	
+		Axis:= stAxis3, 
+		Execute:= iMstrMvMode2=1 AND bMvMstr2, 
+		Distance:= lrMstrTarg2, 
+		Velocity:= lrMstrVelo2);
+		
+IF (NOT(mv_Axis3Abs.Busy) AND NOT(mv_Axis3Rel.busy)) THEN
+	bMvMstr2:=FALSE;
+END_IF
+
+(*Superimposed Move*)
+mv_MasterSprImp(
+	Axis:= stAxis3, 
+	Execute:= bMvMstr3, 
+	Mode:= SUPERPOSITIONMODE_VELOREDUCTION_ADDITIVEMOTION, 
+	Distance:= lrMstrTarg3, 
+	// assume max velo is 2000 (config parameter)
+	VelocityDiff:= 2000-stAxis3.NcToPlc.SetVelo, 
+	Acceleration:= , 
+	Deceleration:= , 
+	Jerk:= , 
+	VelocityProcess:= stAxis3.NcToPlc.SetVelo, 
+	// use 75% of remaining distance to 'catch up'
+	Length:= (stAxis3.NcToPlc.TargetPos-stAxis3.NcToPlc.ActPos)*0.75);
+			
+(* End *)]]></ST>
+    </Implementation>
+    <LineIds Name="Axis3">
+      <LineId Id="3" Count="90" />
+      <LineId Id="149" Count="0" />
+      <LineId Id="130" Count="1" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="146" Count="2" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="150" Count="0" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="159" Count="0" />
+      <LineId Id="157" Count="1" />
+      <LineId Id="151" Count="0" />
+      <LineId Id="160" Count="0" />
+      <LineId Id="162" Count="2" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="176" Count="11" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

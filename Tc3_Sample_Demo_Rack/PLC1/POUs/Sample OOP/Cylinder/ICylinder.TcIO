@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <Itf Name="ICylinder" Id="{a72b46da-34d1-4f4e-912c-cc665256fc13}">
+    <Declaration><![CDATA[INTERFACE ICylinder
+]]></Declaration>
+    <Method Name="M_StateMachine" Id="{b552e9f9-2368-4f99-80cb-39874c0d68b3}">
+      <Declaration><![CDATA[METHOD M_StateMachine : BOOL
+VAR_INPUT
+	bPosLeftReq  : BOOL;
+	bPosRightReq : BOOL;
+END_VAR
+VAR_OUTPUT
+	bAtLeftPos   : BOOL;
+	bAtRightPos  : BOOL; 
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_TimerValue" Id="{5bdd60c0-9652-4432-89e3-97ab36cfddec}">
+      <Declaration><![CDATA[PROPERTY P_TimerValue : LREAL]]></Declaration>
+      <Get Name="Get" Id="{03f752bf-61e0-4186-ba52-58c2e1a3be7b}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{acb36025-fc73-4b83-ae12-5f802808cf8f}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+  </Itf>
+</TcPlcObject>

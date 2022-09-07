@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <Itf Name="I_Mode" Id="{dec41e47-3697-4348-a4cf-a13de5f1b470}">
+    <Declaration><![CDATA[INTERFACE I_Mode
+]]></Declaration>
+    <Method Name="M_Auto" Id="{4fb2d708-ddf3-4540-a8ec-ca5ed42e6da6}">
+      <Declaration><![CDATA[METHOD M_Auto : UDINT
+VAR_INPUT
+	bRequestAutoMode : BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Disable" Id="{21ac1dd1-8804-4039-a364-2c978eff355e}">
+      <Declaration><![CDATA[METHOD M_Disable : UDINT
+VAR_INPUT
+	bDisable : BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Manual" Id="{bca26f4f-4b3b-4788-9ef8-be5e5af0a1a6}">
+      <Declaration><![CDATA[METHOD M_Manual : UDINT
+VAR_INPUT
+	bRequestManualMode: BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Reset" Id="{c3c796d1-2c44-40d3-8604-956ae88eef87}">
+      <Declaration><![CDATA[METHOD M_Reset : UDINT
+VAR_INPUT
+	bRequestReset:BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_CurrentState" Id="{10780ae2-c5ef-4067-bf93-980c61724e14}">
+      <Declaration><![CDATA[PROPERTY P_CurrentState : E_Modes]]></Declaration>
+      <Get Name="Get" Id="{ef2bd7be-1501-4007-a38d-324b46e86cd4}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{94edaf35-277d-48bd-a4a0-d07888139269}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+  </Itf>
+</TcPlcObject>

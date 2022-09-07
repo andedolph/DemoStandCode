@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4018.5">
+  <DUT Name="E_McResetStatus" Id="{b0f22eb4-e575-4cff-b301-28245a30cc73}">
+    <Declaration><![CDATA[TYPE E_McResetStatus :
+(
+
+	eMcReset_Start							:= 0,
+	eMcReset_Init							:= 10,
+	eMcReset_ResetHardware					:= 100,
+	eMcReset_ResetNc						,
+	eMcReset_Done							:= 500,
+	eMcReset_ErrorStep 						:= 999,
+	eMcReset_NoError
+
+);
+END_TYPE
+(* End *)
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
