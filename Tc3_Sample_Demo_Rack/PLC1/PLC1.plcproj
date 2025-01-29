@@ -6,7 +6,7 @@
     <ProjectGuid>{07e483bf-ec1e-4857-8e62-21f297de72b1}</ProjectGuid>
     <SubObjectsSortedByName>True</SubObjectsSortedByName>
     <Name>PLC1</Name>
-    <ProgramVersion>3.1.4020.10</ProgramVersion>
+    <ProgramVersion>3.1.4026.12</ProgramVersion>
     <Application>{f7d91749-fd71-47e0-b4c7-61c3f8e55a46}</Application>
     <TypeSystem>{5c54fdc8-1999-4725-9954-20223796a9de}</TypeSystem>
     <Implicit_Task_Info>{74e7ab00-ec4f-4f0c-b28d-81fcd17c2d36}</Implicit_Task_Info>

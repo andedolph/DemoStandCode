@@ -6,7 +6,7 @@
     <Node>
       <Title>Scope XY NCI</Title>
       <Expanded>False</Expanded>
-      <FileName>C:\Users\AlyssaH\Desktop\Tc3_Sample_Demo_Rack\Tc3_Sample_Demo_Rack\TwinCAT Measurement Axis\Scope XY NCI.tcscopex</FileName>
+      <FileName>C:\Users\Administrator\Desktop\TcStation\DemoStandCode-master\DemoStandCode-master\TwinCAT Measurement Axis\Scope XY NCI.tcscopex</FileName>
       <Children>
         <Node>
           <Title>DataPool</Title>
@@ -20,7 +20,7 @@
               <Children />
             </Node>
             <Node>
-              <Title>ActPos (1)</Title>
+              <Title>ActPos</Title>
               <Expanded>False</Expanded>
               <FileName></FileName>
               <Children />
@@ -49,7 +49,7 @@
                       <Children />
                     </Node>
                     <Node>
-                      <Title>Y: ActPos (1)</Title>
+                      <Title>Y: ActPos</Title>
                       <Expanded>False</Expanded>
                       <FileName></FileName>
                       <Children />
@@ -71,7 +71,7 @@
     <Node>
       <Title>Scope YT Axis 1 Stepper1</Title>
       <Expanded>False</Expanded>
-      <FileName>C:\Users\AlyssaH\Desktop\Active Projects\DemoStandCode\Tc3_Sample_Demo_Rack\TwinCAT Measurement Axis\Scope YT Axis 1 Stepper1.tcscopex</FileName>
+      <FileName>C:\Users\Administrator\Desktop\TcStation\DemoStandCode-master\DemoStandCode-master\TwinCAT Measurement Axis\Scope YT Axis 1 Stepper1.tcscopex</FileName>
       <Children>
         <Node>
           <Title>DataPool</Title>
@@ -241,7 +241,7 @@
     <Node>
       <Title>Scope YT Axis 2 Servo EL1</Title>
       <Expanded>False</Expanded>
-      <FileName>C:\Users\AlyssaH\Desktop\Active Projects\DemoStandCode\Tc3_Sample_Demo_Rack\TwinCAT Measurement Axis\Scope YT Axis 2 Servo EL1.tcscopex</FileName>
+      <FileName>C:\Users\Administrator\Desktop\TcStation\DemoStandCode-master\DemoStandCode-master\TwinCAT Measurement Axis\Scope YT Axis 2 Servo EL1.tcscopex</FileName>
       <Children>
         <Node>
           <Title>DataPool</Title>
@@ -430,7 +430,7 @@
     <Node>
       <Title>Scope YT Axis 3 Servo A AX1</Title>
       <Expanded>False</Expanded>
-      <FileName>C:\Users\AlyssaH\Desktop\Active Projects\DemoStandCode\Tc3_Sample_Demo_Rack\TwinCAT Measurement Axis\Scope YT Axis 3 Servo A AX1.tcscopex</FileName>
+      <FileName>C:\Users\Administrator\Desktop\TcStation\DemoStandCode-master\DemoStandCode-master\TwinCAT Measurement Axis\Scope YT Axis 3 Servo A AX1.tcscopex</FileName>
       <Children>
         <Node>
           <Title>DataPool</Title>
@@ -492,7 +492,7 @@
               <Children />
             </Node>
             <Node>
-              <Title>Torque/force feedback value (1)</Title>
+              <Title>Torque/force feedback value</Title>
               <Expanded>False</Expanded>
               <FileName></FileName>
               <Children />
@@ -599,7 +599,7 @@
               <FileName></FileName>
               <Children>
                 <Node>
-                  <Title>Torque/force feedback value (1)</Title>
+                  <Title>Torque/force feedback value</Title>
                   <Expanded>False</Expanded>
                   <FileName></FileName>
                   <Children />
@@ -619,7 +619,7 @@
     <Node>
       <Title>Scope YT Axis 4 Servo B AX1</Title>
       <Expanded>False</Expanded>
-      <FileName>C:\Users\AlyssaH\Desktop\Active Projects\DemoStandCode\Tc3_Sample_Demo_Rack\TwinCAT Measurement Axis\Scope YT Axis 4 Servo B AX1.tcscopex</FileName>
+      <FileName>C:\Users\Administrator\Desktop\TcStation\DemoStandCode-master\DemoStandCode-master\TwinCAT Measurement Axis\Scope YT Axis 4 Servo B AX1.tcscopex</FileName>
       <Children>
         <Node>
           <Title>DataPool</Title>
@@ -808,7 +808,7 @@
     <Node>
       <Title>Scope YT PLC Data</Title>
       <Expanded>False</Expanded>
-      <FileName>C:\Users\AlyssaH\Desktop\Tc3_Sample_Demo_Rack\Tc3_Sample_Demo_Rack\TwinCAT Measurement Axis\Scope YT PLC Data.tcscopex</FileName>
+      <FileName>C:\Users\Administrator\Desktop\TcStation\DemoStandCode-master\DemoStandCode-master\TwinCAT Measurement Axis\Scope YT PLC Data.tcscopex</FileName>
       <Children>
         <Node>
           <Title>DataPool</Title>
