@@ -35,9 +35,9 @@
     "temporaryPublishWithoutServerConfiguration": false,
     "abortOnErrors": true,
     "createPublishLog": false,
-    "salt": "04f05280c9274309acb894e3e2938db8",
-    "encryptedTcHmiServerPassword": "+yEpDJP1HGhLaUDLJExbXVZmk2uGYcErMdOJ1X6JOvo=",
-    "tcHmiServerHost": "169.254.230.161",
+    "salt": "085d3ad9fd9e4381a7423d90d831dd57",
+    "encryptedTcHmiServerPassword": "FR7F51r3NN/sD3Te0/Y0qQ==",
+    "tcHmiServerHost": "localhost",
     "tcHmiServerPort": "1020",
     "uploadTimeout": "60",
     "connectionTimeout": "5",
@@ -49,7 +49,7 @@
     "launchBrowserAfterPublish": true,
     "createVirtualDirectoriesOnTargetSystem": false,
     "tcHmiServerUserName": "__SystemAdministrator",
-    "tcHmiDestinationUrl": "https://169.254.230.161:1020",
+    "tcHmiDestinationUrl": "https://localhost:1020/",
     "publishConfiguration": "remote",
     "tcHmiIgnoreCertificateErrors": true
   }

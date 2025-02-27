@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ServerSettings>
-  <TargetNetID>5.36.135.40.1.1</TargetNetID>
+  <TargetNetID>5.77.241.156.1.1</TargetNetID>
   <LogMode>1</LogMode>
   <LogPath>C:\TwinCAT\Functions\TF6420-Database-Server\Win32\Server</LogPath>
   <LogMaxLength>10</LogMaxLength>

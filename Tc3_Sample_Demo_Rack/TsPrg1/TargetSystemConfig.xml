@@ -1,19 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TargetSystemConfig Crc="3924223089" Version="1.5">
+<TargetSystemConfig Crc="1753351545" Version="1.5">
   <TargetSystemType>HSafetyPLC</TargetSystemType>
-  <TargetSystemSubType>EL6900</TargetSystemSubType>
+  <TargetSystemSubType>EL6910</TargetSystemSubType>
   <IsExternalDevice>false</IsExternalDevice>
-  <TargetSystemObjectId>50462731</TargetSystemObjectId>
-  <TargetSystemObjectName>Term 11 (EL6900)</TargetSystemObjectName>
-  <SoftwareVersion>05</SoftwareVersion>
-  <SerialNumber>859867</SerialNumber>
+  <TargetSystemObjectId>50462763</TargetSystemObjectId>
+  <TargetSystemObjectName>Term 43 (EL6910)</TargetSystemObjectName>
+  <SoftwareVersion>02 (V01.03)</SoftwareVersion>
+  <SerialNumber>1184038</SerialNumber>
   <ProjectCRC>6778</ProjectCRC>
   <MapProjectCRC>false</MapProjectCRC>
   <MapSerialNumber>false</MapSerialNumber>
   <VersionNumber>1</VersionNumber>
-  <FSOEAddress>1</FSOEAddress>
-  <DipSwitch>1</DipSwitch>
-  <AmsNetID>5.36.135.40.2.1</AmsNetID>
+  <FSOEAddress>134</FSOEAddress>
+  <DipSwitch>134</DipSwitch>
+  <AmsNetID>5.77.241.156.2.1</AmsNetID>
   <AmsPort>1010</AmsPort>
   <ConnectionInfoDataConfigOld>true</ConnectionInfoDataConfigOld>
   <TakeOverSafetyAliasDeviceNamesInProcessImage>false</TakeOverSafetyAliasDeviceNamesInProcessImage>
