@@ -7,11 +7,19 @@
     <RootNamespace>TwinCAT Measurement Axis</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="C:\Users\AlyssaH\Desktop\Active Projects\DemoStandCode\Tc3_Sample_Demo_Rack\TwinCAT Measurement Axis\Scope YT Axis 1 Stepper1.tcscopex" />
-    <Content Include="C:\Users\AlyssaH\Desktop\Active Projects\DemoStandCode\Tc3_Sample_Demo_Rack\TwinCAT Measurement Axis\Scope YT Axis 2 Servo EL1.tcscopex" />
-    <Content Include="C:\Users\AlyssaH\Desktop\Active Projects\DemoStandCode\Tc3_Sample_Demo_Rack\TwinCAT Measurement Axis\Scope YT Axis 3 Servo A AX1.tcscopex" />
-    <Content Include="C:\Users\AlyssaH\Desktop\Active Projects\DemoStandCode\Tc3_Sample_Demo_Rack\TwinCAT Measurement Axis\Scope YT Axis 4 Servo B AX1.tcscopex" />
     <Content Include="Scope XY NCI.tcscopex">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Scope YT Axis 1 Stepper1.tcscopex">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Scope YT Axis 2 Servo EL1.tcscopex">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Scope YT Axis 3 Servo A AX1.tcscopex">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Scope YT Axis 4 Servo B AX1.tcscopex">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Scope YT PLC Data.tcscopex">

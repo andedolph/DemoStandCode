@@ -1,0 +1,20 @@
+<Node>
+  <Title>TwinCAT Database Server</Title>
+  <Expanded>False</Expanded>
+  <FileName></FileName>
+  <Children>
+    <Node>
+      <Title>TcDbServer</Title>
+      <Expanded>False</Expanded>
+      <FileName>C:\Users\TwinCAT_Admin\Desktop\DemoStandCode-master\TwinCAT Database Server\TcDbServer.tcdbsrv</FileName>
+      <Children>
+        <Node>
+          <Title>CSV File</Title>
+          <Expanded>False</Expanded>
+          <FileName>C:\Users\TwinCAT_Admin\Desktop\DemoStandCode-master\TwinCAT Database Server\TcDbServer\CSV File\CSV File.tcdbsrvdb</FileName>
+          <Children />
+        </Node>
+      </Children>
+    </Node>
+  </Children>
+</Node>

@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "serverExtensions": [
       {
@@ -26,35 +26,31 @@
         "name": "TcHmiUserManagement"
       }
     ],
-    "isNew": false,
     "profileName": "Publish",
     "publishMode": "TcHmi",
     "targetDirectory": "",
-    "server": "",
-    "sitePath": "",
-    "destinationUrl": "",
-    "passiveMode": true,
-    "savePassword": true,
     "deleteAllFilesBeforePublish": false,
     "deleteExtensionDataBeforePublish": false,
     "alwaysPublishLocalServerConfiguration": true,
     "temporaryPublishWithoutServerConfiguration": false,
     "abortOnErrors": true,
-    "userName": "",
-    "encryptedPassword": "",
-    "encryptedTcHmiServerPassword": "8ipKuR/JYzvVG4roXcHTog==",
-    "tcHmiServerHost": "169.254.230.161",
+    "createPublishLog": false,
+    "salt": "085d3ad9fd9e4381a7423d90d831dd57",
+    "encryptedTcHmiServerPassword": "FR7F51r3NN/sD3Te0/Y0qQ==",
+    "tcHmiServerHost": "localhost",
     "tcHmiServerPort": "1020",
-    "socketTimeout": "60",
+    "uploadTimeout": "60",
+    "connectionTimeout": "5",
+    "requestTimeout": "60",
+    "extensionStartupTimeout": "120",
     "clientCertificateCN": "",
     "tcHmiUseTLS": true,
     "useClientCertificate": false,
     "launchBrowserAfterPublish": true,
     "createVirtualDirectoriesOnTargetSystem": false,
     "tcHmiServerUserName": "__SystemAdministrator",
-    "tcHmiDestinationUrl": "https://169.254.230.161:1020",
+    "tcHmiDestinationUrl": "https://localhost:1020/",
     "publishConfiguration": "remote",
-    "tcHmiSavePassword": true,
     "tcHmiIgnoreCertificateErrors": true
   }
 ]
