@@ -10,7 +10,7 @@
     <RootNamespace>DriveManager</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="Drive 29 %28AX5203-0000-0210%29_1.tcdmdrv">
+    <Content Include="Drive 29 (AX5203-0000-0215)_1.tcdmdrv">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Term 20 %28EL7201-0010%29.tcdmdrv">

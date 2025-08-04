@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+<TcPlcObject Version="1.1.0.1">
   <Visu Name="TplTsConnectionEK1914" Id="{6ff17537-c750-4dee-b381-cf0b20fa7cbc}">
     <XmlArchive>
       <Data>
@@ -114,6 +114,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">13</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -175,6 +176,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">0</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
               <o>
                 <a n="ConfiguredComplexInputs" et="ComplexInput" />
@@ -282,6 +287,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">13</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -339,6 +345,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">1</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
               <o>
                 <a n="ConfiguredComplexInputs" et="ComplexInput" />
@@ -446,6 +456,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">13</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -503,6 +514,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">3</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
               <o>
                 <a n="ConfiguredComplexInputs" et="ComplexInput" />
@@ -610,6 +625,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">13</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -667,6 +683,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">5</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
               <o>
                 <a n="ConfiguredComplexInputs" et="ComplexInput" />
@@ -774,6 +794,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">13</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -831,6 +852,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">7</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
               <o>
                 <a n="ConfiguredComplexInputs" et="ComplexInput" />
@@ -938,6 +963,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">13</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -999,6 +1025,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">9</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
               <o>
                 <a n="ConfiguredComplexInputs" et="ComplexInput" />
@@ -1106,6 +1136,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">13</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -1167,6 +1198,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">11</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
               <o>
                 <a n="ConfiguredComplexInputs" et="ComplexInput" />
@@ -1274,6 +1309,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">13</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -1335,6 +1371,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">12</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
               <o>
                 <a n="ConfiguredComplexInputs" et="ComplexInput" />
@@ -1442,6 +1482,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">13</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -1503,6 +1544,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">14</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
               <o>
                 <a n="ConfiguredComplexInputs" et="ComplexInput" />
@@ -1610,6 +1655,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">13</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -1671,6 +1717,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">17</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
               <o>
                 <a n="ConfiguredComplexInputs" et="ComplexInput" />
@@ -1768,6 +1818,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">8</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -1829,6 +1880,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">24</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
               <o>
                 <a n="ConfiguredComplexInputs" et="ComplexInput" />
@@ -1926,6 +1981,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">8</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -1987,6 +2043,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">26</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
               <o>
                 <a n="ConfiguredComplexInputs" et="ComplexInput" />
@@ -2084,6 +2144,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">8</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -2145,6 +2206,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">28</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
               <o>
                 <a n="ConfiguredComplexInputs" et="ComplexInput" />
@@ -2242,6 +2307,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">8</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -2303,6 +2369,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">30</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
               <o>
                 <a n="ConfiguredComplexInputs" et="ComplexInput" />
@@ -2400,6 +2470,7 @@
                           <v n="AdditionalFontStyle" t="UInt16">0</v>
                           <v n="ExplicitColor">-16777216</v>
                           <v n="FontName">"Segoe UI"</v>
+                          <v n="DisplayName">""</v>
                           <v n="FontSize">8</v>
                           <v n="ScriptIdentification">0</v>
                           <v n="DoubleFontSize" t="Double">0</v>
@@ -2461,6 +2532,10 @@
                 <d n="SubElements" t="Hashtable" />
                 <v n="VisualElementId">32</v>
                 <l n="UserManagementAccessRights" t="ArrayList" />
+                <v n="AnimationDuration">"0"</v>
+                <v n="BringToForeground">""</v>
+                <v n="ElementVersion" t="Byte">0</v>
+                <n n="TabOrder" />
               </o>
             </l>
             <v n="BackgroundBitmapId">""</v>
@@ -2474,69 +2549,71 @@
               <v n="BgUseColor">16777215</v>
               <v n="BgUseGradient">false</v>
             </o>
+            <v n="AllElementsHaveDynamicVisibility">false</v>
           </o>
           <o n="GeneratedLMMDescriptions" t="GeneratedLanguageModelEntriesData">
             <o n="GeneratedVisuFbDescription" t="GenericFbDescription">
               <d n="FbMethods" t="CaseInsensitiveHashtable" ckt="String" cvt="Guid">
-                <v>GetUpdateRects</v>
-                <v>bb74e872-319d-477f-9627-8f479c620cf9</v>
                 <v>ContainsPoint</v>
                 <v>29242290-c69a-44b2-afb7-bf3b9d24bfe5</v>
+                <v>Destruct</v>
+                <v>3b7cd550-07fe-4949-b677-03657cb880f5</v>
+                <v>ElementInfo</v>
+                <v>f436ddec-3f75-48de-b752-3ea118c665d3</v>
+                <v>FB_Exit</v>
+                <v>17d341e6-5aa8-4e5b-bf6a-fd3ae0c18093</v>
                 <v>FB_Reinit</v>
                 <v>6761ac80-c0dc-4102-8bde-c5cae954a15a</v>
-                <v>SetStaticState</v>
-                <v>9ca52d12-fcee-4fcd-9320-204499823f94</v>
-                <v>Update</v>
-                <v>68670dd1-9131-4a9c-a794-43d2ab11b27f</v>
-                <v>GetTooltip</v>
-                <v>33189381-9f9b-4a1f-985a-4d727466a0b1</v>
-                <v>GetNamespace</v>
-                <v>7b2e0f24-17fa-4866-98ed-49caa64b7800</v>
-                <v>GetTranslator</v>
-                <v>382edb0b-9239-42b4-8b98-19ed0893c1c2</v>
-                <v>SetClientData</v>
-                <v>480f9d2e-5788-4b52-a4b7-1f3b3e5934a5</v>
                 <v>GetClientData</v>
                 <v>e4e8b60f-65cf-444e-aa32-f82829aac778</v>
-                <v>Paint</v>
-                <v>e83fa803-c526-4450-ae3d-b9c4b4057194</v>
-                <v>HasVisibilityAccess</v>
-                <v>77be0a90-1bf3-4f0d-a21a-a7a1f56e48e3</v>
                 <v>GetElementArray</v>
                 <v>7a5ab6ca-bbac-417b-99f2-4d791a38f593</v>
-                <v>SetVisuFlagsInternal</v>
-                <v>90a66a3b-a293-4394-ad5a-cf218dbc80be</v>
-                <v>GetText</v>
-                <v>364cc4a8-4096-49dc-926c-dd1ba51b181b</v>
-                <v>GetTextProperties</v>
-                <v>60004d13-4c28-4eca-9d8a-308b12a908f3</v>
-                <v>IsAntialiasingInactive</v>
-                <v>192549d2-b9fb-493f-894f-1a9dd0d4ac6b</v>
-                <v>Initialize</v>
-                <v>0c428222-adba-476e-b8ec-690f4bae7c87</v>
-                <v>HasInputAccess</v>
-                <v>0b4cc17b-f29e-401f-9d56-76baf70d278c</v>
-                <v>GetSurroundingRect</v>
-                <v>02f9976b-570c-4106-b1c3-3fc102d326d5</v>
+                <v>GetElementIdArray</v>
+                <v>f6f9f4f8-cf70-49f6-9888-76054ae376a2</v>
+                <v>GetInitializeVersion</v>
+                <v>82469dfe-f0d8-42c8-8927-3c51d2c20977</v>
                 <v>GetLocalUsergroup</v>
                 <v>da3cd0ef-0f96-407e-b66c-50a120f80901</v>
                 <v>GetName</v>
                 <v>1116ff3b-66e8-4f2f-9ed7-4900f5d95c3e</v>
+                <v>GetNamespace</v>
+                <v>7b2e0f24-17fa-4866-98ed-49caa64b7800</v>
                 <v>GetSize</v>
                 <v>24c89076-850c-4e11-8d8a-5e6641de8d72</v>
-                <v>Destruct</v>
-                <v>3b7cd550-07fe-4949-b677-03657cb880f5</v>
-                <v>FB_Exit</v>
-                <v>17d341e6-5aa8-4e5b-bf6a-fd3ae0c18093</v>
-                <v>GetInitializeVersion</v>
-                <v>82469dfe-f0d8-42c8-8927-3c51d2c20977</v>
-                <v>GetElementIdArray</v>
-                <v>f6f9f4f8-cf70-49f6-9888-76054ae376a2</v>
+                <v>GetSurroundingRect</v>
+                <v>02f9976b-570c-4106-b1c3-3fc102d326d5</v>
+                <v>GetText</v>
+                <v>364cc4a8-4096-49dc-926c-dd1ba51b181b</v>
+                <v>GetTextProperties</v>
+                <v>60004d13-4c28-4eca-9d8a-308b12a908f3</v>
+                <v>GetTooltip</v>
+                <v>33189381-9f9b-4a1f-985a-4d727466a0b1</v>
+                <v>GetTranslator</v>
+                <v>382edb0b-9239-42b4-8b98-19ed0893c1c2</v>
+                <v>GetUpdateRects</v>
+                <v>bb74e872-319d-477f-9627-8f479c620cf9</v>
                 <v>HandleInput</v>
                 <v>7efac333-7f86-429b-b288-29833981a5c2</v>
-                <v>ElementInfo</v>
-                <v>f436ddec-3f75-48de-b752-3ea118c665d3</v>
+                <v>HasInputAccess</v>
+                <v>0b4cc17b-f29e-401f-9d56-76baf70d278c</v>
+                <v>HasVisibilityAccess</v>
+                <v>77be0a90-1bf3-4f0d-a21a-a7a1f56e48e3</v>
+                <v>Initialize</v>
+                <v>0c428222-adba-476e-b8ec-690f4bae7c87</v>
+                <v>IsAntialiasingInactive</v>
+                <v>192549d2-b9fb-493f-894f-1a9dd0d4ac6b</v>
+                <v>Paint</v>
+                <v>e83fa803-c526-4450-ae3d-b9c4b4057194</v>
+                <v>SetClientData</v>
+                <v>480f9d2e-5788-4b52-a4b7-1f3b3e5934a5</v>
+                <v>SetStaticState</v>
+                <v>9ca52d12-fcee-4fcd-9320-204499823f94</v>
+                <v>SetVisuFlagsInternal</v>
+                <v>90a66a3b-a293-4394-ad5a-cf218dbc80be</v>
+                <v>Update</v>
+                <v>68670dd1-9131-4a9c-a794-43d2ab11b27f</v>
               </d>
+              <d n="FbProperties" t="CaseInsensitiveHashtable" />
               <v n="FbName">"NotImportant"</v>
               <v n="FbGuid">{6ff17537-c750-4dee-b381-cf0b20fa7cbc}</v>
             </o>
@@ -2546,13 +2623,14 @@
             <d n="GeneratedAllElementsEntries" t="Hashtable" />
             <o n="VisuRegDesc" t="GenericFbDescription">
               <d n="FbMethods" t="CaseInsensitiveHashtable" ckt="String" cvt="Guid">
-                <v>FB_Init</v>
-                <v>b43476e8-bde6-41f4-b372-dc3c4d7a1e31</v>
                 <v>FB_Exit</v>
                 <v>0e2f5df5-18ad-42fb-b7fc-84882964ea09</v>
+                <v>FB_Init</v>
+                <v>b43476e8-bde6-41f4-b372-dc3c4d7a1e31</v>
                 <v>FB_Reinit</v>
                 <v>4d5ea93e-267e-4952-a73b-1fdba7752694</v>
               </d>
+              <d n="FbProperties" t="CaseInsensitiveHashtable" />
               <v n="FbName">"NotImportant"</v>
               <v n="FbGuid">{8f4783eb-8cbe-4575-bafb-371ebaa71a42}</v>
             </o>
@@ -2561,35 +2639,38 @@
             <n n="MemManPou" />
             <o n="InputsPou" t="GenericFbDescription">
               <d n="FbMethods" t="CaseInsensitiveHashtable" ckt="String" cvt="Guid">
-                <v>ExecuteLooseCapture</v>
-                <v>b5187d44-523f-4cac-9a6b-63e02d219e5f</v>
-                <v>ExecuteMouseDblClick</v>
-                <v>adb0320f-9e7b-4016-a5c5-b1af3a81b071</v>
-                <v>ExecuteMouseDown</v>
-                <v>eba20785-d0fb-40b5-a6e6-c1635e4b5f67</v>
-                <v>ExecuteMouseUp</v>
-                <v>3fdbd3b9-b1bd-4f2b-b7c7-ea08bde6e2d1</v>
-                <v>GetElementInfo</v>
-                <v>17cfb454-6da0-4f93-8559-b84f9d5b4304</v>
                 <v>abstrGetDefaultCursor</v>
                 <v>81df4eb3-bb6f-4dc0-92f9-de8af2d13857</v>
                 <v>ExecuteDialogClosed</v>
                 <v>0db8e813-c8ad-4d24-b19d-dab19f1e9eb5</v>
-                <v>ExecuteKeyUp</v>
-                <v>2f37c20e-161b-466a-8f09-8927d900ea6c</v>
                 <v>ExecuteKeyDown</v>
                 <v>57ddd48a-b1c4-4115-8570-80304d2bc433</v>
-                <v>ExecuteMouseMove</v>
-                <v>f662b131-9ea8-42d1-97a3-cf65bca7caf3</v>
-                <v>Initialize</v>
-                <v>0e39a28c-3183-4f57-a19a-4ee21c90320e</v>
+                <v>ExecuteKeyUp</v>
+                <v>2f37c20e-161b-466a-8f09-8927d900ea6c</v>
+                <v>ExecuteLooseCapture</v>
+                <v>b5187d44-523f-4cac-9a6b-63e02d219e5f</v>
+                <v>ExecuteMouseClick</v>
+                <v>8f655358-8cf3-4b6b-8082-be17c75fcd9a</v>
+                <v>ExecuteMouseDblClick</v>
+                <v>adb0320f-9e7b-4016-a5c5-b1af3a81b071</v>
+                <v>ExecuteMouseDown</v>
+                <v>eba20785-d0fb-40b5-a6e6-c1635e4b5f67</v>
                 <v>ExecuteMouseEnter</v>
                 <v>930b0628-2134-41f7-b8c2-1ad7a407a79f</v>
                 <v>ExecuteMouseLeave</v>
                 <v>5e803235-a12e-447f-a5f0-47bc24eb6472</v>
-                <v>ExecuteMouseClick</v>
-                <v>8f655358-8cf3-4b6b-8082-be17c75fcd9a</v>
+                <v>ExecuteMouseMove</v>
+                <v>f662b131-9ea8-42d1-97a3-cf65bca7caf3</v>
+                <v>ExecuteMouseUp</v>
+                <v>3fdbd3b9-b1bd-4f2b-b7c7-ea08bde6e2d1</v>
+                <v>ExecuteValueChanged</v>
+                <v>e4211f92-26f3-4845-afa0-fa1a3fb9c7ad</v>
+                <v>GetElementInfo</v>
+                <v>17cfb454-6da0-4f93-8559-b84f9d5b4304</v>
+                <v>Initialize</v>
+                <v>0e39a28c-3183-4f57-a19a-4ee21c90320e</v>
               </d>
+              <d n="FbProperties" t="CaseInsensitiveHashtable" />
               <v n="FbName">"NotImportant"</v>
               <v n="FbGuid">{4b6a7230-9e72-4d16-bd0d-195e02dce726}</v>
             </o>
@@ -2597,28 +2678,11 @@
           </o>
           <v n="LastUsedIdForIdentifier">39</v>
           <o n="TextDocument" t="TextDocument">
-            <a n="TextLines" cet="TextLine">
-              <o>
-                <v n="Id">2L</v>
-                <n n="Tag" />
-                <v n="Text">"VAR_IN_OUT"</v>
-              </o>
-              <o>
-                <v n="Id">5L</v>
-                <n n="Tag" />
-                <v n="Text">"	stConnectionDiag 			:FB_TwinSafeConnectionEK1914;"</v>
-              </o>
-              <o>
-                <v n="Id">4L</v>
-                <n n="Tag" />
-                <v n="Text">"END_VAR"</v>
-              </o>
-              <o>
-                <v n="Id">1L</v>
-                <n n="Tag" />
-                <v n="Text">"(* End *)"</v>
-              </o>
-            </a>
+            <v n="TextBlobForSerialisation">"VAR_IN_OUT
+	stConnectionDiag 			:FB_TwinSafeConnectionEK1914;
+END_VAR
+(* End *)"</v>
+            <n n="LineInfoPersistence" />
           </o>
           <v n="GvlCreated">false</v>
           <n n="LMEntry" />
@@ -2634,12 +2698,14 @@
             <l2 n="Inputs" />
           </o>
           <n n="VisuSizeManager" />
+          <n n="FrameInterfaceDataModel" />
         </o>
       </Data>
       <TypeList>
         <Type n="ArrayList">System.Collections.ArrayList</Type>
         <Type n="BackgroundSettings">{1038f12c-dd4b-4f96-87a3-a350fe8f3552}</Type>
         <Type n="Boolean">System.Boolean</Type>
+        <Type n="Byte">System.Byte</Type>
         <Type n="CaseInsensitiveHashtable">{7df88604-7ac5-4e36-91c4-55e4fdad3e68}</Type>
         <Type n="ComplexInput">{1de566f6-72a7-494c-9353-9a418172c96e}</Type>
         <Type n="Double">System.Double</Type>
@@ -2656,7 +2722,6 @@
         <Type n="NamedStyleColor">{fa491db2-51ff-4bc1-9cd0-ce8c94ff6216}</Type>
         <Type n="String">System.String</Type>
         <Type n="TextDocument">{f3878285-8e4f-490b-bb1b-9acbb7eb04db}</Type>
-        <Type n="TextLine">{a5de0b0b-1cb5-4913-ac21-9d70293ec00d}</Type>
         <Type n="UInt16">System.UInt16</Type>
         <Type n="UInt32">System.UInt32</Type>
         <Type n="VisualElemCollection">{ef9d0b20-c96e-48db-b361-2ded4063150e}</Type>

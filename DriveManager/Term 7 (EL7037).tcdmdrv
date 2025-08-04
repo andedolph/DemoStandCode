@@ -10,6 +10,82 @@
   <ChildCount>0</ChildCount>
   <Disabled>false</Disabled>
   <TreeImageData16x14>424dd6020000000000003600000028000000100000000e0000000100180000000000a002000000000000000000000000000000000000ff00ffff00ffff00ffff00ff808080808080808080808080808080808080808080808080808080808080808080808080ff00ffff00ffff00ffff00ffc0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffc0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffc0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffc0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffc0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0000000c0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffc0c0c0c0c0c0000000000000000000000000000000000000000000c0c0c0c0c0c0808080007fff007fff007fff007fffc0c0c0c0c0c00000000000000000000000000000000000000000000000ffc0c0c0808080007fff007fff007fff007fffc0c0c0c0c0c0000000000000000000000000000000000000000000c0c0c0c0c0c0808080007fff007fff007fff007fffc0c0c0c0c0c0c0c0c0c0c0c0c0c0c0000000c0c0c0c0c0c0000000c0c0c0c0c0c0808080007fff007fff007fff007fffc0c0c0c0c0c0000000000000000000000000c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0808080007fff007fff007fff007fffc0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0808080007fff007fff007fff007fffc0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0808080007fff007fff007fff007fffc0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0808080</TreeImageData16x14>
+  <Xml>
+    <TcDMDrive>
+      <SortId>0</SortId>
+      <DriveModuleType>4</DriveModuleType>
+      <TcLink>
+        <TcPrjPath>..\Tc3_Sample_Demo_Rack\Tc3_Sample_Demo_Rack.tsproj</TcPrjPath>
+        <IoItemPathName>TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Term 7 (EL7037)</IoItemPathName>
+        <ItemId>7</ItemId>
+        <ObjectId>#x03020007</ObjectId>
+      </TcLink>
+      <OrderCode>EL7037</OrderCode>
+      <Name>Term 7 (EL7037)</Name>
+      <ProductRevision>EL7037-0000-0017</ProductRevision>
+      <WatchLog UpdateIntervalInMs="500">
+        <WatchLogItem>
+          <WatchLogParaCoE Index="4120" SubIndex="2" />
+          <Alias>Type</Alias>
+        </WatchLogItem>
+        <WatchLogItem>
+          <WatchLogParaCoE Index="4120" SubIndex="4" />
+          <Alias>Serial Nr</Alias>
+        </WatchLogItem>
+        <WatchLogItem>
+          <WatchLogParaCoE Index="4106" SubIndex="0" />
+          <Alias>Firmware version</Alias>
+        </WatchLogItem>
+        <WatchLogItem>
+          <WatchLogParaCoE Index="63744" SubIndex="5" />
+          <Alias>DC link voltage</Alias>
+        </WatchLogItem>
+        <WatchLogItem>
+          <WatchLogParaCoE Index="36880" SubIndex="17" />
+          <Alias>Amplifier temperature</Alias>
+        </WatchLogItem>
+      </WatchLog>
+      <Inverter>
+        <Device>
+          <Name>DMInverterTypeDevice</Name>
+          <ProjectGUID>00000000-0000-0000-0000-000000000000</ProjectGUID>
+          <Parameter>
+            <PropertyName>MaxAllowedMainVoltage</PropertyName>
+            <Value>24</Value>
+          </Parameter>
+          <Parameter>
+            <PropertyName>MinDcLinkVoltage</PropertyName>
+            <Value>0</Value>
+          </Parameter>
+          <Parameter>
+            <PropertyName>MaxDcLinkVoltage</PropertyName>
+            <Value>0</Value>
+          </Parameter>
+        </Device>
+        <Channel ChnId="0">
+          <TcLink>
+            <TcPrjPath>..\Tc3_Sample_Demo_Rack\Tc3_Sample_Demo_Rack.tsproj</TcPrjPath>
+            <IoItemPathName>TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Term 7 (EL7037)</IoItemPathName>
+            <NcItemPathName>TINC^NC-Task 1 SAF^Axes^Axis 1 Stepper</NcItemPathName>
+          </TcLink>
+          <SelectedModifyOptPDOsMode>0</SelectedModifyOptPDOsMode>
+          <Block Id="0">
+            <Controller />
+          </Block>
+          <WatchLog ChnId="0" UpdateIntervalInMs="500">
+            <WatchLogItem>
+              <WatchLogParaCoE Index="24592" SubIndex="1" />
+              <Alias>Status word</Alias>
+            </WatchLogItem>
+            <WatchLogItem>
+              <WatchLogParaCoE Index="32786" SubIndex="1" />
+              <Alias>Actual operation mode</Alias>
+            </WatchLogItem>
+          </WatchLog>
+        </Channel>
+      </Inverter>
+    </TcDMDrive>
+  </Xml>
   <BoxDef>
     <FieldbusAddress>1006</FieldbusAddress>
     <AmsAddress>
@@ -32,11 +108,11 @@
       </Info>
       <ProcessData>
         <Send>
-          <BitStart>12656</BitStart>
+          <BitStart>12704</BitStart>
           <BitLength>80</BitLength>
         </Send>
         <Recv>
-          <BitStart>12912</BitStart>
+          <BitStart>12704</BitStart>
           <BitLength>96</BitLength>
         </Recv>
         <Sm2>
@@ -191,7 +267,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741200</IndexOffset>
+              <IndexOffset>-1073741408</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -206,7 +282,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741199</IndexOffset>
+              <IndexOffset>-1073741407</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -221,7 +297,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741198</IndexOffset>
+              <IndexOffset>-1073741406</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -236,7 +312,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741197</IndexOffset>
+              <IndexOffset>-1073741405</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -251,7 +327,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741196</IndexOffset>
+              <IndexOffset>-1073741404</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -271,7 +347,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741193</IndexOffset>
+              <IndexOffset>-1073741401</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -286,7 +362,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741192</IndexOffset>
+              <IndexOffset>-1073741400</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -301,7 +377,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741191</IndexOffset>
+              <IndexOffset>-1073741399</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -316,7 +392,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741190</IndexOffset>
+              <IndexOffset>-1073741398</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -336,7 +412,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741188</IndexOffset>
+              <IndexOffset>-1073741396</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -351,7 +427,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741187</IndexOffset>
+              <IndexOffset>-1073741395</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -371,7 +447,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741185</IndexOffset>
+              <IndexOffset>-1073741393</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -386,7 +462,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-2147483568</IndexOffset>
+              <IndexOffset>-2147483594</IndexOffset>
               <Length>4</Length>
             </AdsInfo>
           </Entry>
@@ -401,7 +477,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-2147483564</IndexOffset>
+              <IndexOffset>-2147483590</IndexOffset>
               <Length>4</Length>
             </AdsInfo>
           </Entry>
@@ -431,7 +507,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741120</IndexOffset>
+              <IndexOffset>-1073741328</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -446,7 +522,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741119</IndexOffset>
+              <IndexOffset>-1073741327</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -461,7 +537,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741118</IndexOffset>
+              <IndexOffset>-1073741326</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -476,7 +552,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741117</IndexOffset>
+              <IndexOffset>-1073741325</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -491,7 +567,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741116</IndexOffset>
+              <IndexOffset>-1073741324</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -506,7 +582,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741115</IndexOffset>
+              <IndexOffset>-1073741323</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -521,7 +597,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741114</IndexOffset>
+              <IndexOffset>-1073741322</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -536,7 +612,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741113</IndexOffset>
+              <IndexOffset>-1073741321</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -556,7 +632,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741109</IndexOffset>
+              <IndexOffset>-1073741317</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -571,7 +647,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741108</IndexOffset>
+              <IndexOffset>-1073741316</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -586,7 +662,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741107</IndexOffset>
+              <IndexOffset>-1073741315</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -606,7 +682,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073741105</IndexOffset>
+              <IndexOffset>-1073741313</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -861,7 +937,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1056964240</IndexOffset>
+              <IndexOffset>-1056964192</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -876,7 +952,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1056964239</IndexOffset>
+              <IndexOffset>-1056964191</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -891,7 +967,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1056964238</IndexOffset>
+              <IndexOffset>-1056964190</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -906,7 +982,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1056964237</IndexOffset>
+              <IndexOffset>-1056964189</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -926,7 +1002,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-2130706384</IndexOffset>
+              <IndexOffset>-2130706378</IndexOffset>
               <Length>4</Length>
             </AdsInfo>
           </Entry>
@@ -945,7 +1021,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1056964192</IndexOffset>
+              <IndexOffset>-1056964144</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -960,7 +1036,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1056964191</IndexOffset>
+              <IndexOffset>-1056964143</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -975,7 +1051,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1056964190</IndexOffset>
+              <IndexOffset>-1056964142</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -995,7 +1071,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1056964181</IndexOffset>
+              <IndexOffset>-1056964133</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -1036,7 +1112,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-2130706378</IndexOffset>
+              <IndexOffset>-2130706372</IndexOffset>
               <Length>2</Length>
             </AdsInfo>
           </Entry>
@@ -1207,112 +1283,6 @@
               <Pdo>#x1a03</Pdo>
             </Sm>
           </AlternativeSmMapping>
-          <AlternativeSmMapping>
-            <Name>Velocity control compact with info data</Name>
-            <Sm No="2">
-              <Pdo>#x1600</Pdo>
-              <Pdo>#x1602</Pdo>
-              <Pdo>#x1604</Pdo>
-            </Sm>
-            <Sm No="3">
-              <Pdo>#x1a00</Pdo>
-              <Pdo>#x1a03</Pdo>
-              <Pdo>#x1a04</Pdo>
-            </Sm>
-          </AlternativeSmMapping>
-          <AlternativeSmMapping Selected="true">
-            <Name>Velocity control</Name>
-            <Sm No="2">
-              <Pdo>#x1601</Pdo>
-              <Pdo>#x1602</Pdo>
-              <Pdo>#x1604</Pdo>
-            </Sm>
-            <Sm No="3">
-              <Pdo>#x1a01</Pdo>
-              <Pdo>#x1a03</Pdo>
-            </Sm>
-          </AlternativeSmMapping>
-          <AlternativeSmMapping>
-            <Name>Position control</Name>
-            <Sm No="2">
-              <Pdo>#x1601</Pdo>
-              <Pdo>#x1602</Pdo>
-              <Pdo>#x1603</Pdo>
-            </Sm>
-            <Sm No="3">
-              <Pdo>#x1a01</Pdo>
-              <Pdo>#x1a03</Pdo>
-            </Sm>
-          </AlternativeSmMapping>
-          <AlternativeSmMapping>
-            <Name>Positioning interface compact</Name>
-            <Sm No="2">
-              <Pdo>#x1601</Pdo>
-              <Pdo>#x1602</Pdo>
-              <Pdo>#x1605</Pdo>
-            </Sm>
-            <Sm No="3">
-              <Pdo>#x1a01</Pdo>
-              <Pdo>#x1a03</Pdo>
-              <Pdo>#x1a06</Pdo>
-            </Sm>
-          </AlternativeSmMapping>
-          <AlternativeSmMapping>
-            <Name>Positioning interface</Name>
-            <Sm No="2">
-              <Pdo>#x1601</Pdo>
-              <Pdo>#x1602</Pdo>
-              <Pdo>#x1606</Pdo>
-            </Sm>
-            <Sm No="3">
-              <Pdo>#x1a01</Pdo>
-              <Pdo>#x1a03</Pdo>
-              <Pdo>#x1a07</Pdo>
-            </Sm>
-          </AlternativeSmMapping>
-          <AlternativeSmMapping>
-            <Name>Positioning interface with info data</Name>
-            <Sm No="2">
-              <Pdo>#x1601</Pdo>
-              <Pdo>#x1602</Pdo>
-              <Pdo>#x1606</Pdo>
-            </Sm>
-            <Sm No="3">
-              <Pdo>#x1a01</Pdo>
-              <Pdo>#x1a03</Pdo>
-              <Pdo>#x1a04</Pdo>
-              <Pdo>#x1a07</Pdo>
-            </Sm>
-          </AlternativeSmMapping>
-          <AlternativeSmMapping>
-            <Name>Positioning interface (Auto start)</Name>
-            <Sm No="2">
-              <Pdo>#x1601</Pdo>
-              <Pdo>#x1602</Pdo>
-              <Pdo>#x1606</Pdo>
-              <Pdo>#x1607</Pdo>
-            </Sm>
-            <Sm No="3">
-              <Pdo>#x1a01</Pdo>
-              <Pdo>#x1a03</Pdo>
-              <Pdo>#x1a07</Pdo>
-            </Sm>
-          </AlternativeSmMapping>
-          <AlternativeSmMapping>
-            <Name>Positioning interface (Auto start) with info data</Name>
-            <Sm No="2">
-              <Pdo>#x1601</Pdo>
-              <Pdo>#x1602</Pdo>
-              <Pdo>#x1606</Pdo>
-              <Pdo>#x1607</Pdo>
-            </Sm>
-            <Sm No="3">
-              <Pdo>#x1a01</Pdo>
-              <Pdo>#x1a03</Pdo>
-              <Pdo>#x1a04</Pdo>
-              <Pdo>#x1a07</Pdo>
-            </Sm>
-          </AlternativeSmMapping>
         </AlternativeSmMappings>
       </ProcessData>
       <Mailbox DataLinkLayer="true">
@@ -1320,7 +1290,7 @@
           <Start>4096</Start>
           <Length>128</Length>
         </Send>
-        <Recv>
+        <Recv StatusChange="true">
           <Start>4224</Start>
           <Length>128</Length>
           <StatusBitAddr>2</StatusBitAddr>
@@ -1518,16 +1488,6 @@
         </CoE>
       </Mailbox>
       <InitCmds>
-        <InitCmd>
-          <Transition>IP</Transition>
-          <Comment><![CDATA[set soccom ctrl to 0]]></Comment>
-          <Requires>cycle</Requires>
-          <Cmd>2</Cmd>
-          <Adp>65531</Adp>
-          <Ado>256</Ado>
-          <Data>0000</Data>
-          <Retries>3</Retries>
-        </InitCmd>
         <InitCmd>
           <Transition>PI</Transition>
           <Transition>BI</Transition>
@@ -1815,7 +1775,7 @@
           <Cmd>5</Cmd>
           <Adp>1006</Adp>
           <Ado>1536</Ado>
-          <Data>040000020a0000070011000201000000</Data>
+          <Data>0a0000020a0000070011000201000000</Data>
           <Cnt>1</Cnt>
           <Retries>3</Retries>
         </InitCmd>
@@ -1825,7 +1785,7 @@
           <Cmd>5</Cmd>
           <Adp>1006</Adp>
           <Ado>1552</Ado>
-          <Data>0a0800020c0000078011000101000000</Data>
+          <Data>0a0000020c0000078011000101000000</Data>
           <Cnt>1</Cnt>
           <Retries>3</Retries>
         </InitCmd>
@@ -2078,6 +2038,7 @@
           <Name>Synchron</Name>
           <Desc>FreeRun/SM-Synchron</Desc>
           <AssignActivate>#x0</AssignActivate>
+          <ActivateAdditional>#x0</ActivateAdditional>
           <CycleTimeSync0 Factor="0">0</CycleTimeSync0>
           <ShiftTimeSync0>0</ShiftTimeSync0>
           <CycleTimeSync1 Factor="1">0</CycleTimeSync1>
@@ -2087,6 +2048,7 @@
           <Name>DC</Name>
           <Desc>DC-Synchron</Desc>
           <AssignActivate>#x300</AssignActivate>
+          <ActivateAdditional>#x0</ActivateAdditional>
           <CycleTimeSync0 Factor="1">0</CycleTimeSync0>
           <ShiftTimeSync0>0</ShiftTimeSync0>
           <CycleTimeSync1 Factor="1">0</CycleTimeSync1>
@@ -2129,91 +2091,15 @@
           <ObjectId>false</ObjectId>
         </InfoData>
       </Settings>
-      <EsiFile>C:\TwinCAT\3.1\Config\Io\EtherCAT\Beckhoff EL7xxx.xml</EsiFile>
+      <EsiFile>C:\Program Files (x86)\Beckhoff\TwinCAT\3.1\Config\Io\EtherCAT\Beckhoff EL7xxx.xml</EsiFile>
       <TwinCAT>
         <ExtensionSupportFlags>1</ExtensionSupportFlags>
       </TwinCAT>
     </Slave>
     <AmsAddress>
-      <AmsNetId>5.36.135.40.2.1</AmsNetId>
+      <AmsNetId>5.77.241.156.2.1</AmsNetId>
       <AmsPort>1006</AmsPort>
     </AmsAddress>
-    <LinkedAxis>TINC^NC-Task 1 SAF^Axes^Axis 1 Stepper</LinkedAxis>
-    <LinkedAxis>TINC^NC-Task 1 SAF^Axes^Axis 1 Stepper</LinkedAxis>
+    <LinkedAxis Chn="0">TINC^NC-Task 1 SAF^Axes^Axis 1 Stepper</LinkedAxis>
   </EtherCAT>
-  <Xml>
-    <TcDMDrive>
-      <SortId>0</SortId>
-      <DriveModuleType>4</DriveModuleType>
-      <TcLink>
-        <TcPrjPath>..\Tc3_Sample_Demo_Rack\Tc3_Sample_Demo_Rack.tsproj</TcPrjPath>
-        <IoItemPathName>TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Term 7 (EL7037)</IoItemPathName>
-        <ItemId>7</ItemId>
-        <ObjectId>#x03020007</ObjectId>
-      </TcLink>
-      <OrderCode>EL7037</OrderCode>
-      <Name>Term 7 (EL7037)</Name>
-      <ProductRevision>EL7037-0000-0017</ProductRevision>
-      <WatchLog UpdateIntervalInMs="500">
-        <WatchLogItem>
-          <WatchLogParaCoE Index="4120" SubIndex="2" />
-          <Alias>Type</Alias>
-        </WatchLogItem>
-        <WatchLogItem>
-          <WatchLogParaCoE Index="4120" SubIndex="4" />
-          <Alias>Serial Nr</Alias>
-        </WatchLogItem>
-        <WatchLogItem>
-          <WatchLogParaCoE Index="4106" SubIndex="0" />
-          <Alias>Firmware version</Alias>
-        </WatchLogItem>
-        <WatchLogItem>
-          <WatchLogParaCoE Index="63744" SubIndex="5" />
-          <Alias>DC link voltage</Alias>
-        </WatchLogItem>
-        <WatchLogItem>
-          <WatchLogParaCoE Index="36880" SubIndex="17" />
-          <Alias>Amplifier temperature</Alias>
-        </WatchLogItem>
-      </WatchLog>
-      <Inverter>
-        <Device>
-          <Name>DMInverterTypeDevice</Name>
-          <Parameter>
-            <PropertyName>MaxAllowedMainVoltage</PropertyName>
-            <Value>24</Value>
-          </Parameter>
-          <Parameter>
-            <PropertyName>MinDcLinkVoltage</PropertyName>
-            <Value>0</Value>
-          </Parameter>
-          <Parameter>
-            <PropertyName>MaxDcLinkVoltage</PropertyName>
-            <Value>0</Value>
-          </Parameter>
-        </Device>
-        <Channel ChnId="0">
-          <TcLink>
-            <TcPrjPath>..\Tc3_Sample_Demo_Rack\Tc3_Sample_Demo_Rack.tsproj</TcPrjPath>
-            <IoItemPathName>TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Term 7 (EL7037)</IoItemPathName>
-            <NcItemPathName>TINC^NC-Task 1 SAF^Axes^Axis 1 Stepper</NcItemPathName>
-          </TcLink>
-          <SelectedModifyOptPDOsMode>0</SelectedModifyOptPDOsMode>
-          <Block Id="0">
-            <Controller />
-          </Block>
-          <WatchLog ChnId="0" UpdateIntervalInMs="500">
-            <WatchLogItem>
-              <WatchLogParaCoE Index="24592" SubIndex="1" />
-              <Alias>Status word</Alias>
-            </WatchLogItem>
-            <WatchLogItem>
-              <WatchLogParaCoE Index="32786" SubIndex="1" />
-              <Alias>Actual operation mode</Alias>
-            </WatchLogItem>
-          </WatchLog>
-        </Channel>
-      </Inverter>
-    </TcDMDrive>
-  </Xml>
 </TreeItem>

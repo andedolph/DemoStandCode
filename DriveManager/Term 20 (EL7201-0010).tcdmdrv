@@ -596,6 +596,7 @@
       <Inverter>
         <Device>
           <Name>DMInverterTypeDevice</Name>
+          <ProjectGUID>00000000-0000-0000-0000-000000000000</ProjectGUID>
           <Parameter>
             <PropertyName>MaxAllowedMainVoltage</PropertyName>
             <Value>24</Value>
@@ -958,6 +959,7 @@
             <Feedback DataSource="1">
               <DatabaseType>
                 <OrderCode>Sick#EKM36-0JF0A0S15</OrderCode>
+                <VendorName />
                 <IsRotary>true</IsRotary>
                 <AbsolutePosInterface>7</AbsolutePosInterface>
                 <GroupType>Sick#EKx</GroupType>
@@ -1000,6 +1002,7 @@
             <Load MoveStyle="Linear">
               <IsMotorRotary>true</IsMotorRotary>
               <Name>InverterChannelTypeBlockLoad</Name>
+              <ProjectGUID>00000000-0000-0000-0000-000000000000</ProjectGUID>
               <Parameter>
                 <PropertyName>FeedConstantUnit</PropertyName>
                 <Value>mm</Value>
@@ -1044,6 +1047,7 @@
             <Controller>
               <Filter Id="0">
                 <Name>ControllerFilter</Name>
+                <ProjectGUID>00000000-0000-0000-0000-000000000000</ProjectGUID>
                 <Parameter>
                   <PropertyName>Filter_Type</PropertyName>
                   <Value>1</Value>
@@ -1111,12 +1115,12 @@
       </Info>
       <ProcessData>
         <Send>
-          <BitStart>13616</BitStart>
-          <BitLength>48</BitLength>
+          <BitStart>13200</BitStart>
+          <BitLength>80</BitLength>
         </Send>
         <Recv>
-          <BitStart>13760</BitStart>
-          <BitLength>80</BitLength>
+          <BitStart>13200</BitStart>
+          <BitLength>112</BitLength>
         </Recv>
         <Sm2>
           <Type>Outputs</Type>
@@ -1126,6 +1130,7 @@
           <Enable>1</Enable>
           <Pdo>5632</Pdo>
           <Pdo>5633</Pdo>
+          <Pdo>5638</Pdo>
         </Sm2>
         <Sm3>
           <Type>Inputs</Type>
@@ -1136,6 +1141,7 @@
           <Pdo>6656</Pdo>
           <Pdo>6657</Pdo>
           <Pdo>6659</Pdo>
+          <Pdo>6662</Pdo>
           <Pdo>6663</Pdo>
         </Sm3>
         <TxPdo Fixed="true" Sm="3">
@@ -1152,7 +1158,7 @@
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-2147483464</IndexOffset>
+              <IndexOffset>-2147483534</IndexOffset>
               <Length>4</Length>
             </AdsInfo>
           </Entry>
@@ -1185,7 +1191,7 @@ Bit 14 - 15 : reserved</Comment>
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-2147483460</IndexOffset>
+              <IndexOffset>-2147483530</IndexOffset>
               <Length>2</Length>
             </AdsInfo>
           </Entry>
@@ -1215,7 +1221,7 @@ Bit 14 - 15 : reserved</Comment>
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-2147483458</IndexOffset>
+              <IndexOffset>-2147483528</IndexOffset>
               <Length>2</Length>
             </AdsInfo>
           </Entry>
@@ -1242,7 +1248,7 @@ Bit 14 - 15 : reserved</Comment>
             <DataType>UINT</DataType>
           </Entry>
         </TxPdo>
-        <TxPdo Fixed="true">
+        <TxPdo Fixed="true" Sm="3">
           <Index>#x1a06</Index>
           <Name>DRV Following error actual value</Name>
           <Entry>
@@ -1251,6 +1257,14 @@ Bit 14 - 15 : reserved</Comment>
             <BitLen>32</BitLen>
             <Name>Following error actual value</Name>
             <DataType>DINT</DataType>
+            <AdsInfo>
+              <AmsAddress>
+                <AmsPort>11</AmsPort>
+              </AmsAddress>
+              <IndexGroup>50593856</IndexGroup>
+              <IndexOffset>-2147483526</IndexOffset>
+              <Length>4</Length>
+            </AdsInfo>
           </Entry>
         </TxPdo>
         <TxPdo Fixed="true" Sm="3">
@@ -1267,7 +1281,7 @@ Bit 14 - 15 : reserved</Comment>
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073740288</IndexOffset>
+              <IndexOffset>-1073740816</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -1282,7 +1296,7 @@ Bit 14 - 15 : reserved</Comment>
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073740287</IndexOffset>
+              <IndexOffset>-1073740815</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -1297,7 +1311,7 @@ Bit 14 - 15 : reserved</Comment>
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073740286</IndexOffset>
+              <IndexOffset>-1073740814</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -1317,7 +1331,7 @@ Bit 14 - 15 : reserved</Comment>
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073740281</IndexOffset>
+              <IndexOffset>-1073740809</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -1332,7 +1346,7 @@ Bit 14 - 15 : reserved</Comment>
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073740280</IndexOffset>
+              <IndexOffset>-1073740808</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -1347,7 +1361,7 @@ Bit 14 - 15 : reserved</Comment>
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073740279</IndexOffset>
+              <IndexOffset>-1073740807</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -1362,7 +1376,7 @@ Bit 14 - 15 : reserved</Comment>
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073740278</IndexOffset>
+              <IndexOffset>-1073740806</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -1382,7 +1396,7 @@ Bit 14 - 15 : reserved</Comment>
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-1073740273</IndexOffset>
+              <IndexOffset>-1073740801</IndexOffset>
               <Length>1</Length>
             </AdsInfo>
           </Entry>
@@ -1475,7 +1489,7 @@ Bit 8 - 15 : reserved</Comment>
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-2130706266</IndexOffset>
+              <IndexOffset>-2130706318</IndexOffset>
               <Length>2</Length>
             </AdsInfo>
           </Entry>
@@ -1494,7 +1508,7 @@ Bit 8 - 15 : reserved</Comment>
                 <AmsPort>11</AmsPort>
               </AmsAddress>
               <IndexGroup>50593856</IndexGroup>
-              <IndexOffset>-2130706264</IndexOffset>
+              <IndexOffset>-2130706316</IndexOffset>
               <Length>4</Length>
             </AdsInfo>
           </Entry>
@@ -1543,7 +1557,7 @@ Bit 8 - 15 : reserved</Comment>
             <DataType>INT</DataType>
           </Entry>
         </RxPdo>
-        <RxPdo Fixed="true">
+        <RxPdo Fixed="true" Sm="2">
           <Index>#x1606</Index>
           <Name>DRV Target position</Name>
           <Entry>
@@ -1552,6 +1566,14 @@ Bit 8 - 15 : reserved</Comment>
             <BitLen>32</BitLen>
             <Name>Target position</Name>
             <DataType>UDINT</DataType>
+            <AdsInfo>
+              <AmsAddress>
+                <AmsPort>11</AmsPort>
+              </AmsAddress>
+              <IndexGroup>50593856</IndexGroup>
+              <IndexOffset>-2130706312</IndexOffset>
+              <Length>4</Length>
+            </AdsInfo>
           </Entry>
         </RxPdo>
         <RxPdo Fixed="true">
@@ -1651,40 +1673,6 @@ Bit 8 - 15 : reserved</Comment>
               <Pdo>#x1a03</Pdo>
             </Sm>
           </AlternativeSmMapping>
-          <AlternativeSmMapping>
-            <Name>Cyclic synchronous torque mode with commutation angle (CSTCA)</Name>
-            <Sm No="2">
-              <Pdo>#x1600</Pdo>
-              <Pdo>#x1602</Pdo>
-              <Pdo>#x1603</Pdo>
-            </Sm>
-            <Sm No="3">
-              <Pdo>#x1a01</Pdo>
-            </Sm>
-          </AlternativeSmMapping>
-          <AlternativeSmMapping Default="1">
-            <Name>Cyclic synchronous velocity mode (CSV)</Name>
-            <Sm No="2">
-              <Pdo>#x1600</Pdo>
-              <Pdo>#x1601</Pdo>
-            </Sm>
-            <Sm No="3">
-              <Pdo>#x1a00</Pdo>
-              <Pdo>#x1a01</Pdo>
-            </Sm>
-          </AlternativeSmMapping>
-          <AlternativeSmMapping>
-            <Name>Cyclic synchronous position mode (CSP)</Name>
-            <Sm No="2">
-              <Pdo>#x1600</Pdo>
-              <Pdo>#x1606</Pdo>
-            </Sm>
-            <Sm No="3">
-              <Pdo>#x1a00</Pdo>
-              <Pdo>#x1a01</Pdo>
-              <Pdo>#x1a06</Pdo>
-            </Sm>
-          </AlternativeSmMapping>
         </AlternativeSmMappings>
       </ProcessData>
       <Mailbox DataLinkLayer="true">
@@ -1692,7 +1680,7 @@ Bit 8 - 15 : reserved</Comment>
           <Start>4096</Start>
           <Length>128</Length>
         </Send>
-        <Recv>
+        <Recv StatusChange="true">
           <Start>4224</Start>
           <Length>128</Length>
           <StatusBitAddr>10</StatusBitAddr>
@@ -1722,7 +1710,7 @@ Bit 8 - 15 : reserved</Comment>
               <Ccs>1</Ccs>
               <Index>7186</Index>
               <SubIndex>0</SubIndex>
-              <Data>020000160116</Data>
+              <Data>0300001601160616</Data>
             </InitCmd>
             <InitCmd Fixed="true" CompleteAccess="true">
               <Transition>PS</Transition>
@@ -1731,7 +1719,7 @@ Bit 8 - 15 : reserved</Comment>
               <Ccs>1</Ccs>
               <Index>7187</Index>
               <SubIndex>0</SubIndex>
-              <Data>0400001a011a031a071a</Data>
+              <Data>0500001a011a031a061a071a</Data>
             </InitCmd>
             <InitCmd>
               <Transition>IP</Transition>
@@ -1903,6 +1891,15 @@ Bit 8 - 15 : reserved</Comment>
               <SubIndex>25</SubIndex>
               <Data>c05d0000</Data>
             </InitCmd>
+            <InitCmd>
+              <Transition>PS</Transition>
+              <Comment><![CDATA[DRV Outputs / Modes of operation]]></Comment>
+              <Timeout>0</Timeout>
+              <Ccs>1</Ccs>
+              <Index>28688</Index>
+              <SubIndex>3</SubIndex>
+              <Data>08</Data>
+            </InitCmd>
           </InitCmds>
           <CanOpenType>39</CanOpenType>
           <Profile>
@@ -1920,16 +1917,6 @@ Bit 8 - 15 : reserved</Comment>
         </CoE>
       </Mailbox>
       <InitCmds>
-        <InitCmd>
-          <Transition>IP</Transition>
-          <Comment><![CDATA[set soccom ctrl to 0]]></Comment>
-          <Requires>cycle</Requires>
-          <Cmd>2</Cmd>
-          <Adp>65516</Adp>
-          <Ado>256</Ado>
-          <Data>0000</Data>
-          <Retries>3</Retries>
-        </InitCmd>
         <InitCmd>
           <Transition>PI</Transition>
           <Transition>BI</Transition>
@@ -2262,7 +2249,7 @@ Bit 8 - 15 : reserved</Comment>
           <Cmd>5</Cmd>
           <Adp>1021</Adp>
           <Ado>2064</Ado>
-          <Data>0011060024000100</Data>
+          <Data>00110a0024000100</Data>
           <Cnt>1</Cnt>
           <Retries>3</Retries>
         </InitCmd>
@@ -2272,7 +2259,7 @@ Bit 8 - 15 : reserved</Comment>
           <Cmd>5</Cmd>
           <Adp>1021</Adp>
           <Ado>2072</Ado>
-          <Data>80110a0020000100</Data>
+          <Data>80110e0020000100</Data>
           <Cnt>1</Cnt>
           <Retries>3</Retries>
         </InitCmd>
@@ -2282,7 +2269,7 @@ Bit 8 - 15 : reserved</Comment>
           <Cmd>5</Cmd>
           <Adp>1021</Adp>
           <Ado>1536</Ado>
-          <Data>00200002060000070011000201000000</Data>
+          <Data>001000020a0000070011000201000000</Data>
           <Cnt>1</Cnt>
           <Retries>3</Retries>
         </InitCmd>
@@ -2292,7 +2279,7 @@ Bit 8 - 15 : reserved</Comment>
           <Cmd>5</Cmd>
           <Adp>1021</Adp>
           <Ado>1552</Ado>
-          <Data>002800020a0000078011000101000000</Data>
+          <Data>001000020e0000078011000101000000</Data>
           <Cnt>1</Cnt>
           <Retries>3</Retries>
         </InitCmd>
@@ -2564,6 +2551,7 @@ Bit 8 - 15 : reserved</Comment>
           <Name>DC</Name>
           <Desc>DC-Synchron</Desc>
           <AssignActivate>#x700</AssignActivate>
+          <ActivateAdditional>#x0</ActivateAdditional>
           <CycleTimeSync0 Factor="1">0</CycleTimeSync0>
           <ShiftTimeSync0>30000</ShiftTimeSync0>
           <CycleTimeSync1 Factor="-1">0</CycleTimeSync1>
@@ -2606,13 +2594,13 @@ Bit 8 - 15 : reserved</Comment>
           <ObjectId>false</ObjectId>
         </InfoData>
       </Settings>
-      <EsiFile>C:\TwinCAT\3.1\Config\Io\EtherCAT\Beckhoff EL72xx.xml</EsiFile>
+      <EsiFile>C:\Program Files (x86)\Beckhoff\TwinCAT\3.1\Config\Io\EtherCAT\Beckhoff EL72xx.xml</EsiFile>
       <TwinCAT>
         <ExtensionSupportFlags>1</ExtensionSupportFlags>
       </TwinCAT>
     </Slave>
     <AmsAddress>
-      <AmsNetId>5.36.135.40.2.1</AmsNetId>
+      <AmsNetId>5.77.241.156.2.1</AmsNetId>
       <AmsPort>1021</AmsPort>
     </AmsAddress>
     <LinkedAxis>TINC^NC-Task 1 SAF^Axes^Axis 2 Servo EL</LinkedAxis>
